@@ -2,7 +2,7 @@
 
 A WordPress plugin that integrates the M-Pesa payment gateway and enables you to restrict premium content behind a paywall, allowing you to monetize your website effectively.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Requirements](#requirements)
@@ -15,7 +15,7 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 - [License](#license)
 - [Support](#support)
 
-## ✨ Features
+## Features
 
 - **M-Pesa Payment Integration**: Seamless integration with the M-Pesa payment gateway
 - **Content Paywall**: Restrict premium content behind a secure paywall
@@ -26,14 +26,14 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 - **Multiple Content Types**: Protect pages, posts, or custom content
 - **Plugin Update Checker**: Automatic update notifications from GitHub
 
-## 📋 Requirements
+## Requirements
 
 - **WordPress**: 6.2.1 or higher
 - **PHP**: 7.4 or higher (recommended: 8.1+)
 - **Composer**: For dependency management
 - **M-Pesa Account**: M-Pesa daraja Details
 
-## 🚀 Installation
+## Installation
 
 ### Method 1: Manual Installation
 
@@ -49,7 +49,7 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 3. Select the plugin zip file and click **Install Now**
 4. Click **Activate Plugin**
 
-## ⚙️ Configuration
+## Configuration
 
 ### Initial Setup
 
@@ -73,7 +73,7 @@ The plugin admin interface provides:
 - **Subscriptions**: Manage user subscriptions and access
 - **Reports**: View payment history and analytics
 
-## 📖 Usage
+## Usage
 
 ### Protecting Content
 
@@ -111,7 +111,7 @@ Payment Processed
 Content Access Granted
 ```
 
-## 📁 Plugin Structure
+## Plugin Structure
 
 ```
 MpesaPaywallPro/
@@ -140,7 +140,7 @@ MpesaPaywallPro/
 └── README.md                       # This file
 ```
 
-## 👨‍💻 Author & Contact
+## Author & Contact
 
 **Festus Murimi**
 
@@ -148,7 +148,7 @@ MpesaPaywallPro/
 - **LinkedIn**: [Festus Murimi](https://www.linkedin.com/in/festus-murimi-b41aa2251/)
 - **Gumroad**: [MpesaPaywallPro](https://festuswp.gumroad.com/l/MpesaPaywallPro)
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how you can help:
 
@@ -194,7 +194,7 @@ Found a bug? Please report it on our [GitHub Issues](https://github.com/peanutsx
 - WordPress and PHP versions
 - Any relevant error logs
 
-## 📄 License
+## License
 
 MpesaPaywallPro is licensed under the **GNU General Public License v2 or later**.
 
@@ -205,7 +205,7 @@ You are free to:
 - ✅ Modify the code to fit your needs
 - ✅ Distribute the plugin (with proper attribution)
 
-## 🆘 Support
+## Support
 
 ### Documentation
 
@@ -218,7 +218,7 @@ You are free to:
 2. **Create a new issue**: If not, describe your problem in detail
 3. **Contact**: Reach out via email or LinkedIn
 
-## ❓ Frequently Asked Questions
+## Frequently Asked Questions
 
 ### Q: Can I test the plugin in sandbox mode?
 **A**: Yes! Configure the plugin to use M-Pesa's sandbox environment during testing.
@@ -235,7 +235,7 @@ You are free to:
 ### Q: What happens if a user already paid?
 **A**: The plugin automatically grants access to users who have completed payment. Repeat attempts to access will not charge again.
 
-## 🔄 Version History
+## Version History
 
 ### v1.0.0 (Initial Release)
 - M-Pesa payment gateway integration
@@ -244,7 +244,7 @@ You are free to:
 - Plugin update checker
 - Multi-language support
 
-## 🎯 Roadmap
+## Roadmap
 
 Future enhancements planned:
 - [ ] Subscription management (recurring payments)
@@ -253,14 +253,14 @@ Future enhancements planned:
 - [ ] Affiliate/referral system
 - [ ] Additional payment gateways
 
-## 📞 Security & Privacy
+## Security & Privacy
 
 - All payment data is encrypted
 - No sensitive information is stored on your server
 - Compliant with M-Pesa security standards
 - GDPR compliant data handling
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Yahnis Elsts Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) for update functionality
 - WordPress community for guidelines and best practices
