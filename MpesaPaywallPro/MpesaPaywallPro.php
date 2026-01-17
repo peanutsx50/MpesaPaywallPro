@@ -51,6 +51,7 @@ define('MPP_PATH', plugin_dir_path(__FILE__));
 use MpesaPaywallPro\base\MpesaPaywallProActivator;
 use MpesaPaywallPro\base\MpesaPaywallProDeactivator;
 use MpesaPaywallPro\base\MpesaPaywallPro;
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 /**
  * The code that runs during plugin activation.
@@ -72,6 +73,35 @@ function deactivate_plugin_name()
 
 register_activation_hook(__FILE__, 'activate_plugin_name');
 register_deactivation_hook(__FILE__, 'deactivate_plugin_name');
+
+
+/**
+ * Initialize plugin update checker if the PucFactory class is available.
+ *
+ * This code checks if the YahnisElsts PluginUpdateChecker library is loaded
+ * and available. If it is, it creates an update checker instance that will
+ * periodically check the license server for plugin updates.
+ *
+ * @since 1.0.0
+ */
+
+if (class_exists('YahnisElsts\PluginUpdateChecker\v5\PucFactory')) {
+	/**
+	 * Build and configure the update checker.
+	 *
+	 * Parameters:
+	 * - url: The remote server URL that provides update information
+	 * - __FILE__: The main plugin file path
+	 * - 'mpesapaywallpro': Unique slug identifier for this plugin
+	 */
+	$myUpdateChecker = PucFactory::buildUpdateChecker(
+		'https://github.com/peanutsx50/MpesaPaywallPro.git',
+		__FILE__,
+		'mpesapaywallpro'
+	);
+	//Set the branch that contains the stable release.
+	$myUpdateChecker->setBranch('main');
+}
 
 
 /**

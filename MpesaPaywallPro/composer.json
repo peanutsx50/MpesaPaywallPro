@@ -15,5 +15,8 @@
       "email": "murimifestus09@gmail.com"
     }
   ],
-  "minimum-stability": "dev"
+  "minimum-stability": "dev",
+  "require": {
+    "yahnis-elsts/plugin-update-checker": "dev-master"
+  }
 }
