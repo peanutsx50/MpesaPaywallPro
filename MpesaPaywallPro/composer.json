@@ -1,0 +1,30 @@
+{
+  "name": "yourname/pluginname",
+  "description": "Wordpress plugin starter template",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "PluginName\\": "includes/",
+      "PluginName\\admin\\": "admin/",
+      "PluginName\\public\\": "public/"
+    }
+  },
+  "authors": [
+    {
+      "name": "yourname",
+      "email": "youremail@email.com"
+    }
+  ],
+  "scripts": {
+    "post-create-project-cmd": [
+      "php -r \"require 'setup.php';\""
+    ]
+  },
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "composer/composer": "^2.0"
+  },
+  "minimum-stability": "stable"
+}
