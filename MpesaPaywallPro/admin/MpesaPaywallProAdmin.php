@@ -23,7 +23,8 @@
 
 namespace MpesaPaywallPro\admin;
 
-class MpesaPaywallProAdmin {
+class MpesaPaywallProAdmin
+{
 
 	/**
 	 * The ID of this plugin.
@@ -50,11 +51,11 @@ class MpesaPaywallProAdmin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version)
+	{
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-
 	}
 
 	/**
@@ -62,7 +63,8 @@ class MpesaPaywallProAdmin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -76,8 +78,7 @@ class MpesaPaywallProAdmin {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/plugin-name-admin.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/plugin-name-admin.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -85,7 +86,8 @@ class MpesaPaywallProAdmin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -99,8 +101,52 @@ class MpesaPaywallProAdmin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/plugin-name-admin.js', array( 'jquery' ), $this->version, false );
-
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/plugin-name-admin.js', array('jquery'), $this->version, false);
 	}
 
+	/**
+	 * Register the admin page.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_admin_page()
+	{
+		/**
+		 * This function adds a new admin page to the WordPress dashboard.
+		 * 
+		 * The admin page serves as the main settings interface for the MpesaPaywallPro plugin,
+		 * allowing administrators to configure M-Pesa integration, set paywall options,
+		 * manage payment settings, and monitor transaction history.
+		 * 
+		 * Parameters explained:
+		 * - 'MpesaPaywallPro': The page title displayed in the browser tab and at the top of the page
+		 * - 'MpesaPaywallPro': The text label shown in the WordPress admin menu sidebar
+		 * - 'manage_options': WordPress capability required to access this page (admin-only)
+		 * - 'mpesa-paywall-pro': Unique slug identifier for the page (used in URLs and references)
+		 * - array($this, 'display_admin_page'): Callback function that renders the page content
+		 * - 'dashicons-admin-generic': Icon displayed next to the menu item (from WordPress dashicons)
+		 * - 81: Menu position in the dashboard (higher numbers appear lower in the menu)
+		 * 
+		 * @return void
+		 */
+		add_menu_page(
+			'MpesaPaywallPro settings', // Page title
+			'MpesaPaywallPro', // Menu title
+			'manage_options', // Capability
+			'mpesa-paywall-pro', // Menu slug
+			array($this, 'display_admin_page'), // Callback function
+			'dashicons-admin-generic', // Icon URL
+			81 // Position
+		);
+	}
+
+	/**
+	 * Display the admin page content.
+	 *
+	 * @since    1.0.0
+	 */
+	public function display_admin_page()
+	{
+		echo '<div class="wrap"><h1>Mpesa Paywall Pro Settings</h1><p>Welcome to the Mpesa Paywall Pro admin page.</p></div>';
+	}
 }

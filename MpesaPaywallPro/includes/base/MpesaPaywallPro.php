@@ -81,7 +81,7 @@ class MpesaPaywallPro
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'plugin-name';
+		$this->plugin_name = 'MpesaPaywallPro';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -94,10 +94,10 @@ class MpesaPaywallPro
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Plugin_Name_Loader. Orchestrates the hooks of the plugin.
-	 * - Plugin_Name_i18n. Defines internationalization functionality.
-	 * - Plugin_Name_Admin. Defines all hooks for the admin area.
-	 * - Plugin_Name_Public. Defines all hooks for the public side of the site.
+	 * - MpesaPaywallProLoader. Orchestrates the hooks of the plugin.
+	 * - MpesaPaywallProI18n. Defines internationalization functionality.
+	 * - MpesaPaywallProAdmin. Defines all hooks for the admin area.
+	 * - MpesaPaywallProPublic. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -142,6 +142,9 @@ class MpesaPaywallPro
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+
+		// register admin page
+		$this->loader->add_action('admin_menu', $plugin_admin, 'register_admin_page');
 	}
 
 	/**
