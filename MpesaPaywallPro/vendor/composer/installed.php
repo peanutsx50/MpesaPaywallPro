@@ -3,7 +3,7 @@
         'name' => 'festusmurimi/mpesapaywallpro',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c5eaeced4910ad5409c24f81553ff218a44e215b',
+        'reference' => '794e01b1785d13db1966e8c00ca229067c2064ce',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'festusmurimi/mpesapaywallpro' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c5eaeced4910ad5409c24f81553ff218a44e215b',
+            'reference' => '794e01b1785d13db1966e8c00ca229067c2064ce',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

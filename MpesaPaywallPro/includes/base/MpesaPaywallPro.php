@@ -31,7 +31,7 @@
 namespace MpesaPaywallPro\base;
 
 use MpesaPaywallPro\admin\MpesaPaywallProAdmin;
-use MpesaPayWallPro\public\MpesaPaywallProPublic;
+use MpesaPaywallPro\public\MpesaPaywallProPublic;
 
 
 class MpesaPaywallPro
