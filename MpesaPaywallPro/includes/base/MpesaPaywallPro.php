@@ -28,13 +28,13 @@
  * @author     Your Name <email@example.com>
  */
 
-namespace PluginName\base;
+namespace MpesaPaywallPro\base;
 
-use PluginName\admin\Plugin_Name_Admin;
-use PluginName\public\Plugin_Name_Public;
+use MpesaPaywallPro\admin\MpesaPaywallProAdmin;
+use MpesaPayWallPro\public\MpesaPaywallProPublic;
 
 
-class Plugin_Name
+class MpesaPaywallPro
 {
 
 	/**
@@ -76,8 +76,8 @@ class Plugin_Name
 	 */
 	public function __construct()
 	{
-		if (defined('PLUGIN_NAME_VERSION')) {
-			$this->version = PLUGIN_NAME_VERSION;
+		if (defined('MPP_VERSION')) {
+			$this->version = MPP_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
@@ -108,7 +108,7 @@ class Plugin_Name
 	private function load_dependencies()
 	{
 
-		$this->loader = new Plugin_Name_Loader();
+		$this->loader = new MpesaPaywallProLoader();
 	}
 
 	/**
@@ -123,7 +123,7 @@ class Plugin_Name
 	private function set_locale()
 	{
 
-		$plugin_i18n = new Plugin_Name_i18n();
+		$plugin_i18n = new MpesaPaywallProI18n();
 
 		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
@@ -138,7 +138,7 @@ class Plugin_Name
 	private function define_admin_hooks()
 	{
 
-		$plugin_admin = new Plugin_Name_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new MpesaPaywallProAdmin($this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
@@ -154,7 +154,7 @@ class Plugin_Name
 	private function define_public_hooks()
 	{
 
-		$plugin_public = new Plugin_Name_Public($this->get_plugin_name(), $this->get_version());
+		$plugin_public = new MpesaPaywallProPublic($this->get_plugin_name(), $this->get_version());
 
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');

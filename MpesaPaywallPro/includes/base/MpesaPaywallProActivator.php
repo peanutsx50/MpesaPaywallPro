@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Fired during plugin deactivation
+ * Fired during plugin activation
  *
  * @link       http://example.com
  * @since      1.0.0
@@ -11,9 +11,9 @@
  */
 
 /**
- * Fired during plugin deactivation.
+ * Fired during plugin activation.
  *
- * This class defines all code necessary to run during the plugin's deactivation.
+ * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
  * @package    Plugin_Name
@@ -21,9 +21,9 @@
  * @author     Your Name <email@example.com>
  */
 
-namespace PluginName\base;
+namespace MpesaPaywallPro\base;
 
-class Plugin_Name_Deactivator
+class MpesaPaywallProActivator
 {
 
 	/**
@@ -33,5 +33,5 @@ class Plugin_Name_Deactivator
 	 *
 	 * @since    1.0.0
 	 */
-	public static function deactivate() {}
+	public static function activate() {}
 }

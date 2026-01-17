@@ -1,30 +1,19 @@
 {
-  "name": "yourname/pluginname",
-  "description": "Wordpress plugin starter template",
+  "name": "festusmurimi/mpesapaywallpro",
+  "description": "MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.",
   "type": "project",
   "autoload": {
     "psr-4": {
-      "PluginName\\": "includes/",
-      "PluginName\\admin\\": "admin/",
-      "PluginName\\public\\": "public/"
+      "MpesaPaywallPro\\": "includes/",
+      "MpesaPaywallPro\\admin\\": "admin/",
+      "MpesaPaywallPro\\public\\": "public/"
     }
   },
   "authors": [
     {
-      "name": "yourname",
-      "email": "youremail@email.com"
+      "name": "Festus Murimi",
+      "email": "murimifestus09@gmail.com"
     }
   ],
-  "scripts": {
-    "post-create-project-cmd": [
-      "php -r \"require 'setup.php';\""
-    ]
-  },
-  "require": {
-    "php": ">=7.4"
-  },
-  "require-dev": {
-    "composer/composer": "^2.0"
-  },
-  "minimum-stability": "stable"
+  "minimum-stability": "dev"
 }

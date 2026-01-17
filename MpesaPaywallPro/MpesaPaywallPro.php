@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The plugin bootstrap file
+ * The main plugin file
  *
  * This file is read by WordPress to generate the plugin information in the plugin
  * admin area. This file also includes all of the dependencies used by the plugin,
@@ -10,18 +10,18 @@
  *
  * @link              http://example.com
  * @since             1.0.0
- * @package           Plugin_Name
+ * @package           MpesaPaywallPro
  *
  * @wordpress-plugin
- * Plugin Name:       WordPress Plugin Boilerplate
+ * Plugin Name:       MpesaPaywallPro
  * Plugin URI:        http://example.com/plugin-name-uri/
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.
  * Version:           1.0.0
- * Author:            Your Name or Your Company
- * Author URI:        http://example.com/
- * License:           GPL-2.0+added simple composer
+ * Author:            Festus Murimi
+ * Author URI:        https://www.linkedin.com/in/festus-murimi-b41aa2251/
+ * License:           GNU General Public License v2
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       plugin-name
+ * Text Domain:       mpesapaywallpro
  * Domain Path:       /languages
  */
 
@@ -43,14 +43,14 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
  */
 
 // setting up plugin constants
-define('PLUGIN_NAME_VERSION', '1.0.0');
-define('PLUGIN_NAME_URL', plugin_dir_url(__FILE__));
-define('PLUGIN_NAME_PATH', plugin_dir_path(__FILE__));
+define('MPP_VERSION', '1.0.0');
+define('MPP_URL', plugin_dir_url(__FILE__));
+define('MPP_PATH', plugin_dir_path(__FILE__));
 
 // namespace imports
-use PluginName\base\Plugin_Name_Activator;
-use PluginName\base\Plugin_Name_Deactivator;
-use PluginName\base\Plugin_Name;
+use MpesaPaywallPro\base\MpesaPaywallProActivator;
+use MpesaPaywallPro\base\MpesaPaywallProDeactivator;
+use MpesaPaywallPro\base\MpesaPaywallPro;
 
 /**
  * The code that runs during plugin activation.
@@ -58,7 +58,7 @@ use PluginName\base\Plugin_Name;
  */
 function activate_plugin_name()
 {
-	Plugin_Name_Activator::activate();
+	MpesaPaywallProActivator::activate();
 }
 
 /**
@@ -67,7 +67,7 @@ function activate_plugin_name()
  */
 function deactivate_plugin_name()
 {
-	Plugin_Name_Deactivator::deactivate();
+	MpesaPaywallProDeactivator::deactivate();
 }
 
 register_activation_hook(__FILE__, 'activate_plugin_name');
@@ -87,7 +87,7 @@ register_deactivation_hook(__FILE__, 'deactivate_plugin_name');
 function run_plugin_name()
 {
 
-	$plugin = new Plugin_Name();
+	$plugin = new MpesaPaywallPro();
 	$plugin->run();
 }
 run_plugin_name();

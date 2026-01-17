@@ -25,9 +25,9 @@
  * @author     Your Name <email@example.com>
  */
 
-namespace PluginName\base;
+namespace MpesaPaywallPro\base;
 
-class Plugin_Name_i18n
+class MpesaPaywallProI18n
 {
 
 
