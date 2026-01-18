@@ -107,7 +107,34 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
             </div>
         </div>
 
-        
+        <!-- settings content based on the current tab -->
+        <div class="mpesapaywallpro-settings-content">
+            <form method="post" action="options.php">
+                <?php
+                // Output security fields for the registered setting "mpesapaywallpro_options"
+                settings_fields('mpesapaywallpro_options_group');
+
+                // Output setting sections and their fields
+                do_settings_sections('mpesapaywallpro_' . $current_tab);
 
 
+                switch ($current_tab) {
+                    case 'mpesa_setup':
+                        include_once MPP_PATH . 'admin/partials/tabs/mpesa-setup.php';
+                        break;
+                    case 'paywall_settings':
+                        include_once MPP_PATH . 'admin/partials/tabs/paywall-settings.php';
+                        break;
+                    case 'access_control':
+                        include_once MPP_PATH . 'admin/partials/tabs/access-control.php';
+                        break;
+                }
+
+                ?>
+            </form>
+        </div>
     </div>
+    <?php
+    submit_button();
+    ?>
+</div>
