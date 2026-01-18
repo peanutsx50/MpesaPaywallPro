@@ -3,11 +3,11 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @link       http://example.com
+ * @link       https://festuswp.gumroad.com/l/MpesaPaywallPro
  * @since      1.0.0
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/admin
+ * @package    MpesaPaywallPro
+ * @subpackage MpesaPaywallPro/admin
  */
 
 /**
@@ -16,9 +16,9 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the admin-specific stylesheet and JavaScript.
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/admin
- * @author     Your Name <email@example.com>
+ * @package    MpesaPaywallPro
+ * @subpackage MpesaPaywallPro/admin
+ * @author     Festus Murimi <murimifestus09@gmail.com>
  */
 
 namespace MpesaPaywallPro\admin;
@@ -101,7 +101,7 @@ class MpesaPaywallProAdmin
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/plugin-name-admin.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), (float) $this->version, false);
 	}
 
 	/**

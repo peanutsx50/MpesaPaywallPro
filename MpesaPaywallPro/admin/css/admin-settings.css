@@ -88,7 +88,7 @@
 
 .mpesapaywallpro-tab-content {
   padding: 20px;
-  display: none;
+  display: block;
 }
 
 .mpesapaywallpro-notice {
@@ -96,8 +96,12 @@
   border-left: 4px solid #0073aa;
   padding: 15px;
   margin: 0 0 25px 0;
+  display: flex;
+  justify-content: space-between;
 }
-
+.mpesapaywallpro-notice-close:hover{
+  cursor: pointer;
+}
 
 .mpesapaywallpro-notice h3 {
   margin-top: 0;
@@ -113,9 +117,6 @@
 
 .mpesapaywallpro-notice li {
   margin-bottom: 5px;
-}
-.mpesapaywallpro-settings-content {
-  margin-top: 20px;
 }
 .mpesapaywallpro-settings-section {
   background: white;

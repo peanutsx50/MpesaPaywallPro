@@ -103,6 +103,11 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
                         <li><?php esc_html_e('Control how long users can access content after payment', 'mpesapaywallpro'); ?></li>
                     </ul>
                 </div>
+
+                <!-- Close button -->
+                <div class="mpesapaywallpro-notice-close">
+                    <span class="dashicons dashicons-dismiss"></span>
+                </div>
             </div>
         </div>
 
