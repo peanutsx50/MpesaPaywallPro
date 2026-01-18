@@ -121,27 +121,3 @@ if (!defined('ABSPATH')) {
         </tr>
     </table>
 </div>
-
-<style>
-.shortcode-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-.shortcode-item {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 4px;
-    border-left: 4px solid #0073aa;
-}
-.shortcode-item code {
-    display: block;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: white;
-    border-radius: 3px;
-    font-size: 12px;
-    word-break: break-all;
-}
-</style>

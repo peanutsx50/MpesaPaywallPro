@@ -86,7 +86,6 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
     <div class="mpesapaywallpro-admin-content">
         <!-- Admin settings form -->
         <div class="mpesapaywallpro-tab-content">
-
             <!-- Introduction/Notice Section -->
             <div class="mpesapaywallpro-notice notice-info">
                 <div class="notice-content">
