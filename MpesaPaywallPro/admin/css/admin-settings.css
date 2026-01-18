@@ -1,0 +1,10 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+.mpesa-paywall-pro-admin-banner {
+  background-color: red;
+  height: 200px;
+  width: full;
+}

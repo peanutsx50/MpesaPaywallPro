@@ -20,6 +20,16 @@ if (!defined('ABSPATH')) {
 
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 <div class="wrap">
+    <!-- Admin top banner -->
+    <div class="mpesa-paywall-pro-admin-banner">
+
+    </div>
+
+    <!-- Admin tabbed navigation -->
+
+    <!-- Admin settings form -->
+
+
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
     <p class="description">
         <?php esc_html_e('Configure the MpesaPaywallPro plugin settings below.', 'mpesapaywallpro'); ?>
