@@ -147,6 +147,8 @@ class MpesaPaywallProAdmin
 	 */
 	public function display_admin_page()
 	{
-		echo '<div class="wrap"><h1>Mpesa Paywall Pro Settings</h1><p>Welcome to the Mpesa Paywall Pro admin page.</p></div>';
+		// Include the admin page HTML template
+		$admin_template = MPP_PATH . 'admin/partials/admin-settings.php';
+		require_once $admin_template;
 	}
 }
