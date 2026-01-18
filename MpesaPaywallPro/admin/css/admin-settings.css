@@ -1,10 +1,57 @@
-body.wp-admin {
-  border-top: 5px solid blue !important;
+.mpesapaywallpro-admin-wrap {
+    max-width: 1200px;
+    margin: 20px 0;
 }
 
-.mpesa-paywall-pro-admin-banner {
-  background-color: red;
-  height: 200px;
-  width: 100%;
-  border: 3px solid green;
+.mpesapaywallpro-admin-banner {
+    background: linear-gradient(135deg, #0073aa 0%, #00a0d2 100%);
+    color: white;
+    border-radius: 5px;
+    padding: 25px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.mpesapaywallpro-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.mpesapaywallpro-banner-left h1 {
+    color: white;
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mpesapaywallpro-version {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.mpesapaywallpro-banner-description {
+    font-size: 16px;
+    margin: 0;
+    color: rgba(255,255,255,0.9);
+    max-width: 600px;
+}
+
+.mpesapaywallpro-banner-actions {
+    display: flex;
+    gap: 10px;
+}
+.mpesapaywallpro-features-button{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mpesapaywallpro-banner-actions .dashicons {
+    margin-right: 5px;
 }
