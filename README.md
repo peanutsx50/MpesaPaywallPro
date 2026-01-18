@@ -2,6 +2,9 @@
 
 A WordPress plugin that integrates the M-Pesa payment gateway and enables you to restrict premium content behind a paywall, allowing you to monetize your website effectively.
 
+![MpesaPaywallPro Plugin Interface](assets/screenshot.png)
+
+
 ## Table of Contents
 
 - [Features](#features)
@@ -25,6 +28,7 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 - **User Management**: Track user subscriptions and access
 - **Multiple Content Types**: Protect pages, posts, or custom content
 - **Plugin Update Checker**: Automatic update notifications from GitHub
+
 
 ## Requirements
 
