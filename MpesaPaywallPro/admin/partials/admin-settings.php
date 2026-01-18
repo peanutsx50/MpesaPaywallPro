@@ -116,19 +116,22 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
 
                 // Output setting sections and their fields
                 do_settings_sections('mpesapaywallpro_' . $current_tab);
-
-                switch ($current_tab) {
-                    case 'mpesa_setup':
-                        include_once MPP_PATH . 'admin/partials/mpesa-setup.php';
-                        break;
-                    case 'paywall_settings':
-                        include_once MPP_PATH . 'admin/partials/paywall-settings.php';
-                        break;
-                    case 'access_control':
-                        include_once MPP_PATH . 'admin/partials/access-control.php';
-                        break;
-                }
                 ?>
+                <div class="mpesapaywallpro-settings-sections">
+                    <?php
+                    switch ($current_tab) {
+                        case 'mpesa_setup':
+                            include_once MPP_PATH . 'admin/partials/mpesa-setup.php';
+                            break;
+                        case 'paywall_settings':
+                            include_once MPP_PATH . 'admin/partials/paywall-settings.php';
+                            break;
+                        case 'access_control':
+                            include_once MPP_PATH . 'admin/partials/access-control.php';
+                            break;
+                    }
+                    ?>
+                </div>
             </form>
         </div>
     </div>
