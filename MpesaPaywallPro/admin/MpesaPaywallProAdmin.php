@@ -104,6 +104,7 @@ class MpesaPaywallProAdmin
 		 */
 
 		wp_enqueue_script($this->plugin_name, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), (float) $this->version, false);
+		wp_enqueue_script($this->plugin_name . '-meta-box', MPP_URL . 'admin/js/content-locked-meta-box.js', array('jquery'), (float) $this->version, false);
 	}
 
 	/**
