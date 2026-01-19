@@ -193,4 +193,15 @@ class MpesaPaywallProAdmin
 	{
 		require_once MPP_PATH . 'admin/partials/content-locked-meta-box.php';
 	}
+
+	//save meta box data
+	public function save_meta_box_data($post_id)
+	{
+		if (
+			!isset($_POST['mpp_paywall_nonce']) ||
+			!wp_verify_nonce($_POST['mpp_paywall_nonce'], 'mpp_save_paywall_meta')
+		) {
+			return;
+		}
+	}
 }

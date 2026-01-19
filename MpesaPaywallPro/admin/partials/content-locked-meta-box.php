@@ -21,7 +21,7 @@ if (! defined('WPINC')) {
 }
 
 //add nonce field so we can retreive it later when saving
-wp_nonce_field(basename(__FILE__), 'mpp_content_locked_meta_box_nonce');
+wp_nonce_field('mpp_save_paywall_meta', 'mpp_paywall_nonce');
 
 // retrieve current value of the content locked meta field
 $is_locked = get_post_meta($post->ID, 'mpp_is_locked', true);
