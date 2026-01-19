@@ -78,7 +78,7 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, MPP_URL . 'css/public-paywall.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->plugin_name, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
 	}
 
 	/**

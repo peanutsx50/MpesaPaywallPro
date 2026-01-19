@@ -2,9 +2,161 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
- .mpp-preview-fade {
-    height: 100px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-    margin-top: -100px;
-    position: relative;
+.mpp-preview-fade {
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  margin-top: -200px;
+  position: relative;
+  pointer-events: none;
+}
+
+.mpp-paywall-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 48px 0;
+  margin: 0;
+  text-align: center;
+}
+
+.mpp-paywall-title {
+  color: #111827;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+
+.mpp-paywall-description {
+  color: #6b7280;
+  font-size: 17px;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.mpp-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: start;
+}
+
+.mpp-benefit-item {
+  color: #374151;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mpp-benefit-item::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.mpp-paywall-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.mpp-price-tag {
+  display: inline-block;
+  color: #111827;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.mpp-price-tag small {
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+#mpp-pay-button {
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#mpp-pay-button:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+#mpp-pay-button:active {
+  transform: translateY(0);
+}
+
+#mpp-payment-status {
+  margin-top: 24px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  display: none;
+}
+
+#mpp-payment-status.mpp-status-visible {
+  display: block;
+}
+
+#mpp-payment-status.mpp-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+#mpp-payment-status.mpp-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+#mpp-payment-status.mpp-processing {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+@media (max-width: 768px) {
+  .mpp-paywall-container {
+    padding: 32px 20px;
+  }
+
+  .mpp-paywall-title {
+    font-size: 24px;
+  }
+
+  .mpp-paywall-description {
+    font-size: 16px;
+  }
+
+  .mpp-paywall-action {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .mpp-price-tag {
+    font-size: 28px;
+  }
 }
