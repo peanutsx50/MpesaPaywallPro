@@ -78,7 +78,7 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/plugin-name-public.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->plugin_name, MPP_URL . 'css/public-paywall.css', array(), (float) $this->version, 'all');
 	}
 
 	/**
@@ -128,9 +128,22 @@ class MpesaPaywallProPublic
 			return $content;
 		}
 
-		// Display paywall instead of content
-		$paywall_html = $this->render_paywall($price);
+		// Generate preview content
+		$preview_content = $this->generate_preview($content);
+
+		// Display preview html and attach paywall html
+		$paywall_html = $preview_content . $this->render_paywall();
 		return $paywall_html;
+	}
+
+	// Generate preview content (first 100 words)
+	public function generate_preview($content)
+	{
+		$words = explode(' ', wp_strip_all_tags($content));
+		$preview_words = array_slice($words, 0, 100);
+		$preview_content = implode(' ', $preview_words);
+		$preview_content .= '...<div class="mpp-preview-fade"></div>';
+		return '<div class="mpp-content-preview">' . wpautop($preview_content) . '</div>';
 	}
 
 	// Dummy function to check if user has access
@@ -141,7 +154,10 @@ class MpesaPaywallProPublic
 	}
 
 	// Render the paywall HTML
-	public function render_paywall($price){
+	public function render_paywall()
+	{
+		ob_start();
 		require_once MPP_PATH . 'public/partials/paywall-display.php';
+		return ob_get_clean();
 	}
 }
