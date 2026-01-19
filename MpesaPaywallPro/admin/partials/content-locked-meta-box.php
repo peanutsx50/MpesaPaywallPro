@@ -37,7 +37,7 @@ $price     = get_post_meta($post->ID, 'mpp_price', true);
         </label>
     </p>
 
-    <p>
+    <p id='mpp_price_field'>
         <label for="mpp_price">
             <?php esc_html_e('Price (KES)', 'mpesapaywallpro'); ?>
         </label>

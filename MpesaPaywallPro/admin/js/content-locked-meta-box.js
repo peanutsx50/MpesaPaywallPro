@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const checkbox = document.querySelector('input[name="mpp_is_locked"]');
-  const price = document.getElementById("mpp_price");
+  const price = document.getElementById("mpp_price_field");
 
   function togglePriceField() {
     if (checkbox.checked) {
