@@ -118,10 +118,30 @@ class MpesaPaywallProPublic
 		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
 		$price = get_post_meta($post_id, 'mpp_price', true);
 
-		error_log("Locked: " . $is_locked . " Price: " . $price);
-		// logic to check if content is locked and if user has paid
-		// if locked and not paid, return paywall message
-		// else return original content
-		return $content;
+		// If content is not locked, return original content
+		if ($is_locked !== '1') {
+			return $content;
+		}
+
+		// Check if user has already paid (you'll implement this based on your payment logic)
+		if ($this->user_has_access($post_id)) {
+			return $content;
+		}
+
+		// Display paywall instead of content
+		$paywall_html = $this->render_paywall($price);
+		return $paywall_html;
+	}
+
+	// Dummy function to check if user has access
+	public function user_has_access($post_id)
+	{
+		// Implement your logic to check if the user has paid for access
+		return false;
+	}
+
+	// Render the paywall HTML
+	public function render_paywall($price){
+		require_once MPP_PATH . 'public/partials/paywall-display.php';
 	}
 }
