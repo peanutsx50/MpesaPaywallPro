@@ -154,6 +154,16 @@ class MpesaPaywallProAdmin
 		require_once $admin_template;
 	}
 
+	/**
+	 * Register custom meta box for post paywall settings.
+	 *
+	 * Adds a meta box to the WordPress post editor that allows administrators
+	 * to configure paywall settings for individual posts, including content
+	 * lock status and pricing information.
+	 *
+	 * @since    1.0.0
+	 * @return   void
+	 */
 	public function add_custom_meta_field()
 	{
 		// add custom meta field to get content locked status
@@ -168,7 +178,18 @@ class MpesaPaywallProAdmin
 		// add custom meta field to get content price
 	}
 
-	public function render_content_meta_box() {
+	/**
+	 * Render the content of the paywall meta box.
+	 *
+	 * Displays the HTML form fields for configuring paywall settings on individual posts.
+	 * The actual HTML markup is loaded from a separate partial template file to keep
+	 * the class file focused on business logic rather than presentation.
+	 *
+	 * @since    1.0.0
+	 * @return   void
+	 */
+	public function render_content_meta_box()
+	{
 		require_once MPP_PATH . 'admin/partials/content-locked-meta-box.php';
 	}
 }
