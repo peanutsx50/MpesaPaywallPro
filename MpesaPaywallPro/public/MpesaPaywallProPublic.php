@@ -103,4 +103,25 @@ class MpesaPaywallProPublic
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/plugin-name-public.js', array('jquery'), $this->version, false);
 	}
+
+	// filter post content to enforce paywall
+	public function filter_post_content($content)
+	{
+		// Only apply on single post pages, not in admin or excerpts
+		if (is_admin() || !is_single()) {
+			return $content;
+		}
+		// Get the current post ID
+		$post_id = get_the_ID();
+
+		// Retrieve paywall meta data
+		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
+		$price = get_post_meta($post_id, 'mpp_price', true);
+
+		error_log("Locked: " . $is_locked . " Price: " . $price);
+		// logic to check if content is locked and if user has paid
+		// if locked and not paid, return paywall message
+		// else return original content
+		return $content;
+	}
 }

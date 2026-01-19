@@ -23,9 +23,12 @@ if (! defined('WPINC')) {
 //add nonce field so we can retreive it later when saving
 wp_nonce_field('mpp_save_paywall_meta', 'mpp_paywall_nonce');
 
+// Get the current post ID
+$post_id = get_the_ID();
+
 // retrieve current value of the content locked meta field
-$is_locked = get_post_meta($post->ID, 'mpp_is_locked', true);
-$price     = get_post_meta($post->ID, 'mpp_price', true);
+$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
+$price     = get_post_meta($post_id, 'mpp_price', true);
 
 ?>
 

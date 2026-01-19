@@ -167,6 +167,9 @@ class MpesaPaywallPro
 
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
+
+		// add content filtering hook
+		$this->loader->add_filter('the_content', $plugin_public, 'filter_post_content');
 	}
 
 	/**
