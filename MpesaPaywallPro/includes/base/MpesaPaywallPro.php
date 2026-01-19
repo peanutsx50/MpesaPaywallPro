@@ -145,6 +145,9 @@ class MpesaPaywallPro
 
 		// register admin page
 		$this->loader->add_action('admin_menu', $plugin_admin, 'register_admin_page');
+
+		//register custom meta box
+		$this->loader->add_action('add_meta_boxes', $plugin_admin, 'add_custom_meta_field');
 	}
 
 	/**

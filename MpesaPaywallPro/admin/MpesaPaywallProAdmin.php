@@ -23,6 +23,8 @@
 
 namespace MpesaPaywallPro\admin;
 
+use MpesaPaywallPro\base\MpesaPaywallPro;
+
 class MpesaPaywallProAdmin
 {
 
@@ -150,5 +152,23 @@ class MpesaPaywallProAdmin
 		// Include the admin page HTML template
 		$admin_template = MPP_PATH . 'admin/partials/admin-settings.php';
 		require_once $admin_template;
+	}
+
+	public function add_custom_meta_field()
+	{
+		// add custom meta field to get content locked status
+		add_meta_box(
+			'mpp_meta_box', // Unique ID
+			__('MpesaPaywall', 'mpesapaywallpro'), // Box title
+			array($this, 'render_content_meta_box'), // Content callback, must be of type callable
+			'post', // Post type
+			'side', // Context
+			'high' // Priority
+		);
+		// add custom meta field to get content price
+	}
+
+	public function render_content_meta_box() {
+		require_once MPP_PATH . 'admin/partials/content-locked-meta-box.php';
 	}
 }
