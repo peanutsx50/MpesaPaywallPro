@@ -197,11 +197,34 @@ class MpesaPaywallProAdmin
 	//save meta box data
 	public function save_meta_box_data($post_id)
 	{
+		// Verify nonce prevent cross site request forgery (CSRF)
 		if (
 			!isset($_POST['mpp_paywall_nonce']) ||
 			!wp_verify_nonce($_POST['mpp_paywall_nonce'], 'mpp_save_paywall_meta')
 		) {
 			return;
+		}
+
+		// Check for autosave, prevent data from being saved during autosave
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+			return;
+		}
+
+		// Check user permissions, if user can't edit post, exit
+		if (!current_user_can('edit_post', $post_id)) {
+			return;
+		}
+
+		// Lock status, if POST value is set, save it as '1', else '0'
+		$is_locked = isset($_POST['mpp_is_locked']) ? '1' : '0';
+		update_post_meta($post_id, 'mpp_is_locked', $is_locked);
+
+		// Price
+		if ($is_locked === '1' && isset($_POST['mpp_price']) && intval($_POST['mpp_price']) > 0) {
+			update_post_meta($post_id, 'mpp_price', intval($_POST['mpp_price']));
+		} else {
+			// removes the price meta if content is unlocked or price is invalid (<= 0)
+			delete_post_meta($post_id, 'mpp_price');
 		}
 	}
 }

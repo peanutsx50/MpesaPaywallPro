@@ -48,7 +48,8 @@ $price     = get_post_meta($post->ID, 'mpp_price', true);
             value="<?php echo esc_attr($price); ?>"
             min="1"
             step="1"
-            style="width:100%;"
-            <?php disabled(!$is_locked); ?>>
+            style="width:100%;" />
+        <p id="mpp_price_warning" style="color:red;">Warning: the amount should be greater than 0</p>
     </p>
+
 </div>

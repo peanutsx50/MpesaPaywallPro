@@ -1,18 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
   const checkbox = document.querySelector('input[name="mpp_is_locked"]');
-  const price = document.getElementById("mpp_price_field");
+  const priceField = document.querySelector("#mpp_price_field");
+  const priceInput = document.querySelector("input[name='mpp_price']");
+  const warning = document.getElementById("mpp_price_warning");
 
-  function togglePriceField() {
-    if (checkbox.checked) {
-      price.style.display = "block";
-    } else {
-      price.style.display = "none";
-    }
+  function updatePaywallUI() {
+    const isLocked = checkbox.checked;
+    const price = parseInt(priceInput.value) || 0;
+    const hasUserInput = priceInput.value !== '';
+
+    // Toggle price field visibility
+    priceField.style.display = isLocked ? "block" : "none";
+
+    // Show warning only if locked, user has typed, AND price is invalid
+    warning.style.display = (isLocked && hasUserInput && price <= 0) ? "block" : "none";
   }
 
   // Initial check on page load
-  togglePriceField();
+  updatePaywallUI();
 
-  // Add event listener for checkbox change
-  checkbox.addEventListener("change", togglePriceField);
+  // Update UI on checkbox change
+  checkbox.addEventListener("change", updatePaywallUI);
+  
+  // Update UI on price input
+  priceInput.addEventListener("input", updatePaywallUI);
 });
