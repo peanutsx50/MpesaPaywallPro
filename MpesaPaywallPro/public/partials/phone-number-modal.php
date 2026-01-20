@@ -72,14 +72,14 @@ if (! defined('WPINC')) {
         // Open modal
         if (openBtn) {
             openBtn.addEventListener('click', function() {
-                modal.classList.add('mpp-active');
+                modal.style.display = 'flex';
                 phoneInput.focus();
             });
         }
 
         // Close modal function
         function closeModal() {
-            modal.classList.remove('mpp-active');
+            modal.style.display = 'none';
             form.reset();
             phoneInput.classList.remove('mpp-error');
             errorMsg.classList.remove('mpp-visible');
