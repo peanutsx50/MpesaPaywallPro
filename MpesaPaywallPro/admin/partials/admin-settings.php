@@ -71,8 +71,6 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
         </div>
     </div>
 
-
-
     <!-- Admin tabbed navigation -->
     <div class="nav-tab-wrapper">
         <?php foreach ($tabs as $tab_key => $tab_info) : ?>
