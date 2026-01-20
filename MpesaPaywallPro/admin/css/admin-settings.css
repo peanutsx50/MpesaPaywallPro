@@ -63,6 +63,7 @@
   border-radius: 5px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
+  padding: 20px;
 }
 
 .nav-tab-wrapper {
@@ -80,24 +81,20 @@
   align-items: center;
   justify-content: center;
 }
-
 .nav-tab .dashicons {
   margin-right: 5px;
   vertical-align: middle;
-}
-
-.mpesapaywallpro-tab-content {
-  padding: 20px;
-  display: block;
 }
 
 .mpesapaywallpro-notice {
   background: #f0f8ff;
   border-left: 4px solid #0073aa;
   padding: 15px;
-  margin: 0 0 25px 0;
   display: flex;
   justify-content: space-between;
+}
+.mpesapaywallpro-topnotice{
+  margin-bottom: 20px;
 }
 .mpesapaywallpro-notice-close:hover{
   cursor: pointer;
@@ -120,10 +117,8 @@
 }
 .mpesapaywallpro-settings-section {
   background: white;
-  padding: 20px;
   margin-bottom: 20px;
   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .mpesapaywallpro-settings-section .title {
   border-bottom: 2px solid #f0f0f0;

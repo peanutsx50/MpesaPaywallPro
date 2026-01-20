@@ -84,60 +84,55 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
     </div>
 
     <div class="mpesapaywallpro-admin-content">
-        <!-- Admin settings form -->
-        <div class="mpesapaywallpro-tab-content">
-            <!-- Introduction/Notice Section -->
-            <div class="mpesapaywallpro-notice notice-info">
-                <div class="notice-content">
-                    <h3>
-                        <span class="dashicons dashicons-info"></span>
-                        <?php esc_html_e('Welcome to MpesaPaywallPro', 'mpesapaywallpro'); ?>
-                    </h3>
-                    <p>
-                        <?php esc_html_e('Thank you for choosing MpesaPaywallPro! Configure your M-Pesa payment gateway settings below to start accepting payments from your customers.', 'mpesapaywallpro'); ?>
-                    </p>
-                    <ul>
-                        <li><?php esc_html_e('Set up your M-Pesa API credentials and environment', 'mpesapaywallpro'); ?></li>
-                        <li><?php esc_html_e('Configure payment amounts', 'mpesapaywallpro'); ?></li>
-                        <li><?php esc_html_e('Define how locked content previews are displayed', 'mpesapaywallpro'); ?></li>
-                        <li><?php esc_html_e('Control how long users can access content after payment', 'mpesapaywallpro'); ?></li>
-                    </ul>
-                </div>
+        <!-- Introduction/Notice Section -->
+        <div class="mpesapaywallpro-notice mpesapaywallpro-topnotice">
+            <div class="notice-content">
+                <h3>
+                    <span class="dashicons dashicons-info"></span>
+                    <?php esc_html_e('Welcome to MpesaPaywallPro', 'mpesapaywallpro'); ?>
+                </h3>
+                <p>
+                    <?php esc_html_e('Thank you for choosing MpesaPaywallPro! Configure your M-Pesa payment gateway settings below to start accepting payments from your customers.', 'mpesapaywallpro'); ?>
+                </p>
+                <ul>
+                    <li><?php esc_html_e('Set up your M-Pesa API credentials and environment', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Configure payment amounts', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Define how locked content previews are displayed', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Control how long users can access content after payment', 'mpesapaywallpro'); ?></li>
+                </ul>
+            </div>
 
-                <!-- Close button -->
-                <div class="mpesapaywallpro-notice-close">
-                    <span class="dashicons dashicons-dismiss"></span>
-                </div>
+            <!-- Close button -->
+            <div class="mpesapaywallpro-notice-close">
+                <span class="dashicons dashicons-dismiss"></span>
             </div>
         </div>
 
         <!-- settings content based on the current tab -->
-        <div class="mpesapaywallpro-settings-content">
-            <form method="post" action="options.php">
-                <?php
-                // Output security fields for the registered setting "mpesapaywallpro_options"
-                settings_fields('mpesapaywallpro_options_group');
+        <form method="post" action="options.php">
+            <?php
+            // Output security fields for the registered setting "mpesapaywallpro_options"
+            settings_fields('mpesapaywallpro_options_group');
 
-                // Output setting sections and their fields
-                do_settings_sections('mpesapaywallpro_' . $current_tab);
+            // Output setting sections and their fields
+            do_settings_sections('mpesapaywallpro_' . $current_tab);
+            ?>
+            <div class="mpesapaywallpro-settings-sections">
+                <?php
+                switch ($current_tab) {
+                    case 'mpesa_setup':
+                        include_once MPP_PATH . 'admin/partials/mpesa-setup.php';
+                        break;
+                    case 'paywall_settings':
+                        include_once MPP_PATH . 'admin/partials/paywall-settings.php';
+                        break;
+                    case 'access_control':
+                        include_once MPP_PATH . 'admin/partials/access-control.php';
+                        break;
+                }
                 ?>
-                <div class="mpesapaywallpro-settings-sections">
-                    <?php
-                    switch ($current_tab) {
-                        case 'mpesa_setup':
-                            include_once MPP_PATH . 'admin/partials/mpesa-setup.php';
-                            break;
-                        case 'paywall_settings':
-                            include_once MPP_PATH . 'admin/partials/paywall-settings.php';
-                            break;
-                        case 'access_control':
-                            include_once MPP_PATH . 'admin/partials/access-control.php';
-                            break;
-                    }
-                    ?>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
     <?php
     submit_button();

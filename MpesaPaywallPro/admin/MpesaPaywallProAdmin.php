@@ -80,7 +80,7 @@ class MpesaPaywallProAdmin
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, MPP_URL . 'admin/css/admin-settings.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->plugin_name, MPP_URL . 'admin/css/admin-settings.css', array(), false, 'all');
 	}
 
 	/**
