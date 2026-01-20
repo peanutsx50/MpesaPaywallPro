@@ -25,24 +25,6 @@ if (!defined('ABSPATH')) {
     </div>
 
     <table class="form-table">
-        <tr>
-            <th scope="row">
-                <label for="require_login"><?php esc_html_e('Require User Login', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <label>
-                    <input type="checkbox" 
-                           id="require_login" 
-                           name="mpesapaywallpro_options[require_login]" 
-                           value="1" 
-                           <?php checked($options['require_login'] ?? 0, 1); ?>>
-                    <?php esc_html_e('Users must be logged in to make payments', 'mpesapaywallpro'); ?>
-                </label>
-                <p class="description">
-                    <?php esc_html_e('If enabled, anonymous users will be prompted to login/register before payment', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
 
         <tr>
             <th scope="row">
@@ -51,7 +33,7 @@ if (!defined('ABSPATH')) {
             <td>
                 <?php
                 $roles = wp_roles()->get_names();
-                $selected_roles = $options['allowed_user_roles'] ?? ['administrator'];
+                $selected_roles = get_option('mpp_allowed_user_roles', ['administrator']);
                 ?>
                 <fieldset>
                     <?php foreach ($roles as $role_value => $role_name): ?>
@@ -80,7 +62,7 @@ if (!defined('ABSPATH')) {
                            id="enable_auto_unlock" 
                            name="mpesapaywallpro_options[enable_auto_unlock]" 
                            value="1" 
-                           <?php checked($options['enable_auto_unlock'] ?? 1, 1); ?>>
+                           <?php checked(get_option('mpp_enable_auto_unlock', 1), 1); ?>>
                     <?php esc_html_e('Automatically unlock content after successful payment', 'mpesapaywallpro'); ?>
                 </label>
                 <p class="description">
@@ -97,7 +79,7 @@ if (!defined('ABSPATH')) {
                 <input type="number" 
                        id="payment_timeout" 
                        name="mpesapaywallpro_options[payment_timeout]" 
-                       value="<?php echo esc_attr($options['payment_timeout'] ?? '300'); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_payment_timeout', 300)); ?>" 
                        class="small-text"
                        min="60"
                        step="1">
@@ -116,58 +98,12 @@ if (!defined('ABSPATH')) {
                 <input type="number" 
                        id="max_payment_attempts" 
                        name="mpesapaywallpro_options[max_payment_attempts]" 
-                       value="<?php echo esc_attr($options['max_payment_attempts'] ?? '3'); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_max_payment_attempts', 3)); ?>" 
                        class="small-text"
                        min="1"
                        step="1">
                 <p class="description">
                     <?php esc_html_e('Maximum payment attempts per user per hour', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
-
-        <tr>
-            <th scope="row">
-                <label for="enable_debug_log"><?php esc_html_e('Debug Logging', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <label>
-                    <input type="checkbox" 
-                           id="enable_debug_log" 
-                           name="mpesapaywallpro_options[enable_debug_log]" 
-                           value="1" 
-                           <?php checked($options['enable_debug_log'] ?? 0, 1); ?>>
-                    <?php esc_html_e('Enable debug logging for payment transactions', 'mpesapaywallpro'); ?>
-                </label>
-                <?php if (!empty($options['enable_debug_log'])): ?>
-                    <p>
-                        <a href="<?php echo esc_url(admin_url('admin.php?page=mpesapaywallpro-logs')); ?>" class="button button-secondary">
-                            <span class="dashicons dashicons-media-text"></span>
-                            <?php esc_html_e('View Debug Logs', 'mpesapaywallpro'); ?>
-                        </a>
-                    </p>
-                <?php endif; ?>
-                <p class="description">
-                    <?php esc_html_e('Log all payment transactions for debugging purposes', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
-
-        <tr>
-            <th scope="row">
-                <label for="enable_webhook_verification"><?php esc_html_e('Webhook Verification', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <label>
-                    <input type="checkbox" 
-                           id="enable_webhook_verification" 
-                           name="mpesapaywallpro_options[enable_webhook_verification]" 
-                           value="1" 
-                           <?php checked($options['enable_webhook_verification'] ?? 1, 1); ?>>
-                    <?php esc_html_e('Verify M-Pesa webhook signatures for security', 'mpesapaywallpro'); ?>
-                </label>
-                <p class="description">
-                    <?php esc_html_e('Recommended for production environments', 'mpesapaywallpro'); ?>
                 </p>
             </td>
         </tr>

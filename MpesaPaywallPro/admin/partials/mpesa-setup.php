@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     <div class="mpesapaywallpro-notice notice-info">
         <p>
             <?php esc_html_e('Enter your M-Pesa Daraja API credentials. These are required to process payments through Safaricom.', 'mpesapaywallpro'); ?>
-            <a href="https://developer.safaricom.co.ke/" target="_blank"><?php esc_html_e('Get API credentials', 'mpesapaywallpro'); ?></a>
+            <a href="https://developer.safaricom.co.ke/apis" target="_blank"><?php esc_html_e('Get API credentials', 'mpesapaywallpro'); ?></a>
         </p>
     </div>
 
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
                 <input type="password" 
                        id="mpesa_consumer_key" 
                        name="mpesapaywallpro_options[mpesa_consumer_key]" 
-                       value="<?php echo esc_attr($options['mpesa_consumer_key'] ?? ''); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_consumer_key', '')); ?>" 
                        class="regular-text"
                        placeholder="Enter your M-Pesa Consumer Key">
                 <p class="description">
@@ -51,7 +51,7 @@ if (!defined('ABSPATH')) {
                 <input type="password" 
                        id="mpesa_consumer_secret" 
                        name="mpesapaywallpro_options[mpesa_consumer_secret]" 
-                       value="<?php echo esc_attr($options['mpesa_consumer_secret'] ?? ''); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_consumer_secret', '')); ?>" 
                        class="regular-text"
                        placeholder="Enter your M-Pesa Consumer Secret">
                 <p class="description">
@@ -68,7 +68,7 @@ if (!defined('ABSPATH')) {
                 <input type="text" 
                        id="mpesa_shortcode" 
                        name="mpesapaywallpro_options[mpesa_shortcode]" 
-                       value="<?php echo esc_attr($options['mpesa_shortcode'] ?? ''); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_shortcode', '')); ?>" 
                        class="regular-text"
                        placeholder="e.g., 174379">
                 <p class="description">
@@ -85,7 +85,7 @@ if (!defined('ABSPATH')) {
                 <input type="password" 
                        id="mpesa_passkey" 
                        name="mpesapaywallpro_options[mpesa_passkey]" 
-                       value="<?php echo esc_attr($options['mpesa_passkey'] ?? ''); ?>" 
+                       value="<?php echo esc_attr(get_option('mpp_passkey', '')); ?>" 
                        class="regular-text"
                        placeholder="Enter your M-Pesa Passkey">
                 <p class="description">
