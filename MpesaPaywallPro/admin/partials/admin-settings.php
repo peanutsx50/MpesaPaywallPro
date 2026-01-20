@@ -110,7 +110,7 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
         <form method="post" action="options.php">
             <?php
             // Output security fields for the registered setting "mpesapaywallpro_options"
-            settings_fields('mpesapaywallpro_options_group');
+            settings_fields('mpesapaywallpro_settings_group');
 
             // Output setting sections and their fields
             do_settings_sections('mpesapaywallpro_' . $current_tab);
@@ -130,9 +130,10 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
                 }
                 ?>
             </div>
+
+            <?php
+            submit_button();
+            ?>
         </form>
     </div>
-    <?php
-    submit_button();
-    ?>
 </div>

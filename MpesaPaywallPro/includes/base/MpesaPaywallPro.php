@@ -151,6 +151,9 @@ class MpesaPaywallPro
 
 		//save meta box data
 		$this->loader->add_action('save_post', $plugin_admin, 'save_meta_box_data');
+
+		// save settings
+		$this->loader->add_action('admin_init', $plugin_admin, 'save_settings');
 	}
 
 	/**

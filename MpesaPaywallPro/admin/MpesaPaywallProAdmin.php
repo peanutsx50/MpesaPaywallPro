@@ -194,7 +194,32 @@ class MpesaPaywallProAdmin
 		require_once MPP_PATH . 'admin/partials/content-locked-meta-box.php';
 	}
 
-	//save meta box data
+	/**
+	 * Save paywall meta box data for a post.
+	 *
+	 * Handles saving paywall configuration data submitted from the post editor meta box.
+	 * This function implements security checks including nonce verification, autosave prevention,
+	 * and user capability validation before processing and storing the paywall settings.
+	 *
+	 * Security & Validation:
+	 * - Verifies nonce token to prevent cross-site request forgery (CSRF) attacks
+	 * - Skips processing during WordPress autosave operations
+	 * - Checks that the current user has permission to edit the post
+	 *
+	 * Data Processing:
+	 * - Saves the lock status as '1' (locked) or '0' (unlocked)
+	 * - Only saves price data if content is locked AND price is a valid positive integer
+	 * - Removes price metadata if content is unlocked or price is invalid
+	 *
+	 * @since    1.0.0
+	 * @param    int $post_id The ID of the post being saved
+	 * @return   void
+	 *
+	 * @uses     wp_verify_nonce() To validate CSRF token
+	 * @uses     current_user_can() To check user edit permissions
+	 * @uses     update_post_meta() To save paywall settings
+	 * @uses     delete_post_meta() To remove invalid price metadata
+	 */
 	public function save_meta_box_data($post_id)
 	{
 		// Verify nonce prevent cross site request forgery (CSRF)
@@ -226,5 +251,56 @@ class MpesaPaywallProAdmin
 			// removes the price meta if content is unlocked or price is invalid (<= 0)
 			delete_post_meta($post_id, 'mpp_price');
 		}
+	}
+
+	/**
+	 * Register plugin settings for M-Pesa configuration.
+	 *
+	 * Registers all M-Pesa API credential settings that are displayed in the mpesa-setup.php form.
+	 * This function defines the setting group and individual settings with their types and default values.
+	 * All settings are sanitized and stored securely.
+	 *
+	 * Settings registered:
+	 * - mpp_consumer_key: M-Pesa Daraja API Consumer Key
+	 * - mpp_consumer_secret: M-Pesa Daraja API Consumer Secret
+	 * - mpp_shortcode: M-Pesa Business Shortcode (PayBill or Till Number)
+	 * - mpp_passkey: M-Pesa Daraja API Passkey
+	 * - mpp_env: Environment selection (sandbox or production)
+	 *
+	 * @since    1.0.0
+	 * @return   void
+	 *
+	 * @uses     register_setting() To register individual settings with WordPress
+	 */
+	public function save_settings()
+	{
+		register_setting(
+			'mpesapaywallpro_settings_group',
+			'mpesapaywallpro_options',
+			[
+				'type'              => 'array',
+				'sanitize_callback' => function ($options) {
+					// Ensure $options is an array
+					$options = is_array($options) ? $options : [];
+
+					return [
+						'mpp_consumer_key'    => sanitize_text_field($options['mpp_consumer_key'] ?? ''),
+						'mpp_consumer_secret' => sanitize_text_field($options['mpp_consumer_secret'] ?? ''),
+						'mpp_shortcode'       => sanitize_text_field($options['mpp_shortcode'] ?? ''),
+						'mpp_passkey'         => sanitize_text_field($options['mpp_passkey'] ?? ''),
+						'mpp_env'             => (isset($options['mpp_env']) && $options['mpp_env'] === 'production')
+							? 'production'
+							: 'sandbox',
+					];
+				},
+				'default' => [
+					'mpp_consumer_key'    => '',
+					'mpp_consumer_secret' => '',
+					'mpp_shortcode'       => '',
+					'mpp_passkey'         => '',
+					'mpp_env'             => 'sandbox',
+				],
+			]
+		);
 	}
 }
