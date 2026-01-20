@@ -50,7 +50,7 @@ if (! defined('WPINC')) {
                 <button type="button" class="mpp-btn mpp-btn-secondary" id="mpp-cancel-btn">
                     <?php _e('Cancel', 'mpesapaywallpro'); ?>
                 </button>
-                <button type="submit" class="mpp-btn mpp-btn-primary" id="mpp-submit-btn">
+                <button type="submit" class="mpp-btn mpp-btn-primary" style="background-color: <?php echo esc_attr($buttonColor); ?>;" id="mpp-submit-btn">
                     <?php _e('Continue', 'mpesapaywallpro'); ?>
                 </button>
             </div>

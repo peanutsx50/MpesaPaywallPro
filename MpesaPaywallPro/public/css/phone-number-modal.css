@@ -162,12 +162,7 @@
 }
 
 .mpp-btn-primary {
-  background: #111827;
   color: #ffffff;
-}
-
-.mpp-btn-primary:hover {
-  background: #1f2937;
 }
 
 .mpp-btn-primary:disabled {
