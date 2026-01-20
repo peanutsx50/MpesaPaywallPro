@@ -161,4 +161,14 @@ class MpesaPaywallProPublic
 		require_once MPP_PATH . 'public/partials/paywall-display.php';
 		return ob_get_clean();
 	}
+
+	//register endpoint for ajax payment verification
+	public function register_ajax_endpoints()
+	{
+		register_rest_route('mppmpesa/v1', '/callback', [
+			'methods' => ['POST', 'GET'],
+			'callback' => [],
+			'permission_callback' => '__return_true',
+		]);
+	}
 }

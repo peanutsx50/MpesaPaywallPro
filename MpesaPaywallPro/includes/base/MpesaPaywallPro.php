@@ -173,6 +173,9 @@ class MpesaPaywallPro
 
 		// add content filtering hook
 		$this->loader->add_filter('the_content', $plugin_public, 'filter_post_content');
+
+		// register ajax endpoints
+		$this->loader->add_action('rest_api_init', $plugin_public, 'register_ajax_endpoints');
 	}
 
 	/**

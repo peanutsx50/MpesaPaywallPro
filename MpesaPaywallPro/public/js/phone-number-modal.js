@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
             phone = phone.replace(/[\s-]/g, '');
 
             // Check if it's a valid Kenyan number (starts with 07 or 01, 10 digits)
-            const phoneRegex = /^(07|01)\d{8}$/;
-            return phoneRegex.test(phone);
+            const phonePattern = /^254(?:7[0-9]|1[01])[0-9]{7}$/;
+            return phonePattern.test(phone);
         }
 
         // Format phone number for display
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const phoneNumber = phoneInput.value.trim();
+            const phoneNumber = phoneInput.value.trim().replace(/^\+/, "");
 
             // Validate
             if (!validatePhone(phoneNumber)) {
@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function initiatePayment(phoneNumber) {
             // Example AJAX call to initiate payment
+            
         }
 
         function checkPaymentStatus(transactionId) {
