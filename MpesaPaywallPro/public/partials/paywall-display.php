@@ -44,7 +44,7 @@ $price = get_post_meta($post_id, 'mpp_price', true);
             <small>KES</small> <?php echo esc_html($price); ?>
         </div>
 
-        <button id="mpp-pay-button">
+        <button id="mpp-pay-button" type="button">
             <?php _e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
         </button>
     </div>

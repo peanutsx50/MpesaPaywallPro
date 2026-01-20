@@ -158,6 +158,7 @@ class MpesaPaywallProPublic
 	{
 		ob_start();
 		require_once MPP_PATH . 'public/partials/paywall-display.php';
+		require_once MPP_PATH . 'public/partials/phone-number-modal.php';
 		return ob_get_clean();
 	}
 }
