@@ -162,6 +162,11 @@ class MpesaPaywallProPublic
 		return ob_get_clean();
 	}
 
+	// handle mpesa payment ajax request
+	public function process_payment(){
+		
+	}
+
 	//register endpoint for ajax payment verification
 	public function register_ajax_endpoints()
 	{

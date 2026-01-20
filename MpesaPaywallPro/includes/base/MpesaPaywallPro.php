@@ -157,25 +157,38 @@ class MpesaPaywallPro
 	}
 
 	/**
-	 * Register all of the hooks related to the public-facing functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the public-facing functionality of the plugin.
+	 *
+	 * This method sets up all public-facing hooks including:
+	 * - Frontend script and style enqueuing
+	 * - Content filtering for paywall display
+	 * - REST API endpoints for payment processing
+	 * - AJAX handlers for M-Pesa payment processing (both authenticated and non-authenticated users)
 	 *
 	 * @since    1.0.0
 	 * @access   private
+	 * @return   void
 	 */
 	private function define_public_hooks()
 	{
 
 		$plugin_public = new MpesaPaywallProPublic($this->get_plugin_name(), $this->get_version());
 
+		// Enqueue frontend styles and scripts
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 
-		// add content filtering hook
+		// Filter post content to display paywall for locked content
 		$this->loader->add_filter('the_content', $plugin_public, 'filter_post_content');
 
-		// register ajax endpoints
+		// Register REST API endpoints for payment processing
 		$this->loader->add_action('rest_api_init', $plugin_public, 'register_ajax_endpoints');
+
+		// Register AJAX handlers for M-Pesa payment processing
+		// wp_ajax_nopriv allows non-authenticated users to process payments
+		// wp_ajax allows authenticated users to process payments
+		$this->loader->add_action('wp_ajax_nopriv_mpp_process_payment', $plugin_public, 'process_payment');
+		$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
 	}
 
 	/**
