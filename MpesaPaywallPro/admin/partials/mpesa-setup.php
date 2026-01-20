@@ -32,13 +32,13 @@ $options = get_option('mpesapaywallpro_options', []);
     <table class="form-table">
         <tr>
             <th scope="row">
-                <label for="mpp_consumer_key"><?php esc_html_e('Consumer Key', 'mpesapaywallpro'); ?></label>
+                <label for="consumer_key"><?php esc_html_e('Consumer Key', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
                 <input type="password"
-                    id="mpp_consumer_key"
-                    name="mpesapaywallpro_options[mpp_consumer_key]"
-                    value="<?php echo esc_attr($options['mpp_consumer_key'] ?? ''); ?>"
+                    id="consumer_key"
+                    name="mpesapaywallpro_options[consumer_key]"
+                    value="<?php echo esc_attr($options['consumer_key'] ?? ''); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Consumer Key">
                 <p class="description">
@@ -49,13 +49,13 @@ $options = get_option('mpesapaywallpro_options', []);
 
         <tr>
             <th scope="row">
-                <label for="mpp_consumer_secret"><?php esc_html_e('Consumer Secret', 'mpesapaywallpro'); ?></label>
+                <label for="consumer_secret"><?php esc_html_e('Consumer Secret', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
                 <input type="password"
-                    id="mpp_consumer_secret"
-                    name="mpesapaywallpro_options[mpp_consumer_secret]"
-                    value="<?php echo esc_attr($options['mpp_consumer_secret'] ?? ''); ?>"
+                    id="consumer_secret"
+                    name="mpesapaywallpro_options[consumer_secret]"
+                    value="<?php echo esc_attr($options['consumer_secret'] ?? ''); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Consumer Secret">
                 <p class="description">
@@ -66,13 +66,13 @@ $options = get_option('mpesapaywallpro_options', []);
 
         <tr>
             <th scope="row">
-                <label for="mpp_shortcode"><?php esc_html_e('Business Shortcode', 'mpesapaywallpro'); ?></label>
+                <label for="shortcode"><?php esc_html_e('Business Shortcode', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
                 <input type="text"
-                    id="mpp_shortcode"
-                    name="mpesapaywallpro_options[mpp_shortcode]"
-                    value="<?php echo esc_attr($options['mpp_shortcode'] ?? ''); ?>"
+                    id="shortcode"
+                    name="mpesapaywallpro_options[shortcode]"
+                    value="<?php echo esc_attr($options['shortcode'] ?? ''); ?>"
                     class="regular-text"
                     placeholder="e.g., 174379">
                 <p class="description">
@@ -83,13 +83,13 @@ $options = get_option('mpesapaywallpro_options', []);
 
         <tr>
             <th scope="row">
-                <label for="mpp_passkey"><?php esc_html_e('Passkey', 'mpesapaywallpro'); ?></label>
+                <label for="passkey"><?php esc_html_e('Passkey', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
                 <input type="password"
-                    id="mpp_passkey"
-                    name="mpesapaywallpro_options[mpp_passkey]"
-                    value="<?php echo esc_attr($options['mpp_passkey'] ?? ''); ?>"
+                    id="passkey"
+                    name="mpesapaywallpro_options[passkey]"
+                    value="<?php echo esc_attr($options['passkey'] ?? ''); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Passkey">
                 <p class="description">
@@ -100,14 +100,14 @@ $options = get_option('mpesapaywallpro_options', []);
 
         <tr>
             <th scope="row">
-                <label for="mpp_env"><?php esc_html_e('Environment', 'mpesapaywallpro'); ?></label>
+                <label for="env"><?php esc_html_e('Environment', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
-                <select id="mpp_env" name="mpesapaywallpro_options[mpp_env]" class="regular-text">
-                    <option value="sandbox" <?php selected($options['mpp_env'] ?? 'sandbox', 'sandbox'); ?>>
+                <select id="env" name="mpesapaywallpro_options[env]" class="regular-text">
+                    <option value="sandbox" <?php selected($options['env'] ?? 'sandbox', 'sandbox'); ?>>
                         <?php esc_html_e('Sandbox (Testing)', 'mpesapaywallpro'); ?>
                     </option>
-                    <option value="production" <?php selected($options['mpp_env'] ?? '', 'production'); ?>>
+                    <option value="production" <?php selected($options['env'] ?? '', 'production'); ?>>
                         <?php esc_html_e('Production (Live)', 'mpesapaywallpro'); ?>
                     </option>
                 </select>

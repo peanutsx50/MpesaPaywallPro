@@ -254,23 +254,37 @@ class MpesaPaywallProAdmin
 	}
 
 	/**
-	 * Register plugin settings for M-Pesa configuration.
+	 * Register plugin settings with WordPress Settings API.
 	 *
-	 * Registers all M-Pesa API credential settings that are displayed in the mpesa-setup.php form.
-	 * This function defines the setting group and individual settings with their types and default values.
-	 * All settings are sanitized and stored securely.
+	 * Registers the MpesaPaywallPro settings with the WordPress Settings API, including
+	 * comprehensive data sanitization and validation. This method defines all configurable
+	 * options for M-Pesa API integration, paywall behavior, and access control.
 	 *
-	 * Settings registered:
-	 * - mpp_consumer_key: M-Pesa Daraja API Consumer Key
-	 * - mpp_consumer_secret: M-Pesa Daraja API Consumer Secret
-	 * - mpp_shortcode: M-Pesa Business Shortcode (PayBill or Till Number)
-	 * - mpp_passkey: M-Pesa Daraja API Passkey
-	 * - mpp_env: Environment selection (sandbox or production)
+	 * Settings Groups:
+	 * - M-Pesa API Settings: Authentication credentials and environment configuration
+	 * - Paywall Settings: Content display and payment behavior options
+	 * - Access Control Settings: User role permissions and payment constraints
+	 *
+	 * Sanitization:
+	 * - Text fields: Uses sanitize_text_field() to remove HTML and malicious content
+	 * - Integers: Uses absint() to ensure positive integer values
+	 * - Colors: Uses sanitize_hex_color() to validate hex color codes
+	 * - HTML content: Uses wp_kses_post() to allow safe HTML in paywall messages
+	 * - Arrays: Uses array_map() with sanitize_text_field() for role arrays
+	 *
+	 * Security & Validation:
+	 * - Environment: Restricted to 'production' or 'sandbox' values only
+	 * - Boolean fields: Converted to 1 (true) or 0 (false)
+	 * - Invalid or missing values: Falls back to sensible defaults
 	 *
 	 * @since    1.0.0
 	 * @return   void
 	 *
-	 * @uses     register_setting() To register individual settings with WordPress
+	 * @uses     register_setting() WordPress Settings API function
+	 * @uses     sanitize_text_field() To clean text input
+	 * @uses     absint() To validate positive integers
+	 * @uses     sanitize_hex_color() To validate color hex codes
+	 * @uses     wp_kses_post() To allow safe HTML in messages
 	 */
 	public function save_settings()
 	{
@@ -280,25 +294,54 @@ class MpesaPaywallProAdmin
 			[
 				'type'              => 'array',
 				'sanitize_callback' => function ($options) {
-					// Ensure $options is an array
 					$options = is_array($options) ? $options : [];
 
 					return [
-						'mpp_consumer_key'    => sanitize_text_field($options['mpp_consumer_key'] ?? ''),
-						'mpp_consumer_secret' => sanitize_text_field($options['mpp_consumer_secret'] ?? ''),
-						'mpp_shortcode'       => sanitize_text_field($options['mpp_shortcode'] ?? ''),
-						'mpp_passkey'         => sanitize_text_field($options['mpp_passkey'] ?? ''),
-						'mpp_env'             => (isset($options['mpp_env']) && $options['mpp_env'] === 'production')
+						// M-Pesa API Settings
+						'consumer_key'     => sanitize_text_field($options['consumer_key'] ?? ''),
+						'consumer_secret'  => sanitize_text_field($options['consumer_secret'] ?? ''),
+						'shortcode'        => sanitize_text_field($options['shortcode'] ?? ''),
+						'passkey'          => sanitize_text_field($options['passkey'] ?? ''),
+						'env'              => (isset($options['env']) && $options['env'] === 'production')
 							? 'production'
 							: 'sandbox',
+
+						// Paywall Settings
+						'auto_lock'        => isset($options['auto_lock']) ? 1 : 0,
+						'default_amount'   => absint($options['default_amount'] ?? 20),
+						'button_color'     => sanitize_hex_color($options['button_color'] ?? '#0073aa'),
+						'excerpt_length'   => absint($options['excerpt_length'] ?? 100),
+						'paywall_message'  => wp_kses_post($options['paywall_message'] ?? ''),
+						'payment_expiry'   => absint($options['payment_expiry'] ?? 30),
+
+						// Access Control Settings
+						'allowed_user_roles'   => array_map('sanitize_text_field', (array) ($options['allowed_user_roles'] ?? ['administrator'])),
+						'enable_auto_unlock'   => isset($options['enable_auto_unlock']) ? 1 : 0,
+						'payment_timeout'      => absint($options['payment_timeout'] ?? 300),
+						'max_payment_attempts' => absint($options['max_payment_attempts'] ?? 3),
 					];
 				},
 				'default' => [
-					'mpp_consumer_key'    => '',
-					'mpp_consumer_secret' => '',
-					'mpp_shortcode'       => '',
-					'mpp_passkey'         => '',
-					'mpp_env'             => 'sandbox',
+					// M-Pesa API Settings
+					'consumer_key'     => '',
+					'consumer_secret'  => '',
+					'shortcode'        => '',
+					'passkey'          => '',
+					'env'              => 'sandbox',
+
+					// Paywall Settings
+					'auto_lock'        => 0,
+					'default_amount'   => 20,
+					'button_color'     => '#0073aa',
+					'excerpt_length'   => 100,
+					'paywall_message'  => '',
+					'payment_expiry'   => 30,
+
+					// Access Control Settings
+					'allowed_user_roles'   => ['administrator'],
+					'enable_auto_unlock'   => 1,
+					'payment_timeout'      => 300,
+					'max_payment_attempts' => 3,
 				],
 			]
 		);
