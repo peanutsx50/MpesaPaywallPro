@@ -51,3 +51,4 @@ $price = get_post_meta($post_id, 'mpp_price', true);
 
     <div id="mpp-payment-status"></div>
 </div>
+<?php require_once MPP_PATH . 'public/partials/phone-number-modal.php'; ?>

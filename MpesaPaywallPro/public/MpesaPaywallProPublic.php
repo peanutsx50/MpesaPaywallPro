@@ -79,6 +79,7 @@ class MpesaPaywallProPublic
 		 */
 
 		wp_enqueue_style($this->plugin_name, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->plugin_name . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), (float) $this->version, 'all');
 	}
 
 	/**
@@ -158,7 +159,6 @@ class MpesaPaywallProPublic
 	{
 		ob_start();
 		require_once MPP_PATH . 'public/partials/paywall-display.php';
-		require_once MPP_PATH . 'public/partials/phone-number-modal.php';
 		return ob_get_clean();
 	}
 }
