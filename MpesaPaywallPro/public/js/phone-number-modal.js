@@ -19,7 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Close modal function
         function closeModal() {
-            modal.style.display = 'none';
+            modal.classList.add('mpp-fade-out');
+            setTimeout(() => {
+                modal.classList.remove('mpp-fade-out');
+                modal.style.display = 'none';
+            }, 200);
             form.reset();
             phoneInput.classList.remove('mpp-error');
             errorMsg.classList.remove('mpp-visible');

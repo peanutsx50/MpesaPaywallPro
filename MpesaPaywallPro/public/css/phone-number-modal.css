@@ -12,6 +12,9 @@
   z-index: 9998;
   animation: mpp-fadeIn 0.2s ease;
 }
+.mpp-fade-out {
+  animation: mpp-fadeOut 0.2s ease forwards;
+}
 
 @keyframes mpp-fadeIn {
   from {
@@ -20,6 +23,16 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes mpp-fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 
