@@ -22,6 +22,9 @@ if (! defined('WPINC')) {
 $post_id = get_the_ID();
 // retrieve current value of the content locked meta field
 $price = get_post_meta($post_id, 'mpp_price', true);
+$buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? '#111827';
+$paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro');
+
 ?>
 <div class="mpp-paywall-container">
     <h3 class="mpp-paywall-title">
@@ -29,7 +32,7 @@ $price = get_post_meta($post_id, 'mpp_price', true);
     </h3>
 
     <p class="mpp-paywall-description">
-        <?php _e('Unlock this article and support quality content with a simple one-time payment', 'mpesapaywallpro'); ?>
+        <?php echo esc_html($paywallMessage); ?>
     </p>
 
     <ul class="mpp-benefits-list">
@@ -44,7 +47,7 @@ $price = get_post_meta($post_id, 'mpp_price', true);
             <small>KES</small> <?php echo esc_html($price); ?>
         </div>
 
-        <button id="mpp-pay-button" type="button">
+        <button id="mpp-pay-button" type="button" style="background-color: <?php echo esc_attr($buttonColor); ?>;">
             <?php _e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
         </button>
     </div>

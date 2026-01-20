@@ -87,7 +87,6 @@
 }
 
 #mpp-pay-button {
-  background: #111827;
   color: #ffffff;
   border: none;
   padding: 14px 32px;
@@ -99,7 +98,6 @@
 }
 
 #mpp-pay-button:hover {
-  background: #1f2937;
   transform: translateY(-1px);
 }
 

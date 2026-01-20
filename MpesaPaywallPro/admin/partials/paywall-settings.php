@@ -74,9 +74,9 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="color"
                     id="button_color"
                     name="mpesapaywallpro_options[button_color]"
-                    value="<?php echo esc_attr($options['button_color'] ?? '#0073aa'); ?>"
+                    value="<?php echo esc_attr($options['button_color'] ?? '#111827'); ?>"
                     class="mpesapaywallpro-color-field"
-                    data-default-color="#0073aa">
+                    data-default-color="#111827">
                 <p class="description">
                     <?php esc_html_e('Color of the paywall payment button', 'mpesapaywallpro'); ?>
                 </p>
