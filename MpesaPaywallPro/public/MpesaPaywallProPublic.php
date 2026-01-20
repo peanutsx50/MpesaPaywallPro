@@ -105,7 +105,19 @@ class MpesaPaywallProPublic
 		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float)	$this->version, false);
 	}
 
-	// filter post content to enforce paywall
+	/**
+	 * Filters post content to enforce paywall restrictions.
+	 *
+	 * This function intercepts the post content on single post pages and applies
+	 * paywall logic. If the post is locked and the user hasn't purchased access,
+	 * it replaces the full content with a preview and paywall HTML. Only applies
+	 * on the frontend for single post pages.
+	 *
+	 * @since      1.0.0
+	 * @param      string    $content    The original post content.
+	 * @return     string              The filtered content (either original content,
+	 *                                 preview + paywall, or unchanged content).
+	 */
 	public function filter_post_content($content)
 	{
 		// Only apply on single post pages, not in admin or excerpts
@@ -137,11 +149,22 @@ class MpesaPaywallProPublic
 		return $paywall_html;
 	}
 
-	// Generate preview content (first 100 words)
+	/**
+	 * Generates a preview of the post content (first 100 words).
+	 *
+	 * Extracts the first 100 words from the post content, strips HTML tags,
+	 * and wraps it in a container with a fade effect. This preview is displayed
+	 * to users who haven't purchased access to the full content.
+	 *
+	 * @since      1.0.0
+	 * @param      string    $content    The original post content.
+	 * @return     string              HTML-formatted preview content with fade effect.
+	 */
 	public function generate_preview($content)
 	{
 		$words = explode(' ', wp_strip_all_tags($content));
-		$preview_words = array_slice($words, 0, 100);
+		$excerpt = get_option('mpesapaywallpro_options')['excerpt_length'] ?? 100;
+		$preview_words = array_slice($words, 0, $excerpt);
 		$preview_content = implode(' ', $preview_words);
 		$preview_content .= '...<div class="mpp-preview-fade"></div>';
 		return '<div class="mpp-content-preview">' . wpautop($preview_content) . '</div>';
@@ -154,7 +177,16 @@ class MpesaPaywallProPublic
 		return false;
 	}
 
-	// Render the paywall HTML
+	/**
+	 * Renders the paywall HTML markup.
+	 *
+	 * Includes and outputs the paywall display partial template, capturing
+	 * the rendered output via output buffering. This includes the paywall UI,
+	 * call-to-action, and payment form elements.
+	 *
+	 * @since      1.0.0
+	 * @return     string    The rendered paywall HTML markup.
+	 */
 	public function render_paywall()
 	{
 		ob_start();
@@ -163,9 +195,7 @@ class MpesaPaywallProPublic
 	}
 
 	// handle mpesa payment ajax request
-	public function process_payment(){
-		
-	}
+	public function process_payment() {}
 
 	//register endpoint for ajax payment verification
 	public function register_ajax_endpoints()
