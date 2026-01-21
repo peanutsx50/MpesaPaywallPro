@@ -88,9 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
     submitBtn.innerHTML =
       '<span class="mpp-loading-spinner"></span>Processing...';
 
-    // TODO: Send to your payment endpoint
-    // Example AJAX call:
+    // intiate payment then check payment status
     initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg);
-    checkPaymentStatus();
   });
 });
