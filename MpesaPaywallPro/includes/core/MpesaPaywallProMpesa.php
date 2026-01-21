@@ -31,7 +31,7 @@ class MpesaPaywallProMpesa
     private $passkey;
     private $access_token;
     private $timestamp;
-    private $environment = 'production'; //sandbox or production
+    private $environment; //sandbox or production
     private $callbackurl;
     private $account_reference;
     private $transaction_description;
@@ -45,18 +45,20 @@ class MpesaPaywallProMpesa
     public function __construct()
     {
         // Initialize Mpesa properties from settings
-        $this->consumer_key        = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
-        $this->consumer_secret     = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
-        $this->shortcode           = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
-        $this->passkey             = get_option('mpesapaywallpro_options')['passkey'] ?? '';
-        $this->access_token        = $this->generate_access_token();
-        $this->timestamp           = date('YmdHis'); // should always come first before generate password so its not empty
-        $this->password            = $this->generate_password();
-        $this->account_reference   = get_option('mpesapaywallpro_options')['account_reference'] ?? ''; // figure out how to make it incremental
+        $this->consumer_key            = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
+        $this->consumer_secret         = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
+        $this->shortcode               = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
+        $this->passkey                 = get_option('mpesapaywallpro_options')['passkey'] ?? '';
+        $this->environment             = get_option('mpesapaywallpro_options')['env'] ?? 'sandbox';
+        $this->amount                  = get_option('mpesapaywallpro_options')['default_amount'] ?? 20; // Match form field name
+        $this->account_reference       = get_option('mpesapaywallpro_options')['account_reference'] ?? '';
         $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
-        $this->amount              = get_option('mpesapaywallpro_options')['amount'] ?? '';
-        $this->callbackurl         = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
-        $this->url = $this->environment === 'production' ?
+        
+        $this->access_token = $this->generate_access_token();
+        $this->timestamp    = date('YmdHis');
+        $this->password     = $this->generate_password();
+        $this->callbackurl  = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
+        $this->url          = $this->environment === 'production' ?
             'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
             'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
     }
