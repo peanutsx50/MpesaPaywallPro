@@ -23,6 +23,8 @@
 
 namespace MpesaPaywallPro\public;
 
+use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+
 class MpesaPaywallProPublic
 {
 
@@ -207,10 +209,58 @@ class MpesaPaywallProPublic
 		return ob_get_clean();
 	}
 
-	// handle mpesa payment ajax request
-	public function process_payment() {}
+	/**
+	 * Processes M-Pesa payment requests via AJAX.
+	 *
+	 * Handles incoming AJAX requests for M-Pesa payments. Validates the request using
+	 * nonce verification for security, extracts the customer's phone number from POST data,
+	 * and initiates an M-Pesa STK push payment request. Returns a JSON response indicating
+	 * whether the payment was successfully initiated or failed.
+	 *
+	 * Expected POST Parameters:
+	 * - mpp_nonce (string): Security nonce for verification
+	 * - phone_number (string): Customer's M-Pesa registered phone number
+	 *
+	 * Response:
+	 * - Success: Returns JSON with 'checkout_request_id' for payment tracking
+	 * - Error: Returns JSON error message describing the failure reason
+	 *
+	 * @since      1.0.0
+	 * @return     void    Sends JSON response and terminates execution
+	 */
+	public function process_payment()
+	{
+		//check nonce for security
+		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_ajax_nonce')) {
+			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
+			wp_die();
+		}
+		// get phone number, amount and post id from ajax request
+		$phone_number = sanitize_text_field($_POST['phone_number']);
 
-	//register endpoint for ajax payment verification
+		// instantiate mpesa class and send payment request
+		$mpesa = new MpesaPaywallProMpesa();
+		$response = $mpesa->send_stk_push_request($phone_number);
+
+		//handle response
+		if ($response['status'] === 'success') {
+			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.', 'checkout_request_id' => $response['checkout_request_id']]);
+		} else {
+			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
+		}
+	}
+
+	/**
+	 * Registers REST API endpoint for M-Pesa payment callbacks.
+	 *
+	 * Registers a custom REST route that handles M-Pesa payment verification callbacks.
+	 * The endpoint is accessible at /wp-json/mppmpesa/v1/callback and accepts both
+	 * POST and GET requests. This endpoint allows the M-Pesa payment gateway to send
+	 * payment status updates without authentication requirements.
+	 *
+	 * @since      1.0.0
+	 * @return     void
+	 */
 	public function register_ajax_endpoints()
 	{
 		register_rest_route('mppmpesa/v1', '/callback', [
