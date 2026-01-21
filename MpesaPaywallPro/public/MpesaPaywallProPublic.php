@@ -109,6 +109,19 @@ class MpesaPaywallProPublic
 		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), false, false);
 	}
 
+	/**
+	 * Localizes payment data for JavaScript.
+	 *
+	 * Prepares and passes payment-related data to frontend JavaScript via wp_localize_script.
+	 * Determines the payment amount by checking if the current post is locked with a custom price,
+	 * otherwise uses the default amount from paywall settings. Includes AJAX endpoints, nonce for
+	 * security verification, and payment timeout configuration.
+	 *
+	 * The localized data is made available to JavaScript via the `mpp_ajax_object` global variable.
+	 *
+	 * @since      1.0.0
+	 * @return     void    Localizes script data for frontend JavaScript
+	 */
 	public function localize_scripts()
 	{
 		// Get the current post ID
