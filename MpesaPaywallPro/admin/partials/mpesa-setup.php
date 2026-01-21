@@ -30,6 +30,8 @@ $options = get_option('mpesapaywallpro_options', []);
     </div>
 
     <table class="form-table">
+        
+        <!-- consumer key -->
         <tr>
             <th scope="row">
                 <label for="consumer_key"><?php esc_html_e('Consumer Key', 'mpesapaywallpro'); ?></label>
@@ -47,6 +49,7 @@ $options = get_option('mpesapaywallpro_options', []);
             </td>
         </tr>
 
+        <!-- consumer secret -->
         <tr>
             <th scope="row">
                 <label for="consumer_secret"><?php esc_html_e('Consumer Secret', 'mpesapaywallpro'); ?></label>
@@ -64,6 +67,7 @@ $options = get_option('mpesapaywallpro_options', []);
             </td>
         </tr>
 
+        <!-- shortcode -->
         <tr>
             <th scope="row">
                 <label for="shortcode"><?php esc_html_e('Business Shortcode', 'mpesapaywallpro'); ?></label>
@@ -81,6 +85,7 @@ $options = get_option('mpesapaywallpro_options', []);
             </td>
         </tr>
 
+        <!-- passkey -->
         <tr>
             <th scope="row">
                 <label for="passkey"><?php esc_html_e('Passkey', 'mpesapaywallpro'); ?></label>
@@ -98,6 +103,43 @@ $options = get_option('mpesapaywallpro_options', []);
             </td>
         </tr>
 
+        <!-- account reference -->
+        <tr>
+            <th scope="row">
+                <label for="account_reference"><?php esc_html_e('Account Reference', 'mpesapaywallpro'); ?></label>
+            </th>
+            <td>
+                <input type="text"
+                    id="account_reference"
+                    name="mpesapaywallpro_options[account_reference]"
+                    value="<?php echo esc_attr($options['account_reference'] ?? ''); ?>"
+                    class="regular-text"
+                    placeholder="Enter Account Reference">
+                <p class="description">
+                    <?php esc_html_e('An identifier of the transaction e.g., WebsiteName', 'mpesapaywallpro'); ?>
+                </p>
+            </td>
+        </tr>
+
+        <!-- transaction description -->
+        <tr>
+            <th scope="row">
+                <label for="transaction_description"><?php esc_html_e('Transaction Description', 'mpesapaywallpro'); ?></label>
+            </th>
+            <td>
+                <input type="text"
+                    id="transaction_description"
+                    name="mpesapaywallpro_options[transaction_description]"
+                    value="<?php echo esc_attr($options['transaction_description'] ?? ''); ?>"
+                    class="regular-text"
+                    placeholder="Enter Transaction Description">
+                <p class="description">
+                    <?php esc_html_e('A brief description of the transaction e.g., Payment for article access', 'mpesapaywallpro'); ?>
+                </p>
+            </td>
+        </tr>
+
+        <!-- environment selection -->
         <tr>
             <th scope="row">
                 <label for="env"><?php esc_html_e('Environment', 'mpesapaywallpro'); ?></label>
