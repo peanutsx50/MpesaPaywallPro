@@ -111,6 +111,23 @@ class MpesaPaywallProPublic
 
 	public function localize_scripts()
 	{
+		// Get the current post ID
+		$post_id = get_the_ID();
+
+		// retrieve current value of the content locked meta field
+		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
+		$price     = get_post_meta($post_id, 'mpp_price', true);
+
+		//get default amount from paywall settings
+		$default_price = get_option('mpesapaywallpro_options')['default_amount'] ?? 20;
+
+		//check if content is locked and price is set and is greater than 0
+		if ($is_locked === '1' && is_numeric($price) && $price > 0) {
+			$amount = $price;
+		} else {
+			$amount = $default_price;
+		}
+
 		wp_localize_script(
 			$this->plugin_name,
 			'mpp_ajax_object',
@@ -119,6 +136,7 @@ class MpesaPaywallProPublic
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'payment_timeout' => get_option('mpesapaywallpro_options')['payment_timeout'] ?? 300,
+				'amount'   => $amount,
 			)
 		);
 	}
