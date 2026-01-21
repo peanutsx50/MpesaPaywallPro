@@ -50,10 +50,10 @@ class MpesaPaywallProMpesa
         $this->shortcode               = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
         $this->passkey                 = get_option('mpesapaywallpro_options')['passkey'] ?? '';
         $this->environment             = get_option('mpesapaywallpro_options')['env'] ?? 'sandbox';
-        $this->amount                  = get_option('mpesapaywallpro_options')['default_amount'] ?? 20; // Match form field name
+        //$this->amount                  = get_option('mpesapaywallpro_options')['default_amount'] ?? 20; // Match form field name
         $this->account_reference       = get_option('mpesapaywallpro_options')['account_reference'] ?? '';
         $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
-        
+
         $this->access_token = $this->generate_access_token();
         $this->timestamp    = date('YmdHis');
         $this->password     = $this->generate_password();
@@ -64,7 +64,7 @@ class MpesaPaywallProMpesa
     }
 
     // Mpesa STK push request function
-    public function send_stk_push_request($phone_number)
+    public function send_stk_push_request($phone_number, $amount)
     {
         // check if consumer_key, consumer_secret, shortcode, passkey is empty
         $validation_result = $this->validate_config();
@@ -72,13 +72,16 @@ class MpesaPaywallProMpesa
             return $validation_result;
         }
 
+        // set global amount variable for use in callback
+        $this->amount = $amount;
+
         try {
             $data = [
                 "BusinessShortCode" => $this->shortcode, // paybill number
                 "Password" => $this->password, // generated password
                 "Timestamp" => $this->timestamp, // current timestamp
                 "TransactionType" => $this->transactionType, // transaction type (CustomerBuyGoodsOnline or CustomerPayBillOnline)
-                "Amount" => $this->amount, // get amount from settings, do not allow zero or negative amounts
+                "Amount" => $amount, // get amount from settings, do not allow zero or negative amounts
                 "PartyA" => $phone_number, // phone number making payment
                 "PartyB" => $this->shortcode, // paybill number
                 "PhoneNumber" => $phone_number, // similar to pary A
@@ -243,7 +246,7 @@ class MpesaPaywallProMpesa
      */
         $checkoutId = sanitize_text_field($request->get_param('checkout_id'));
         $phone = sanitize_text_field($request->get_param('phone'));
-        
+
 
         if (!$checkoutId || !$phone) {
             return rest_ensure_response([

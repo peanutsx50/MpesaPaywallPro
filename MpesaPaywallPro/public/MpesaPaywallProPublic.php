@@ -256,12 +256,13 @@ class MpesaPaywallProPublic
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
 			wp_die();
 		}
-		// get phone number, amount and post id from ajax request
+		// get phone number and amount from ajax request
 		$phone_number = sanitize_text_field($_POST['phone_number']);
+		$amount = intval($_POST['amount']);
 
 		// instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
-		$response = $mpesa->send_stk_push_request($phone_number);
+		$response = $mpesa->send_stk_push_request($phone_number, $amount);
 
 		//handle response
 		if ($response['status'] === 'success') {

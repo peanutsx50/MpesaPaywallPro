@@ -24,6 +24,7 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
         action: "mpp_process_payment",
         phone_number: phoneNumber,
         mpp_nonce: mpp_ajax_object.nonce,
+        amount: mpp_ajax_object.amount,
       }),
     });
 
