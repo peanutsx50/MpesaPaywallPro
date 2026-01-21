@@ -45,17 +45,17 @@ class MpesaPaywallProMpesa
     public function __construct()
     {
         // Initialize Mpesa properties from settings
-        $this->consumer_key        = get_option('bpmg_consumer_key');
-        $this->consumer_secret     = get_option('bpmg_consumer_secret');
-        $this->shortcode           = get_option('bpmg_shortcode');
-        $this->passkey             = get_option('bpmg_passkey');
+        $this->consumer_key        = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
+        $this->consumer_secret     = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
+        $this->shortcode           = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
+        $this->passkey             = get_option('mpesapaywallpro_options')['passkey'] ?? '';
         $this->access_token        = $this->generate_access_token();
         $this->timestamp           = date('YmdHis'); // should always come first before generate password so its not empty
         $this->password            = $this->generate_password();
-        $this->account_reference   = get_option('bpmpesa_account_reference'); // figure out how to make it incremental
-        $this->transaction_description = get_option('bpmpesa_transaction_reference');
-        $this->amount              = get_option('bpmpesa_amount');
-        $this->callbackurl         = home_url('/wp-json/bpmpesa/v1/callback', 'https');
+        $this->account_reference   = get_option('mpesapaywallpro_options')['account_reference'] ?? ''; // figure out how to make it incremental
+        $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
+        $this->amount              = get_option('mpesapaywallpro_options')['amount'] ?? '';
+        $this->callbackurl         = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
         $this->url = $this->environment === 'production' ?
             'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
             'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';

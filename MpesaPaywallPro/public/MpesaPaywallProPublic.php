@@ -263,7 +263,7 @@ class MpesaPaywallProPublic
 	 */
 	public function register_ajax_endpoints()
 	{
-		register_rest_route('mppmpesa/v1', '/callback', [
+		register_rest_route('mpesapaywallpro/v1', '/callback', [
 			'methods' => ['POST', 'GET'],
 			'callback' => [],
 			'permission_callback' => '__return_true',
