@@ -178,6 +178,9 @@ class MpesaPaywallPro
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 
+		//localize script with ajax url
+		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'localize_scripts');
+
 		// Filter post content to display paywall for locked content
 		$this->loader->add_filter('the_content', $plugin_public, 'filter_post_content');
 

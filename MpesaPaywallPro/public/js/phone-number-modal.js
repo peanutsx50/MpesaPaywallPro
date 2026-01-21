@@ -91,13 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // TODO: Send to your payment endpoint
     // Example AJAX call:
     initiatePayment(phoneNumber);
+    checkPaymentStatus();
   });
-
-  function initiatePayment(phoneNumber) {
-    // Example AJAX call to initiate payment
-  }
-
-  function checkPaymentStatus(transactionId) {
-    // TODO: Implement polling logic to check payment status
-  }
 });

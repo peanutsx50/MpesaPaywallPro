@@ -102,7 +102,20 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float)	$this->version, false);
+		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), false, false);
+		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/process-payment.js', array('jquery'), false, false);
+	}
+
+	public function localize_scripts()
+	{
+		wp_localize_script(
+			$this->plugin_name,
+			'mpp_ajax_object',
+			array(
+				'ajax_url' => admin_url('admin-ajax.php'),
+				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
+			)
+		);
 	}
 
 	/**
