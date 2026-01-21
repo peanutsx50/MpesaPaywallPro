@@ -105,7 +105,8 @@ class MpesaPaywallProPublic
 		 */
 
 		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), false, false);
-		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/process-payment.js', array('jquery'), false, false);
+		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), false, false);
+		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), false, false);
 	}
 
 	public function localize_scripts()

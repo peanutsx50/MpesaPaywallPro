@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // TODO: Send to your payment endpoint
     // Example AJAX call:
-    initiatePayment(phoneNumber);
+    initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg);
     checkPaymentStatus();
   });
 });

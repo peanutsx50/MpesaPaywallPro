@@ -1,4 +1,4 @@
-function initiatePayment(phoneNumber) {
+function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
   // AJAX call to initiate payment
   fetch(mpp_ajax_object.ajax_url, {
     method: "POST",
@@ -16,14 +16,18 @@ function initiatePayment(phoneNumber) {
       if (data.success) {
         console.log("Payment initiated:", data);
         // You can store transaction ID or other info if needed
+        checkPaymentStatus(data.data.response.CheckoutRequestID)
       } else {
-        console.error("Payment initiation failed:", data.message);
+        console.error("Payment initiation failed:", data.data.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Transaction Failed. Try Again";
+        phoneInput.classList.add("mpp-error");
+        errorMsg.textContent =
+          "Payment initiation failed: " + data.data.message;
+        errorMsg.classList.add("mpp-visible");
       }
     })
     .catch((error) => {
       console.error("Error initiating payment:", error);
     });
-}
-function checkPaymentStatus(transactionId) {
-  // TODO: Implement polling logic to check payment status
 }
