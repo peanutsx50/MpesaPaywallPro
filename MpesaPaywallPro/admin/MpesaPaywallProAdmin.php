@@ -296,13 +296,21 @@ class MpesaPaywallProAdmin
 				'sanitize_callback' => function ($options) {
 					$options = is_array($options) ? $options : [];
 
+					// Get existing options from database
+					$existing_options = get_option('mpesapaywallpro_options', []);
+
+					// Merge new options with existing ones (new values override existing)
+					$options = array_merge($existing_options, $options);
+
 					return [
 						// M-Pesa API Settings
-						'consumer_key'     => sanitize_text_field($options['consumer_key'] ?? ''),
-						'consumer_secret'  => sanitize_text_field($options['consumer_secret'] ?? ''),
-						'shortcode'        => sanitize_text_field($options['shortcode'] ?? ''),
-						'passkey'          => sanitize_text_field($options['passkey'] ?? ''),
-						'env'              => (isset($options['env']) && $options['env'] === 'production')
+						'consumer_key'            => sanitize_text_field($options['consumer_key'] ?? ''),
+						'consumer_secret' 		  => sanitize_text_field($options['consumer_secret'] ?? ''),
+						'shortcode'        		  => sanitize_text_field($options['shortcode'] ?? ''),
+						'passkey'          		  => sanitize_text_field($options['passkey'] ?? ''),
+						'account_reference' 	  => sanitize_text_field($options['account_reference'] ?? ''),
+						'transaction_description' => sanitize_text_field($options['transaction_description'] ?? ''),
+						'env'              		  => (isset($options['env']) && $options['env'] === 'production')
 							? 'production'
 							: 'sandbox',
 
