@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Check if phone number is empty
       if (!phoneValue) {
         resultDiv.style.display = "block";
-        resultDiv.className = "test-result error";
+        resultDiv.classList.add("error");
         resultDiv.innerHTML =
           '<span class="dashicons dashicons-no"></span> Please enter a phone number.';
         return;
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!phoneNumber) {
         resultDiv.style.display = "block";
-        resultDiv.className = "test-result error";
+        resultDiv.classList.add("error");
         resultDiv.innerHTML =
           '<span class="dashicons dashicons-no"></span> Invalid Kenyan phone number. Please use format: 254XXXXXXXXX, +254XXXXXXXXX, or 07XXXXXXXX';
         return;
