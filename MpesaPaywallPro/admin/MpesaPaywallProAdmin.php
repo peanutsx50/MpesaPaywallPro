@@ -23,7 +23,7 @@
 
 namespace MpesaPaywallPro\admin;
 
-use MpesaPaywallPro\base\MpesaPaywallPro;
+use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 
 class MpesaPaywallProAdmin
 {
@@ -105,6 +105,20 @@ class MpesaPaywallProAdmin
 
 		wp_enqueue_script($this->plugin_name, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), false, false);
 		wp_enqueue_script($this->plugin_name . '-meta-box', MPP_URL . 'admin/js/content-locked-meta-box.js', array('jquery'), (float) $this->version, false);
+		wp_enqueue_script($this->plugin_name . '-test-connection', MPP_URL . 'admin/js/test-connection.js', array('jquery'), (float) $this->version, false);
+	}
+
+	public function localize_scripts()
+	{
+		wp_localize_script(
+			$this->plugin_name,
+			'mpp_admin_ajax_object',
+			array(
+				'ajax_url' => admin_url('admin-ajax.php'),
+				'nonce'    => wp_create_nonce('mpp_admin_ajax_nonce'),
+				'phone_number' => get_option('mpesapaywallpro_options')['test_phone_number'] ?? '',
+			)
+		);
 	}
 
 	/**
@@ -253,6 +267,30 @@ class MpesaPaywallProAdmin
 		}
 	}
 
+	//test api connection
+	public function test_connection()
+	{
+		//check nonce for security
+		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_ajax_nonce')) {
+			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
+			wp_die();
+		}
+		// get phone number and amount from ajax request
+		$phone_number = sanitize_text_field($_POST['phone_number']);
+		$amount = intval($_POST['amount']);
+
+		// instantiate mpesa class and send payment request
+		$mpesa = new MpesaPaywallProMpesa();
+		$response = $mpesa->send_stk_push_request($phone_number, $amount);
+
+		//handle response
+		if ($response['status'] === 'success') {
+			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.', 'checkout_request_id' => $response['checkout_request_id']]);
+		} else {
+			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
+		}
+	}
+
 	/**
 	 * Register plugin settings with WordPress Settings API.
 	 *
@@ -313,6 +351,7 @@ class MpesaPaywallProAdmin
 						'env'              		  => (isset($options['env']) && $options['env'] === 'production')
 							? 'production'
 							: 'sandbox',
+						'test_phone_number'      => sanitize_text_field($options['test_phone_number'] ?? ''),
 
 						// Paywall Settings
 						'auto_lock'        => isset($options['auto_lock']) ? 1 : 0,

@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Check if cookie is set to hide notice
   const closedNotice = get_cookie("mpesapaywallpro_notice_closed");
   const notice = document.querySelector(".mpesapaywallpro-notice");
+
+  // admin test connection elements
+  const testButton = document.getElementById("test-mpesa-connection");
+  const phoneInput = document.getElementById("test_phone_number");
+  const resultDiv = document.getElementById("test-connection-result");
   
   if (!closedNotice && notice) {
     notice.style.display = "flex";
@@ -19,6 +24,16 @@ document.addEventListener("DOMContentLoaded", function () {
         60 * 60 * 24 * 30; // 30 days
     });
   }
+
+  // Test Connection button functionality
+  if (testButton && !empty(phoneInput.value)) {
+    testButton.addEventListener("click", async function () {
+      testButton.disabled = true;
+      testButton.innerHTML = "Testing...";
+      testConnection(testButton, phoneInput, resultDiv);
+    });
+  };
+
 });
 
 // Function to get cookie

@@ -30,7 +30,7 @@ $options = get_option('mpesapaywallpro_options', []);
     </div>
 
     <table class="form-table">
-        
+
         <!-- consumer key -->
         <tr>
             <th scope="row">
@@ -158,6 +158,25 @@ $options = get_option('mpesapaywallpro_options', []);
                 </p>
             </td>
         </tr>
+
+        <!-- phone number for test connection -->
+        <tr>
+            <th scope="row">
+                <label for="test_phone_number"><?php esc_html_e('Test Phone Number', 'mpesapaywallpro'); ?></label>
+            </th>
+            <td>
+                <input type="text"
+                    id="test_phone_number"
+                    name="mpesapaywallpro_options[test_phone_number]"
+                    value="<?php echo esc_attr($options['test_phone_number'] ?? ''); ?>"
+                    class="regular-text"
+                    placeholder="e.g., 2547XXXXXXXX">
+                <p class="description">
+                    <?php esc_html_e('Phone number to use for testing the API connection (in international format)', 'mpesapaywallpro'); ?>
+                </p>
+            </td>
+        </tr>
+
     </table>
 
     <div class="mpesapaywallpro-test-connection">

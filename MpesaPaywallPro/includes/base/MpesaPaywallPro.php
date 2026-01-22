@@ -154,6 +154,15 @@ class MpesaPaywallPro
 
 		// save settings
 		$this->loader->add_action('admin_init', $plugin_admin, 'save_settings');
+
+		//localize scripts with ajax url
+		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'localize_scripts');
+
+		// Register AJAX handlers for M-Pesa payment processing
+		// wp_ajax_nopriv allows non-authenticated users to process payments
+		// wp_ajax allows authenticated users to process payments
+		$this->loader->add_action('wp_ajax_nopriv_mpp_admin_test_connection', $plugin_admin, 'test_connection');
+		$this->loader->add_action('wp_ajax_mpp_admin_test_connection', $plugin_admin, 'test_connection');
 	}
 
 	/**
