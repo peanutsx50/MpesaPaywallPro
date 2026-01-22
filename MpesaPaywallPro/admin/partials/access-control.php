@@ -29,7 +29,7 @@ $options = get_option('mpesapaywallpro_options', []);
     </div>
 
     <table class="form-table">
-
+    <!-- Exempt User Roles Setting -->
         <tr>
             <th scope="row">
                 <label for="allowed_user_roles"><?php esc_html_e('Exempt User Roles', 'mpesapaywallpro'); ?></label>
@@ -55,63 +55,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 </p>
             </td>
         </tr>
-
-        <tr>
-            <th scope="row">
-                <label for="enable_auto_unlock"><?php esc_html_e('Auto Content Unlock', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <label>
-                    <input type="checkbox"
-                        id="enable_auto_unlock"
-                        name="mpesapaywallpro_options[enable_auto_unlock]"
-                        value="1"
-                        <?php checked($options['enable_auto_unlock'] ?? 1, 1); ?>>
-                    <?php esc_html_e('Automatically unlock content after successful payment', 'mpesapaywallpro'); ?>
-                </label>
-                <p class="description">
-                    <?php esc_html_e('If disabled, admin must manually approve payments', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
-
-        <tr>
-            <th scope="row">
-                <label for="payment_timeout"><?php esc_html_e('Payment Timeout', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <input type="number"
-                    id="payment_timeout"
-                    name="mpesapaywallpro_options[payment_timeout]"
-                    value="<?php echo esc_attr($options['payment_timeout'] ?? 300); ?>"
-                    class="small-text"
-                    min="60"
-                    step="1">
-                <span><?php esc_html_e('seconds', 'mpesapaywallpro'); ?></span>
-                <p class="description">
-                    <?php esc_html_e('Time allowed for user to complete M-Pesa payment', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
-
-        <tr>
-            <th scope="row">
-                <label for="max_payment_attempts"><?php esc_html_e('Max Payment Attempts', 'mpesapaywallpro'); ?></label>
-            </th>
-            <td>
-                <input type="number"
-                    id="max_payment_attempts"
-                    name="mpesapaywallpro_options[max_payment_attempts]"
-                    value="<?php echo esc_attr($options['max_payment_attempts'] ?? 3); ?>"
-                    class="small-text"
-                    min="1"
-                    step="1">
-                <p class="description">
-                    <?php esc_html_e('Maximum payment attempts per user per hour', 'mpesapaywallpro'); ?>
-                </p>
-            </td>
-        </tr>
-
+        
     </table>
 
     <div class="mpesapaywallpro-security-tips">

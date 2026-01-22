@@ -347,9 +347,6 @@ class MpesaPaywallProAdmin
 
 					// Access Control Settings
 					'allowed_user_roles'   => ['administrator'],
-					'enable_auto_unlock'   => 1,
-					'payment_timeout'      => 300,
-					'max_payment_attempts' => 3,
 				],
 			]
 		);
