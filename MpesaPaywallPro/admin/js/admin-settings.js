@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const testButton = document.getElementById("test-mpesa-connection");
   const phoneInput = document.getElementById("test_phone_number");
   const resultDiv = document.getElementById("test-connection-result");
-  
+
   if (!closedNotice && notice) {
     notice.style.display = "flex";
   }
@@ -26,14 +26,62 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Test Connection button functionality
-  if (testButton && !empty(phoneInput.value)) {
-    testButton.addEventListener("click", async function () {
+  if (testButton && phoneInput && resultDiv) {
+    testButton.addEventListener("click", function () {
+      // Get and validate phone number
+      const phoneValue = phoneInput.value.trim();
+
+      // Check if phone number is empty
+      if (!phoneValue) {
+        resultDiv.style.display = "block";
+        resultDiv.className = "test-result error";
+        resultDiv.innerHTML =
+          '<span class="dashicons dashicons-no"></span> Please enter a phone number.';
+        return;
+      }
+
+      // Validate phone number
+      const phoneNumber = validatePhoneNumber(phoneValue);
+
+      if (!phoneNumber) {
+        resultDiv.style.display = "block";
+        resultDiv.className = "test-result error";
+        resultDiv.innerHTML =
+          '<span class="dashicons dashicons-no"></span> Invalid Kenyan phone number. Please use format: 254XXXXXXXXX, +254XXXXXXXXX, or 07XXXXXXXX';
+        return;
+      }
+
+      // Proceed with test if validation passes
       testButton.disabled = true;
       testButton.innerHTML = "Testing...";
-      testConnection(testButton, phoneInput, resultDiv);
+      testConnection(phoneNumber, testButton, phoneInput, resultDiv);
     });
-  };
+  }
 
+  function validatePhoneNumber(phoneNumber) {
+    // Remove any whitespace
+    let cleaned = phoneNumber.trim().replace(/\s+/g, "");
+
+    // Remove leading + if present
+    if (cleaned.startsWith("+")) {
+      cleaned = cleaned.substring(1);
+    }
+
+    // Replace 07 with 254 at the start
+    if (cleaned.startsWith("07")) {
+      cleaned = "254" + cleaned.substring(1);
+    }
+
+    // Check if it's a valid Kenyan number starting with 254
+    // Valid Kenyan mobile prefixes: 254(7XX or 1XX) followed by 7 more digits
+    const phonePattern = /^254(7[0-9]{8}|1[0-9]{8})$/;
+
+    if (!phonePattern.test(cleaned)) {
+      return false;
+    }
+
+    return cleaned; // Return the formatted number instead of just true
+  }
 });
 
 // Function to get cookie

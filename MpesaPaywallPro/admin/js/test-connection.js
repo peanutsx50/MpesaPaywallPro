@@ -6,7 +6,7 @@ function displayConnectionError(testButton, phoneInput, resultDiv, message) {
   resultDiv.classList.add("mpp-visible");
 }
 
-async function testConnection(testButton, phoneInput, resultDiv) {
+async function testConnection(phoneNumber, testButton, phoneInput, resultDiv) {
     // test mpesa connection
      try {
     const response = await fetch(mpp_admin_ajax_object.ajax_url, {
@@ -16,7 +16,7 @@ async function testConnection(testButton, phoneInput, resultDiv) {
       },
       body: new URLSearchParams({
         action: "mpp_admin_test_connection",
-        phone_number: mpp_admin_ajax_object.phone_number,
+        phone_number: phoneNumber,
         mpp_nonce: mpp_admin_ajax_object.nonce,
         amount: 1,
       }),
