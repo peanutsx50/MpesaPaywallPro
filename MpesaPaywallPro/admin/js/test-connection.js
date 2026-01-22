@@ -1,12 +1,11 @@
-function displayConnectionError(testButton, phoneInput, resultDiv, message) {
+function displayConnectionError(testButton, resultDiv, message) {
   testButton.disabled = false;
   testButton.innerHTML = "Transaction Failed. Try Again";
-  phoneInput.classList.add("mpp-error");
   resultDiv.textContent = message;
   resultDiv.classList.add("mpp-visible");
 }
 
-async function testConnection(phoneNumber, testButton, phoneInput, resultDiv) {
+async function testConnection(phoneNumber, testButton, resultDiv) {
     // test mpesa connection
      try {
     const response = await fetch(mpp_admin_ajax_object.ajax_url, {
@@ -30,10 +29,10 @@ async function testConnection(phoneNumber, testButton, phoneInput, resultDiv) {
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
       console.error("Payment initiation failed:", errorMessage);
-      displayConnectionError(testButton, phoneInput, resultDiv, errorMessage);
+      displayConnectionError(testButton, resultDiv, errorMessage);
     }
   } catch (error) {
     console.error("Error initiating payment:", error);
-    displayConnectionError(testButton, phoneInput, resultDiv, "An error occurred. Please try again.");
+    displayConnectionError(testButton, resultDiv, "An error occurred. Please try again.");
   }
 }

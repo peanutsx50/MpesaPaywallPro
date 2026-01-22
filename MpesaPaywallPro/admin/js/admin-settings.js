@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Proceed with test if validation passes
       testButton.disabled = true;
       testButton.innerHTML = "Testing...";
-      testConnection(phoneNumber, testButton, phoneInput, resultDiv);
+      testConnection(phoneNumber, testButton, resultDiv);
     });
   }
 
