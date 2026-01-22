@@ -148,7 +148,7 @@ class MpesaPaywallProPublic
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
-				'payment_timeout' => get_option('mpesapaywallpro_options')['payment_timeout'] ?? 300,
+				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
 				'amount'   => $amount,
 			)
 		);

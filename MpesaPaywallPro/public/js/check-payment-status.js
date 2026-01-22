@@ -24,6 +24,10 @@ async function checkPaymentStatus(
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Payment Complete ✓";
         submitBtn.style.backgroundColor = "#4CAF50";
+        //set cookie to indicate payment
+        document.cookie = `mpp_paid_${checkoutRequestId}=true; max-age=${
+          mpp_ajax_object.access_expiry * 86400
+        }; path=/`;
         return data;
       }
     } catch (error) {
