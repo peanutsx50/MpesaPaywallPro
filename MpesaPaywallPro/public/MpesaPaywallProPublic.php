@@ -222,7 +222,15 @@ class MpesaPaywallProPublic
 	// Dummy function to check if user has access
 	public function user_has_access($post_id)
 	{
-		// Implement your logic to check if the user has paid for access
+		// get current user role and check if exempted
+		$current_user = wp_get_current_user();
+		$allowed_roles = get_option('mpesapaywallpro_options')['allowed_user_roles'] ?? ['administrator'];
+		foreach ($current_user->roles as $role) {
+			if (in_array($role, (array)$allowed_roles)) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
