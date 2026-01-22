@@ -199,15 +199,23 @@ class MpesaPaywallProPublic
 	}
 
 	/**
-	 * Generates a preview of the post content (first 100 words).
+	 * Generates a preview of the post content based on configured excerpt length.
 	 *
-	 * Extracts the first 100 words from the post content, strips HTML tags,
-	 * and wraps it in a container with a fade effect. This preview is displayed
-	 * to users who haven't purchased access to the full content.
+	 * Extracts the first N words from the post content (where N is configured via
+	 * the 'excerpt_length' setting in paywall options, defaults to 100 words), strips
+	 * HTML tags, adds ellipsis, and wraps it in a container with a fade effect. This
+	 * preview is displayed to users who haven't purchased access to the full content.
+	 *
+	 * The excerpt_length is configurable in the plugin settings, allowing administrators
+	 * to control how much content is previewed before the paywall is displayed.
 	 *
 	 * @since      1.0.0
 	 * @param      string    $content    The original post content.
-	 * @return     string              HTML-formatted preview content with fade effect.
+	 * @return     string              HTML-formatted preview content with ellipsis and fade effect.
+	 *
+	 * @uses       get_option() To retrieve the configured excerpt_length setting
+	 * @uses       wp_strip_all_tags() To remove HTML tags from content
+	 * @uses       wpautop() To convert line breaks to paragraph tags
 	 */
 	public function generate_preview($content)
 	{
