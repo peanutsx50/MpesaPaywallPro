@@ -1,13 +1,15 @@
 function displayConnectionError(testButton, resultDiv, message) {
   testButton.disabled = false;
   testButton.innerHTML = "Transaction Failed. Try Again";
-  resultDiv.textContent = message;
-  resultDiv.classList.add("mpp-visible");
+
+  resultDiv.style.display = "block";
+  resultDiv.classList.add("error");
+  resultDiv.innerHTML = '<span class="dashicons dashicons-no"></span> ' + message;
 }
 
 async function testConnection(phoneNumber, testButton, resultDiv) {
-    // test mpesa connection
-     try {
+  // test mpesa connection
+  try {
     const response = await fetch(mpp_admin_ajax_object.ajax_url, {
       method: "POST",
       headers: {
@@ -26,16 +28,20 @@ async function testConnection(phoneNumber, testButton, resultDiv) {
     if (data.success) {
       testButton.disabled = false;
       testButton.innerHTML = "Transaction Initiated Successfully";
-      resultDiv.textContent =
-        "Payment initiation successful. Please check your phone to complete the transaction.";
+      resultDiv.innerHTML =
+        '<span class="dashicons dashicons-yes"></span> Payment initiation successful. Please check your phone to complete the transaction.';
       resultDiv.classList.add("mpp-visible");
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
       console.error("Payment initiation failed:", errorMessage);
-      displayConnectionError(testButton, resultDiv, errorMessage); 
+      displayConnectionError(testButton, resultDiv, errorMessage);
     }
   } catch (error) {
     console.error("Error initiating payment:", error);
-    displayConnectionError(testButton, resultDiv, "An error occurred. Please try again.");
+    displayConnectionError(
+      testButton,
+      resultDiv,
+      "An error occurred. Please try again.",
+    );
   }
 }

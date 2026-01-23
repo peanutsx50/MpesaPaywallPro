@@ -282,7 +282,6 @@ class MpesaPaywallProAdmin
 		// instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
-		error_log('MpesaPaywallProAdmin::test_connection response: ' . print_r($response, true));
 
 		//handle response
 		if ($response['status'] === 'success') {
