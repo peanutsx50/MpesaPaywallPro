@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://festuswp.gumroad.com/l/MpesaPaywallPro
+ * @link              https://surgetech.co.ke/mpesapaywallpro
  * @since             1.0.0
  * @package           MpesaPaywallPro
  *
  * @wordpress-plugin
  * Plugin Name:       MpesaPaywallPro
- * Plugin URI:        https://festuswp.gumroad.com/l/MpesaPaywallPro
+ * Plugin URI:        https://surgetech.co.ke/mpesapaywallpro
  * Description:       MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.
  * Version:           1.0.0
- * Author:            Festus Murimi
- * Author URI:        https://www.linkedin.com/in/festus-murimi-b41aa2251/
+ * Author:            Surge Technologies
+ * Author URI:        https://surgetech.co.ke/
  * License:           GNU General Public License v2
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       mpesapaywallpro

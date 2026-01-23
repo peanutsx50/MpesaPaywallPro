@@ -113,11 +113,11 @@ Initial release of MpesaPaywallPro. Start monetizing your WordPress content toda
 For support, bug reports, and feature requests, visit the GitHub repository:
 https://github.com/peanutsx50/MpesaPaywallPro
 
-Contact the author: murimifestus09@gmail.com
+Contact the author: admin@surgetech.co.ke
 
 == Author ==
 
-**Festus Murimi**
-- Email: murimifestus09@gmail.com
+**Surge Technologies**
+- Email: admin@surgetech.co.ke
 - LinkedIn: https://www.linkedin.com/in/festus-murimi-b41aa2251/
 - Gumroad: https://festuswp.gumroad.com/l/MpesaPaywallPro

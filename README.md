@@ -146,10 +146,10 @@ MpesaPaywallPro/
 
 ## Author & Contact
 
-**Festus Murimi**
+**Surge Technologies**
 
-- **Email**: [murimifestus09@gmail.com](mailto:murimifestus09@gmail.com)
-- **LinkedIn**: [Festus Murimi](https://www.linkedin.com/in/festus-murimi-b41aa2251/)
+- **Email**: [admin@surgetech.co.ke](mailto:admin@surgetech.co.ke)
+- **LinkedIn**: [Surge Technologies](https://www.linkedin.com/in/festus-murimi-b41aa2251/)
 - **Gumroad**: [MpesaPaywallPro](https://festuswp.gumroad.com/l/MpesaPaywallPro)
 
 ## Contributing

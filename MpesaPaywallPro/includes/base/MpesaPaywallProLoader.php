@@ -19,7 +19,7 @@
  *
  * @package    MpesaPaywallPro
  * @subpackage MpesaPaywallPro/includes
- * @author     Festus Murimi <murimifestus09@gmail.com>
+ * @author     Surge Technologies <admin@surgetech.co.ke>
  */
 
 namespace MpesaPaywallPro\base;
