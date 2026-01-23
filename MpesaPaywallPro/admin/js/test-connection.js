@@ -8,6 +8,7 @@ function displayConnectionError(testButton, resultDiv, message) {
 async function testConnection(phoneNumber, testButton, resultDiv) {
     // test mpesa connection
      try {
+    console.log("Initiating payment to phone number:", phoneNumber);
     const response = await fetch(mpp_admin_ajax_object.ajax_url, {
       method: "POST",
       headers: {
@@ -26,10 +27,15 @@ async function testConnection(phoneNumber, testButton, resultDiv) {
     if (data.success) {
       console.log("Payment initiated:", data);
       testButton.disabled = false;
+      testButton.innerHTML = "Transaction Initiated Successfully";
+      resultDiv.textContent =
+        "Payment initiation successful. Please check your phone to complete the transaction.";
+      resultDiv.classList.add("mpp-visible");
     } else {
+      console.log("failed data:", data);
       const errorMessage = data.data?.message || "Payment initiation failed";
       console.error("Payment initiation failed:", errorMessage);
-      displayConnectionError(testButton, resultDiv, errorMessage);
+      displayConnectionError(testButton, resultDiv, errorMessage); 
     }
   } catch (error) {
     console.error("Error initiating payment:", error);
