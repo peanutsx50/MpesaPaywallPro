@@ -271,7 +271,7 @@ class MpesaPaywallProAdmin
 	public function test_connection()
 	{
 		//check nonce for security
-		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_ajax_nonce')) {
+		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_admin_ajax_nonce')) {
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
 			wp_die();
 		}
@@ -282,10 +282,11 @@ class MpesaPaywallProAdmin
 		// instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
+		error_log('MpesaPaywallProAdmin::test_connection response: ' . print_r($response, true));
 
 		//handle response
 		if ($response['status'] === 'success') {
-			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.', 'checkout_request_id' => $response['checkout_request_id']]);
+			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.']);
 		} else {
 			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
 		}

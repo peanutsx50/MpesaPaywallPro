@@ -101,11 +101,22 @@ class MpesaPaywallProMpesa
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
             $response = curl_exec($curl);
+            $decoded_response = json_decode($response, true);
+
+            // Check for M-Pesa API errors
+            if (isset($decoded_response['errorCode'])) {
+                return [
+                    'status' => 'error',
+                    'message' => $decoded_response['errorMessage'] ?? 'M-Pesa API Error',
+                    'error_code' => $decoded_response['errorCode'],
+                    'response' => $decoded_response
+                ];
+            }
 
             return [
                 'status' => 'success',
                 'message' => 'Payment request sent. Enter your M-Pesa PIN.',
-                'response' => json_decode($response, true), // decode the JSON response
+                'response' => $decoded_response,
             ];
         } catch (\Exception $e) {
             $this->err = $e->getMessage();
