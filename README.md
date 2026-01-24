@@ -4,7 +4,6 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 
 ![MpesaPaywallPro Plugin Interface](assets/screenshot.png)
 
-
 ## Table of Contents
 
 - [Features](#features)
@@ -28,7 +27,6 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 - **User Management**: Track user subscriptions and access
 - **Multiple Content Types**: Protect pages, posts, or custom content
 - **Plugin Update Checker**: Automatic update notifications from GitHub
-
 
 ## Requirements
 
@@ -131,9 +129,9 @@ MpesaPaywallPro/
 │   │   ├── MpesaPaywallProDeactivator.php # Deactivation hooks
 │   │   ├── MpesaPaywallProI18n.php       # Internationalization
 │   │   └── MpesaPaywallProLoader.php     # Hook loader
-│   └── core/                        # Core functionality
-├── public/                         # Frontend functionality
-│   ├── MpesaPaywallProPublic.php  # Public class
+│   └── core/
+|   |   └── MpesaPaywallProMpesa.php # M-Pesa API integration
+|   ├── public/                         # Frontend functionality
 │   ├── css/                        # Frontend styles
 │   ├── js/                         # Frontend scripts
 │   └── partials/                   # Frontend templates
@@ -149,8 +147,8 @@ MpesaPaywallPro/
 **Surge Technologies**
 
 - **Email**: [admin@surgetech.co.ke](mailto:admin@surgetech.co.ke)
-- **LinkedIn**: [Surge Technologies](https://www.linkedin.com/in/festus-murimi-b41aa2251/)
-- **Gumroad**: [MpesaPaywallPro](https://festuswp.gumroad.com/l/MpesaPaywallPro)
+- **LinkedIn**: [Surge Technologies](https://surgetech.co.ke/)
+- **Gumroad**: [MpesaPaywallPro](https://surgetech.co.ke/mpesapaywallpro)
 
 ## Contributing
 
@@ -160,21 +158,25 @@ We welcome contributions! Here's how you can help:
 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
+
    ```bash
-   git clone https://github.com/YOUR_USERNAME/MpesaPaywallPro.git
+   git clone git@github.com:peanutsx50/MpesaPaywallPro.git
    ```
 
 3. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 4. Make your changes and commit:
+
    ```bash
    git commit -am 'Add your feature description'
    ```
 
 5. Push to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -205,6 +207,7 @@ MpesaPaywallPro is licensed under the **GNU General Public License v2 or later**
 For full license details, see [LICENSE.txt](LICENSE.txt)
 
 You are free to:
+
 - ✅ Use the plugin on as many sites as you wish
 - ✅ Modify the code to fit your needs
 - ✅ Distribute the plugin (with proper attribution)
@@ -225,37 +228,42 @@ You are free to:
 ## Frequently Asked Questions
 
 ### Q: Can I test the plugin in sandbox mode?
+
 **A**: Yes! Configure the plugin to use M-Pesa's sandbox environment during testing.
 
 ### Q: What payment methods does this support?
+
 **A**: Currently, the plugin supports M-Pesa payments. Additional payment gateways may be added in future releases.
 
 ### Q: Can I customize the paywall appearance?
+
 **A**: Yes, you can modify the templates in the `public/partials/` directory or use WordPress hooks and filters.
 
 ### Q: How do I get reports of transactions?
+
 **A**: Navigate to the Reports section in the plugin admin panel to view detailed transaction history.
 
 ### Q: What happens if a user already paid?
+
 **A**: The plugin automatically grants access to users who have completed payment. Repeat attempts to access will not charge again.
 
 ## Version History
 
 ### v1.0.0 (Initial Release)
+
 - M-Pesa payment gateway integration
 - Content paywall functionality
 - Admin dashboard
 - Plugin update checker
-- Multi-language support
 
 ## Roadmap
 
 Future enhancements planned:
-- [ ] Subscription management (recurring payments)
+
 - [ ] Advanced analytics and settings dashboard
 - [ ] Email notifications and reminders
-- [ ] Affiliate/referral system
 - [ ] Additional payment gateways
+- [ ] Multiple payment plans (daily, monthly, yearly)
 
 ## Security & Privacy
 
