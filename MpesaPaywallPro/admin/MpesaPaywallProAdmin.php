@@ -326,6 +326,19 @@ class MpesaPaywallProAdmin
 	 */
 	public function save_settings()
 	{
+		// VERIFY THE NONCE FIRST
+		if (
+			!isset($_POST['mpesapaywallpro_nonce']) ||
+			!wp_verify_nonce($_POST['mpesapaywallpro_nonce'], 'mpesapaywallpro_nonce_action')
+		) {
+			wp_die('Security check failed. Nonce verification failed.');
+		}
+
+		// NOW it's safe to save settings
+		if (!current_user_can('manage_options')) {
+			wp_die('Unauthorized');
+		}
+		
 		register_setting(
 			'mpesapaywallpro_settings_group',
 			'mpesapaywallpro_options',
