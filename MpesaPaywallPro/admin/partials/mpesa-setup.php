@@ -154,7 +154,7 @@ $options = get_option('mpesapaywallpro_options', []);
                     </option>
                 </select>
                 <p class="description">
-                    <?php esc_html_e('Select Sandbox for testing, Production for live transactions', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e('If you are using test credentials, select Sandbox. For live transactions, select Production.', 'mpesapaywallpro'); ?>
                 </p>
             </td>
         </tr>
