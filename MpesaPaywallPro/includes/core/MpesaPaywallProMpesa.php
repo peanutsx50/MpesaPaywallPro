@@ -41,55 +41,132 @@ class MpesaPaywallProMpesa
     private $transactionType = 'CustomerPayBillOnline';
 
 
-    // Mpesa related functions can be added here in the future
-    public function __construct()
+    /**
+     * Initializes M-Pesa configuration and generates required authentication tokens.
+     *
+     * This private method is called before each M-Pesa API request to populate all necessary
+     * configuration properties from WordPress options. It retrieves M-Pesa credentials
+     * (consumer key, secret, shortcode, passkey), generates an OAuth access token for API
+     * authentication, creates a timestamp and password for STK push requests, and sets up
+     * the appropriate API endpoint URL based on the environment (sandbox or production).
+     *
+     * The method consolidates all initialization logic in one place to ensure consistent
+     * state before making API calls. Configuration defaults are provided for optional fields,
+     * while missing credentials will be caught during validation.
+     *
+     * @since      1.0.0
+     * @access     private
+     * @return     void    Sets instance properties for M-Pesa API communication
+     *
+     * @uses       get_option() To retrieve M-Pesa configuration from WordPress options
+     * @uses       generate_access_token() To obtain OAuth token from M-Pesa API
+     * @uses       generate_password() To create STK push password from shortcode, passkey, and timestamp
+     * @uses       home_url() To construct the callback URL for payment notifications
+     */
+    private function run()
     {
-        // Initialize Mpesa properties from settings
+        // Retrieve M-Pesa API credentials from WordPress options
         $this->consumer_key            = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
         $this->consumer_secret         = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
         $this->shortcode               = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
         $this->passkey                 = get_option('mpesapaywallpro_options')['passkey'] ?? '';
         $this->environment             = get_option('mpesapaywallpro_options')['env'] ?? 'sandbox';
-        //$this->amount                  = get_option('mpesapaywallpro_options')['default_amount'] ?? 20; // Match form field name
         $this->account_reference       = get_option('mpesapaywallpro_options')['account_reference'] ?? '';
         $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
 
+        // Generate OAuth access token for M-Pesa API authentication
         $this->access_token = $this->generate_access_token();
+        
+        // Create timestamp in YYYYMMDDHHmmss format for password generation
         $this->timestamp    = date('YmdHis');
+        
+        // Generate base64-encoded password for STK push authentication
         $this->password     = $this->generate_password();
+        
+        // Set the callback URL where M-Pesa will send payment confirmation webhooks
         $this->callbackurl  = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
+        
+        // Set the appropriate M-Pesa API endpoint URL based on environment
         $this->url          = $this->environment === 'production' ?
             'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
             'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
     }
 
-    // Mpesa STK push request function
+    /**
+     * Initiates an M-Pesa STK push payment request.
+     *
+     * Sends a payment request to the M-Pesa API which prompts the customer to enter their
+     * M-Pesa PIN on their phone. This method handles the complete flow: initializing M-Pesa
+     * configuration, validating required settings, constructing the payment request payload,
+     * communicating with the M-Pesa API, and handling the response.
+     *
+     * The method performs configuration validation to ensure all required M-Pesa credentials
+     * are present before attempting the API call. It constructs a request payload with payment
+     * details including the customer's phone number, transaction amount, business shortcode,
+     * and callback URL for payment notifications.
+     *
+     * @since      1.0.0
+     * @param      string    $phone_number    The customer's M-Pesa registered phone number (e.g., '254712345678')
+     * @param      int       $amount          The transaction amount in KES to charge the customer
+     * @return     array                      Response array with the following structure:
+     *                                        - On success: [
+     *                                            'status' => 'success',
+     *                                            'message' => 'Payment request sent. Enter your M-Pesa PIN.',
+     *                                            'response' => $decoded_response containing CheckoutRequestID
+     *                                          ]
+     *                                        - On validation error: [
+     *                                            'status' => 'error',
+     *                                            'message' => 'Missing required Mpesa configuration details for...',
+     *                                            'data' => ['missing_field' => '...']
+     *                                          ]
+     *                                        - On API error: [
+     *                                            'status' => 'error',
+     *                                            'message' => 'M-Pesa error message',
+     *                                            'error_code' => 'error code from M-Pesa',
+     *                                            'response' => full M-Pesa API response
+     *                                          ]
+     *                                        - On exception: [
+     *                                            'status' => 'error',
+     *                                            'message' => 'Exception: error details'
+     *                                          ]
+     *
+     * @uses       run() To initialize M-Pesa configuration and generate tokens
+     * @uses       validate_config() To ensure all required M-Pesa credentials are present
+     * @uses       curl_init() To initialize HTTP client for API communication
+     * @uses       json_encode() To serialize the payment request payload
+     * @uses       json_decode() To parse the M-Pesa API response
+     */
     public function send_stk_push_request($phone_number, $amount)
     {
-        // check if consumer_key, consumer_secret, shortcode, passkey is empty
+        // Initialize M-Pesa configuration properties and generate access token
+        $this->run();
+
+        // Validate that all required M-Pesa configuration fields are populated
         $validation_result = $this->validate_config();
         if ($validation_result['status'] === 'error') {
             return $validation_result;
         }
 
-        // set global amount variable for use in callback
+        // Store the transaction amount for use in the callback handler
         $this->amount = $amount;
 
         try {
+            // Construct the payment request payload for M-Pesa STK push API
             $data = [
-                "BusinessShortCode" => $this->shortcode, // paybill number
-                "Password" => $this->password, // generated password
-                "Timestamp" => $this->timestamp, // current timestamp
-                "TransactionType" => $this->transactionType, // transaction type (CustomerBuyGoodsOnline or CustomerPayBillOnline)
-                "Amount" => $amount, // get amount from settings, do not allow zero or negative amounts
-                "PartyA" => $phone_number, // phone number making payment
-                "PartyB" => $this->shortcode, // paybill number
-                "PhoneNumber" => $phone_number, // similar to pary A
-                "AccountReference" => $this->account_reference, // transaction id
-                "TransactionDesc" => $this->transaction_description, // description of transaction
-                "CallBackURL" => $this->callbackurl, // webhook callback
+                "BusinessShortCode" => $this->shortcode,
+                "Password" => $this->password,
+                "Timestamp" => $this->timestamp,
+                "TransactionType" => $this->transactionType,
+                "Amount" => $amount,
+                "PartyA" => $phone_number,
+                "PartyB" => $this->shortcode,
+                "PhoneNumber" => $phone_number,
+                "AccountReference" => $this->account_reference,
+                "TransactionDesc" => $this->transaction_description,
+                "CallBackURL" => $this->callbackurl,
             ];
-            // send request to mpesa api
+
+            // Initialize HTTP client and configure request parameters
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $this->url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, [
@@ -100,10 +177,12 @@ class MpesaPaywallProMpesa
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+
+            // Execute the API request and capture the response
             $response = curl_exec($curl);
             $decoded_response = json_decode($response, true);
 
-            // Check for M-Pesa API errors
+            // Check if M-Pesa API returned an error code
             if (isset($decoded_response['errorCode'])) {
                 return [
                     'status' => 'error',
@@ -113,20 +192,20 @@ class MpesaPaywallProMpesa
                 ];
             }
 
+            // Return success response with payment details for client-side tracking
             return [
                 'status' => 'success',
                 'message' => 'Payment request sent. Enter your M-Pesa PIN.',
                 'response' => $decoded_response,
             ];
         } catch (\Exception $e) {
+            // Capture and return any thrown exceptions as error response
             $this->err = $e->getMessage();
             return [
                 'status' => 'error',
                 'message' => 'Exception: ' . $this->err
             ];
         }
-
-        // return ['status' => 'success'];
     }
 
     // generate access token for mpesa api
