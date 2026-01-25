@@ -82,6 +82,7 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
     </div>
 
     <div class="mpesapaywallpro-admin-content">
+
         <!-- Introduction/Notice Section -->
         <div class="mpesapaywallpro-notice mpesapaywallpro-topnotice">
             <div class="notice-content">
@@ -89,15 +90,42 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
                     <span class="dashicons dashicons-info"></span>
                     <?php esc_html_e('Welcome to MpesaPaywallPro', 'mpesapaywallpro'); ?>
                 </h3>
+
                 <p>
-                    <?php esc_html_e('Thank you for choosing MpesaPaywallPro! Configure your M-Pesa payment gateway settings below to start accepting payments from your customers.', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e(
+                        'MpesaPaywallPro allows you to restrict access to content and require users to complete an M-Pesa payment before viewing it. To get started, enter your M-Pesa API credentials and configure the payment settings below.',
+                        'mpesapaywallpro'
+                    ); ?>
                 </p>
+
+                <p>
+                    <?php esc_html_e(
+                        'You can use either Sandbox (Test) credentials or Live (Production) credentials. If you are testing, select the Sandbox environment and use your test credentials. If you are accepting real payments, select the Production environment and use your live credentials.',
+                        'mpesapaywallpro'
+                    ); ?>
+                </p>
+
+                <p>
+                    <?php esc_html_e(
+                        'After entering your credentials, always click “Save Changes” first. Only test the API connection after your settings have been saved.',
+                        'mpesapaywallpro'
+                    ); ?>
+                </p>
+
                 <ul>
-                    <li><?php esc_html_e('Set up your M-Pesa API credentials and environment', 'mpesapaywallpro'); ?></li>
-                    <li><?php esc_html_e('Configure payment amounts', 'mpesapaywallpro'); ?></li>
-                    <li><?php esc_html_e('Define how locked content previews are displayed', 'mpesapaywallpro'); ?></li>
-                    <li><?php esc_html_e('Control how long users can access content after payment', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Enter your M-Pesa Consumer Key, Consumer Secret, Shortcode, and Passkey', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Select the correct environment: Sandbox for testing, Production for live payments', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Save your settings before testing the API connection', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Configure payment amounts and access duration after payment', 'mpesapaywallpro'); ?></li>
+                    <li><?php esc_html_e('Control how locked content previews are displayed to users', 'mpesapaywallpro'); ?></li>
                 </ul>
+
+                <p style="color:#b32d2e; font-weight:600;">
+                    <?php esc_html_e(
+                        'WARNING: Never share your M-Pesa API credentials with third parties, contractors, or employees. Anyone with access to these details can initiate payments on your behalf.',
+                        'mpesapaywallpro'
+                    ); ?>
+                </p>
             </div>
 
             <!-- Close button -->
