@@ -238,7 +238,7 @@ class MpesaPaywallProPublic
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -293,11 +293,24 @@ class MpesaPaywallProPublic
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
 
-		//handle response
 		if ($response['status'] === 'success') {
-			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.', 'checkout_request_id' => $response['checkout_request_id']]);
+
+			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
+
+			if (!$checkout_request_id) {
+				wp_send_json_error([
+					'message' => 'CheckoutRequestID missing from M-Pesa response'
+				]);
+			}
+
+			wp_send_json_success([
+				'message' => 'Payment initiated. Please complete the payment on your phone.',
+				'checkout_request_id' => $checkout_request_id,
+			]);
 		} else {
-			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
+			wp_send_json_error([
+				'message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error'),
+			]);
 		}
 	}
 

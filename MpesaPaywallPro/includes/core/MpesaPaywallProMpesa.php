@@ -76,16 +76,16 @@ class MpesaPaywallProMpesa
 
         // Generate OAuth access token for M-Pesa API authentication
         $this->access_token = $this->generate_access_token();
-        
+
         // Create timestamp in YYYYMMDDHHmmss format for password generation
         $this->timestamp    = date('YmdHis');
-        
+
         // Generate base64-encoded password for STK push authentication
         $this->password     = $this->generate_password();
-        
+
         // Set the callback URL where M-Pesa will send payment confirmation webhooks
         $this->callbackurl  = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
-        
+
         // Set the appropriate M-Pesa API endpoint URL based on environment
         $this->url          = $this->environment === 'production' ?
             'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
@@ -364,10 +364,27 @@ class MpesaPaywallProMpesa
         //store phone number in post meta
         update_post_meta($post_id, 'phone_number', $phone);
 
+        $status      = get_post_meta($post_id, 'status', true);
+        $result_desc = get_post_meta($post_id, 'result_desc', true);
+
+        if ($status === 'failed') {
+            return rest_ensure_response([
+                'status'  => 'failed',
+                'message' => $result_desc ?: 'Payment was cancelled or failed',
+            ]);
+        }
+
+        if ($status === 'success') {
+            return rest_ensure_response([
+                'status'  => 'success',
+                'message' => $result_desc ?: 'Payment successful',
+            ]);
+        }
+
+        // fallback (should rarely happen)
         return rest_ensure_response([
-            'status'    => get_post_meta($post_id, 'status', true),
-            'message'   => get_post_meta($post_id, 'result_desc', true),
-            'date'      => get_post_meta($post_id, 'date', true),
+            'status'  => 'pending',
+            'message' => 'Waiting for payment confirmation',
         ]);
     }
 }

@@ -13,7 +13,7 @@ async function checkPaymentStatus(
 
     try {
       const response = await fetch(
-        `${mpp_ajax_object.callback_url}?checkout_id=${checkoutRequestId}`,
+        `${mpp_ajax_object.callback_url}?checkout_id=${checkoutRequestId}&phone=${phoneNumber}`,
         { method: "GET", credentials: "same-origin" },
       );
 
@@ -30,6 +30,15 @@ async function checkPaymentStatus(
         }; path=/`;
         return data;
       }
+
+      if (data.status === "failed") {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = data.message || "Payment cancelled";
+        submitBtn.style.backgroundColor = "#f44336";
+        console.warn("Payment failed:", data);
+        return data;
+      }
+      
     } catch (error) {
       console.warn(`Poll attempt ${pollCount} failed:`, error);
     }
