@@ -1,6 +1,7 @@
 async function checkPaymentStatus(
   checkoutRequestId,
   submitBtn,
+  phoneNumber,
   maxAttempts = 20,
   pollInterval = 3000,
 ) {
@@ -38,7 +39,7 @@ async function checkPaymentStatus(
         console.warn("Payment failed:", data);
         return data;
       }
-      
+
     } catch (error) {
       console.warn(`Poll attempt ${pollCount} failed:`, error);
     }
