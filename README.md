@@ -113,6 +113,50 @@ Payment Processed
 Content Access Granted
 ```
 
+### Local Development with ngrok
+
+To test the plugin locally with HTTPS (required for secure M-Pesa callbacks), you can use ngrok to expose your local WordPress installation.
+
+#### Setup Steps
+
+1. **Install ngrok**: Download from [ngrok.com](https://ngrok.com) or install via package manager
+
+2. **Configure wp-config.php**: Add the following code to your `wp-config.php` file before the line `/* That's all, stop editing! */`:
+
+```php
+define('WP_HOME', 'https://XXXX.ngrok-free.dev');
+define('WP_SITEURL', 'https://XXXX.ngrok-free.dev');
+
+define('FORCE_SSL_ADMIN', true);
+define('FORCE_SSL_LOGIN', true);
+
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+```
+
+Replace `XXXX` with your actual ngrok subdomain.
+
+3. **restart apache2**: once you add the code to your wp-config, you need to restart apache2 for changes to take effect
+```bash
+sudo systemctl restart apache2
+```
+
+4. **Start ngrok**: Run the following command in your terminal:
+
+```bash
+ngrok http <port>
+```
+
+Replace `<port>` with your local WordPress server port (typically 8000, 8080, 3000, etc.)
+
+Example:
+```bash
+ngrok http 8000
+```
+
+5. **Test Payment Flow**: You can now test M-Pesa payment processing with full HTTPS support
+
 ## Plugin Structure
 
 ```
@@ -148,7 +192,8 @@ MpesaPaywallPro/
 
 - **Email**: [admin@surgetech.co.ke](mailto:admin@surgetech.co.ke)
 - **LinkedIn**: [Surge Technologies](https://surgetech.co.ke/)
-- **Gumroad**: [MpesaPaywallPro](https://surgetech.co.ke/mpesapaywallpro)
+- **Website**: [MpesaPaywallPro](https://surgetech.co.ke/mpesapaywallpro)
+- **Gumroad**: [GumroadMpesaPaywallPro](https://festuswp.gumroad.com/l/BPMpesaGateway)
 
 ## Contributing
 
