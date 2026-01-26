@@ -104,9 +104,9 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), false, false);
-		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), false, false);
-		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), false, false);
+		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), (float) $this->version, true);
 	}
 
 	/**
@@ -124,23 +124,7 @@ class MpesaPaywallProPublic
 	 */
 	public function localize_scripts()
 	{
-		// Get the current post ID
 		$post_id = get_the_ID();
-
-		// retrieve current value of the content locked meta field
-		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
-		$price     = get_post_meta($post_id, 'mpp_price', true);
-
-		//get default amount from paywall settings
-		$default_price = get_option('mpesapaywallpro_options')['default_amount'] ?? 20;
-
-		//check if content is locked and price is set and is greater than 0
-		if ($is_locked === '1' && is_numeric($price) && $price > 0) {
-			$amount = $price;
-		} else {
-			$amount = $default_price;
-		}
-
 		wp_localize_script(
 			$this->plugin_name,
 			'mpp_ajax_object',
@@ -149,7 +133,7 @@ class MpesaPaywallProPublic
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
-				'amount'   => $amount,
+				'amount' => $post_id ? $this->get_amount($post_id) : 0,
 			)
 		);
 	}
@@ -170,22 +154,24 @@ class MpesaPaywallProPublic
 	public function filter_post_content($content)
 	{
 		// Only apply on single post pages, not in admin or excerpts
-		if (is_admin() || !is_single()) {
+		if (is_admin() || !is_single() || is_feed()) {
 			return $content;
 		}
-		// Get the current post ID
+
 		$post_id = get_the_ID();
 
-		// Retrieve paywall meta data
-		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true);
-		$price = get_post_meta($post_id, 'mpp_price', true);
-
-		// If content is not locked, return original content
-		if ($is_locked !== '1') {
+		// Early return if no valid post ID
+		if (!$post_id) {
 			return $content;
 		}
 
-		// Check if user has already paid (you'll implement this based on your payment logic)
+		// check if amount is 0, if so return content
+		$amount = $this->get_amount($post_id);
+		if ($amount <= 0) {
+			return $content;
+		}
+
+		// Check if user has already paid
 		if ($this->user_has_access($post_id)) {
 			return $content;
 		}
@@ -285,9 +271,23 @@ class MpesaPaywallProPublic
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
 			wp_die();
 		}
-		// get phone number and amount from ajax request
+
+		// Validate required fields
+		if (empty($_POST['phone_number']) || empty($_POST['amount'])) {
+			wp_send_json_error([
+				'message' => __('Phone number and amount are required.', 'mpesapaywallpro')
+			]);
+		}
+
+		// get phone number and amount from body of request
 		$phone_number = sanitize_text_field($_POST['phone_number']);
-		$amount = intval($_POST['amount']);
+		$amount = absint($_POST['amount']);
+
+		if ($amount < 1 || $amount > 150000) {
+			wp_send_json_error([
+				'message' => __('Invalid payment amount.', 'mpesapaywallpro')
+			]);
+		}
 
 		// instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
@@ -296,12 +296,6 @@ class MpesaPaywallProPublic
 		if ($response['status'] === 'success') {
 
 			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
-
-			if (!$checkout_request_id) {
-				wp_send_json_error([
-					'message' => 'CheckoutRequestID missing from M-Pesa response'
-				]);
-			}
 
 			wp_send_json_success([
 				'message' => 'Payment initiated. Please complete the payment on your phone.',
@@ -312,6 +306,31 @@ class MpesaPaywallProPublic
 				'message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error'),
 			]);
 		}
+	}
+
+	private function get_amount($post_id)
+	{
+		// Get settings and meta
+		$options = get_option('mpesapaywallpro_options', []);
+		$default_amount = absint($options['default_amount'] ?? 20);
+		$auto_lock = !empty($options['auto_lock']);
+
+		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true) === '1';
+		$custom_price = get_post_meta($post_id, 'mpp_price', true);
+		$custom_price = is_numeric($custom_price) ? absint($custom_price) : 0;
+
+		// Auto-lock enabled: use custom price if available, otherwise default
+		if ($auto_lock) {
+			return ($is_locked && $custom_price > 0) ? $custom_price : $default_amount;
+		}
+
+		// Auto-lock disabled: only charge if manually locked
+		if ($is_locked) {
+			return $custom_price > 0 ? $custom_price : $default_amount;
+		}
+
+		// Not locked
+		return 0;
 	}
 
 	/**
