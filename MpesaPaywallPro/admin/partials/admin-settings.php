@@ -139,7 +139,6 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
             <?php
             // Output security fields for the registered setting "mpesapaywallpro_options"
             settings_fields('mpesapaywallpro_settings_group');
-            wp_nonce_field('mpesapaywallpro_nonce_action', 'mpesapaywallpro_nonce');
 
             // Output setting sections and their fields
             do_settings_sections('mpesapaywallpro_' . $current_tab);
