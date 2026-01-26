@@ -320,7 +320,6 @@ class MpesaPaywallProPublic
 		// get phone number, amount  and post id from body of request
 		$phone_number = sanitize_text_field($_POST['phone_number']);
 		$amount = absint($_POST['amount']);
-		$post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
 
 		if ($amount < 1 || $amount > 150000) {
 			wp_send_json_error([
