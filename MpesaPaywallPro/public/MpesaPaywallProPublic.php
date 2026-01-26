@@ -133,6 +133,7 @@ class MpesaPaywallProPublic
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
+				'post_id' => $post_id,
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
 			)
 		);
@@ -213,7 +214,26 @@ class MpesaPaywallProPublic
 		return '<div class="mpp-content-preview">' . wpautop($preview_content) . '</div>';
 	}
 
-	// Dummy function to check if user has access
+	/**
+	 * Determines if the current user has access to locked content.
+	 *
+	 * Checks access eligibility through two mechanisms:
+	 * 1. User role exemption - Users with roles in the 'allowed_user_roles' setting bypass the paywall
+	 * 2. Payment verification - Validates payment status via a checkout ID cookie and corresponding M-Pesa post record
+	 *
+	 * Access is granted if either condition is met: the user has an exempt role OR they have a valid payment record.
+	 *
+	 * @since      1.0.0
+	 * @param      int     $post_id    The post ID to check access for
+	 * @return     bool                True if user has access, false otherwise
+	 *
+	 * @global array $_COOKIE           Payment cookie storage
+	 *
+	 * @uses       wp_get_current_user()    To retrieve the current user object
+	 * @uses       get_option()             To fetch allowed user roles from plugin settings
+	 * @uses       sanitize_text_field()    To safely sanitize the checkout ID from cookie
+	 * @uses       get_posts()              To verify payment record in M-Pesa custom post type
+	 */
 	public function user_has_access($post_id)
 	{
 		// get current user role and check if exempted
@@ -221,6 +241,24 @@ class MpesaPaywallProPublic
 		$allowed_roles = get_option('mpesapaywallpro_options')['allowed_user_roles'] ?? ['administrator'];
 		foreach ($current_user->roles as $role) {
 			if (in_array($role, (array)$allowed_roles)) {
+				return true;
+			}
+		}
+
+		// Check for payment cookie (for immediate access after payment)
+		$cookie_name = 'mpp_paid_' . $post_id;
+		if (isset($_COOKIE[$cookie_name])) {
+			/** @disregard */
+			$checkout_id = sanitize_text_field($_COOKIE[$cookie_name]);
+			// get post meta to verify
+			$posts = get_posts([
+				'post_type'   => 'mpesa',
+				'meta_key'    => 'checkout_id',
+				'meta_value'  => $checkout_id,
+				'numberposts' => 1,
+			]);
+
+			if (!empty($posts)) {
 				return true;
 			}
 		}
@@ -279,9 +317,10 @@ class MpesaPaywallProPublic
 			]);
 		}
 
-		// get phone number and amount from body of request
+		// get phone number, amount  and post id from body of request
 		$phone_number = sanitize_text_field($_POST['phone_number']);
 		$amount = absint($_POST['amount']);
+		$post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
 
 		if ($amount < 1 || $amount > 150000) {
 			wp_send_json_error([

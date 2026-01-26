@@ -26,10 +26,16 @@ async function checkPaymentStatus(
         submitBtn.innerHTML = "Payment Complete ✓";
         submitBtn.style.backgroundColor = "#4CAF50";
         //set cookie to indicate payment
-        document.cookie = `mpp_paid_${checkoutRequestId}=true; max-age=${
+        document.cookie = `mpp_paid_${mpp_ajax_object.post_id}=${checkoutRequestId}; max-age=${
           mpp_ajax_object.access_expiry * 86400
-        }; path=/`;
-        return data;
+        }; path=/; SameSite=Strict`;
+
+        // Show success message
+        setTimeout(() => {
+          submitBtn.innerHTML = "Unlocking Content...";
+          // Reload page to show unlocked content
+          window.location.reload();
+        }, 1500);
       }
 
       if (data.status === "failed") {
@@ -37,9 +43,8 @@ async function checkPaymentStatus(
         submitBtn.innerHTML = data.message || "Payment cancelled";
         submitBtn.style.backgroundColor = "#f44336";
         console.warn("Payment failed:", data);
-        return data;
       }
-
+      
     } catch (error) {
       console.warn(`Poll attempt ${pollCount} failed:`, error);
     }
