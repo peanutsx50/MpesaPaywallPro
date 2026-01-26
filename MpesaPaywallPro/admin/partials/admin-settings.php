@@ -48,21 +48,21 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
                     <span class="mpesapaywallpro-version">v<?php echo esc_html(MPP_VERSION); ?></span>
                 </h1>
                 <p class="mpesapaywallpro-banner-description">
-                    <?php esc_html_e('Seamlessly integrate M-Pesa payments for premium content, memberships, and digital products on your WordPress site.', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e('Turn your WordPress content into revenue. Accept M-Pesa payments, control access to premium posts, and build a sustainable income stream.', 'mpesapaywallpro'); ?>
                 </p>
             </div>
             <div class="mpesapaywallpro-banner-right">
                 <div class="mpesapaywallpro-banner-actions">
-                    <a href="https://festuswp.gumroad.com/l/MpesaPaywallPro" target="_blank" class="button button-primary">
+                    <a href="https://surgetech.co.ke/contact" target="_blank" class="button button-primary">
                         <div class="mpesapaywallpro-features-button">
                             <span class="dashicons dashicons-external"></span>
-                            <?php esc_html_e('View Premium Features', 'mpesapaywallpro'); ?>
+                            <?php esc_html_e('Contact us for custom plugin', 'mpesapaywallpro'); ?>
                         </div>
                     </a>
-                    <a href="https://festuswp.gumroad.com/l/MpesaPaywallPro" target="_blank" class="button">
+                    <a href="https://surgetech.co.ke/mpesapaywallpro" target="_blank" class="button">
                         <div class="mpesapaywallpro-features-button">
                             <span class="dashicons dashicons-book"></span>
-                            <?php esc_html_e('Documentation', 'mpesapaywallpro'); ?>
+                            <?php esc_html_e('Read how to use this plugin', 'mpesapaywallpro'); ?>
                         </div>
 
                     </a>
