@@ -330,7 +330,7 @@ class MpesaPaywallProAdmin
 		if (!current_user_can('manage_options')) {
 			wp_die('Unauthorized');
 		}
-		
+
 		register_setting(
 			'mpesapaywallpro_settings_group',
 			'mpesapaywallpro_options',
@@ -359,6 +359,7 @@ class MpesaPaywallProAdmin
 						'test_phone_number'      => sanitize_text_field($options['test_phone_number'] ?? ''),
 
 						// Paywall Settings
+						'license_key'      => sanitize_text_field($options['license_key'] ?? ''),
 						'auto_lock'        => isset($options['auto_lock']) ? 1 : 0,
 						'default_amount'   => absint($options['default_amount'] ?? 20),
 						'button_color'     => sanitize_hex_color($options['button_color'] ?? '#0073aa'),
@@ -382,6 +383,7 @@ class MpesaPaywallProAdmin
 					'env'              => 'sandbox',
 
 					// Paywall Settings
+					'license_key'      => '',
 					'auto_lock'        => 0,
 					'default_amount'   => 20,
 					'button_color'     => '#0073aa',

@@ -30,6 +30,23 @@ $options = get_option('mpesapaywallpro_options', []);
 
     <table class="form-table">
 
+        <!-- Enter license key -->
+        <tr>
+            <th scope="row">
+                <label for="license_key"><?php esc_html_e('License Key', 'mpesapaywallpro'); ?></label>
+            </th>
+            <td>
+                <input type="password"
+                    id="license_key"
+                    name="mpesapaywallpro_options[license_key]"
+                    value="<?php echo esc_attr($options['license_key'] ?? ''); ?>"
+                    class="regular-text">
+                <p class="description">
+                    <?php esc_html_e('Enter your license key to enable updates and support.', 'mpesapaywallpro'); ?>
+                </p>
+            </td>
+        </tr>
+
         <!-- Auto-lock new posts -->
         <tr>
             <th scope="row">
