@@ -204,6 +204,9 @@ class MpesaPaywallPro
 
 		//add license check on admin init
 		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'display_license_notice', 10, 3);
+
+		//disable update if license fails
+		$this->loader->add_filter('pre_set_site_transient_update_plugins', $this, 'block_updates');
 	}
 
 	/**
@@ -412,5 +415,32 @@ class MpesaPaywallPro
 		if (!empty($license_key)) {
 			delete_transient('mpesapaywallpro_license_' . md5($license_key));
 		}
+	}
+
+	/**
+	 * Block plugin updates if the license verification fails.
+	 *
+	 * This method is hooked to the 'pre_set_site_transient_update_plugins' filter.
+	 * It checks if the license is valid before allowing plugin updates to be set.
+	 * If the license status is not 'valid', it removes the plugin's update
+	 * information from the WordPress update transient, preventing users from
+	 * updating the plugin until the license is verified.
+	 *
+	 * @since    1.0.0
+	 * @access   public
+	 * @param    object $transient The site transient data for plugin updates.
+	 * @return   object The modified plugin updates transient with MpesaPaywallPro
+	 *                  updates removed if license is invalid.
+	 */
+	public function block_updates( $transient ) {
+		$license_status = $this->get_cached_license_status();
+		
+		if ( $license_status !== 'valid' ) {
+			if ( isset( $transient->response[MPP_BASENAME] ) ) {
+				unset( $transient->response[MPP_BASENAME] );
+			}
+		}
+		
+		return $transient;
 	}
 }
