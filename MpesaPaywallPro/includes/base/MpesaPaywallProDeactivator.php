@@ -3,11 +3,11 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       http://example.com
+ * @link       http://surgetech.co.ke
  * @since      1.0.0
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/includes
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/includes
  */
 
 /**
@@ -16,9 +16,9 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    Plugin_Name
- * @subpackage Plugin_Name/includes
- * @author     Your Name <email@example.com>
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/includes
+ * @author     SurgeTech <admin@surgetech.co.ke>
  */
 
 namespace MpesaPaywallPro\base;

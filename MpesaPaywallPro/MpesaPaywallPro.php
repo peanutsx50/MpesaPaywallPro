@@ -59,7 +59,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
  * The code that runs during plugin activation.
  * This action is documented in includes/class-plugin-name-activator.php
  */
-function activate_plugin_name()
+function activate_mpesapaywallpro()
 {
 	MpesaPaywallProActivator::activate();
 }
@@ -68,13 +68,13 @@ function activate_plugin_name()
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-plugin-name-deactivator.php
  */
-function deactivate_plugin_name()
+function deactivate_mpesapaywallpro()
 {
 	MpesaPaywallProDeactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_plugin_name');
-register_deactivation_hook(__FILE__, 'deactivate_plugin_name');
+register_activation_hook(__FILE__, 'activate_mpesapaywallpro');
+register_deactivation_hook(__FILE__, 'deactivate_mpesapaywallpro');
 
 
 /**
@@ -116,10 +116,10 @@ if (class_exists('YahnisElsts\PluginUpdateChecker\v5\PucFactory')) {
  * @since    1.0.0
  */
 
-function run_plugin_name()
+function run_mpesapaywallpro()
 {
 
 	$plugin = new MpesaPaywallPro();
 	$plugin->run();
 }
-run_plugin_name();
+run_mpesapaywallpro();

@@ -3,11 +3,11 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       http://example.com
+ * @link       http://surgetech.co.ke
  * @since      1.0.0
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/public
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/public
  */
 
 /**
@@ -16,9 +16,9 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the public-facing stylesheet and JavaScript.
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/public
- * @author     Your Name <email@example.com>
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/public
+ * @author     SurgeTech <admin@surgetech.co.ke>
  */
 
 namespace MpesaPaywallPro\public;
@@ -33,9 +33,9 @@ class MpesaPaywallProPublic
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string    $mpesapaywallpro    The ID of this plugin.
 	 */
-	private $plugin_name;
+	private $mpesapaywallpro;
 
 	/**
 	 * The version of this plugin.
@@ -50,13 +50,13 @@ class MpesaPaywallProPublic
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of the plugin.
+	 * @param      string    $mpesapaywallpro       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version)
+	public function __construct($mpesapaywallpro, $version)
 	{
 
-		$this->plugin_name = $plugin_name;
+		$this->mpesapaywallpro = $mpesapaywallpro;
 		$this->version = $version;
 	}
 
@@ -72,16 +72,16 @@ class MpesaPaywallProPublic
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
+		 * defined in mpesapaywallpro_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Plugin_Name_Loader will then create the relationship
+		 * The mpesapaywallpro_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
-		wp_enqueue_style($this->plugin_name . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), (float) $this->version, 'all');
 	}
 
 	/**
@@ -96,17 +96,17 @@ class MpesaPaywallProPublic
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
+		 * defined in mpesapaywallpro_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Plugin_Name_Loader will then create the relationship
+		 * The mpesapaywallpro_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), false, true);
-		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), false, true);
-		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), false, true);
+		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), (float) $this->version, true);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class MpesaPaywallProPublic
 	{
 		$post_id = get_the_ID();
 		wp_localize_script(
-			$this->plugin_name,
+			$this->mpesapaywallpro,
 			'mpp_ajax_object',
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),

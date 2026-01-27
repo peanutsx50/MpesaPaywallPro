@@ -6,11 +6,11 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       http://example.com
+ * @link       http://surgetech.co.ke
  * @since      1.0.0
  *
- * @package    Plugin_Name
- * @subpackage Plugin_Name/includes
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/includes
  */
 
 /**
@@ -20,9 +20,9 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    Plugin_Name
- * @subpackage Plugin_Name/includes
- * @author     Your Name <email@example.com>
+ * @package    mpesapaywallpro
+ * @subpackage mpesapaywallpro/includes
+ * @author     SurgeTech <admin@surgetech.co.ke>
  */
 
 namespace MpesaPaywallPro\base;

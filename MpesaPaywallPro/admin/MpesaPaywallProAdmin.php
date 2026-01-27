@@ -33,9 +33,9 @@ class MpesaPaywallProAdmin
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string    $mpesapaywallpro    The ID of this plugin.
 	 */
-	private $plugin_name;
+	private $mpesapaywallpro;
 
 	/**
 	 * The version of this plugin.
@@ -50,13 +50,13 @@ class MpesaPaywallProAdmin
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
+	 * @param      string    $mpesapaywallpro       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version)
+	public function __construct($mpesapaywallpro, $version)
 	{
 
-		$this->plugin_name = $plugin_name;
+		$this->mpesapaywallpro = $mpesapaywallpro;
 		$this->version = $version;
 	}
 
@@ -72,15 +72,15 @@ class MpesaPaywallProAdmin
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
+		 * defined in mpesapaywallpro_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Plugin_Name_Loader will then create the relationship
+		 * The mpesapaywallpro_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, MPP_URL . 'admin/css/admin-settings.css', array(), false, 'all');
+		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'admin/css/admin-settings.css', array(), (float) $this->version, 'all');
 	}
 
 	/**
@@ -95,23 +95,23 @@ class MpesaPaywallProAdmin
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
+		 * defined in mpesapaywallpro_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Plugin_Name_Loader will then create the relationship
+		 * The mpesapaywallpro_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), false, false);
-		wp_enqueue_script($this->plugin_name . '-meta-box', MPP_URL . 'admin/js/content-locked-meta-box.js', array('jquery'), false, false);
-		wp_enqueue_script($this->plugin_name . '-test-connection', MPP_URL . 'admin/js/test-connection.js', array('jquery'), false, false);
+		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), (float) $this->version, false);
+		wp_enqueue_script($this->mpesapaywallpro . '-meta-box', MPP_URL . 'admin/js/content-locked-meta-box.js', array('jquery'), (float) $this->version, false);
+		wp_enqueue_script($this->mpesapaywallpro . '-test-connection', MPP_URL . 'admin/js/test-connection.js', array('jquery'), (float) $this->version, false);
 	}
 
 	public function localize_scripts()
 	{
 		wp_localize_script(
-			$this->plugin_name,
+			$this->mpesapaywallpro,
 			'mpp_admin_ajax_object',
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
