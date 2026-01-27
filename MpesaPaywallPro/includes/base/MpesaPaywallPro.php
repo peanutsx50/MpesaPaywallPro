@@ -250,6 +250,20 @@ class MpesaPaywallPro
 		return $this->version;
 	}
 
+	/**
+	 * Display a license status notice on the plugins page.
+	 *
+	 * This method is hooked to 'after_plugin_row_' action and displays a notice
+	 * below the MpesaPaywallPro plugin row in the plugins list table. The notice
+	 * appears only when the license is invalid, missing, or has an error.
+	 *
+	 * @since    1.0.0
+	 * @access   public
+	 * @param    string $plugin_file The plugin file path.
+	 * @param    array  $plugin_data An array of plugin data.
+	 * @param    string $status      The plugin status.
+	 * @return   void
+	 */
 	public function display_license_notice($plugin_file, $plugin_data, $status)
 	{
 		$license_status = $this->get_cached_license_status();
@@ -269,6 +283,18 @@ class MpesaPaywallPro
     </tr>';
 	}
 
+	/**
+	 * Get the cached license status or verify it with the license server.
+	 *
+	 * Retrieves the license key from plugin options and checks the cached
+	 * license status. If no cache exists, it verifies the license with the
+	 * remote license server and caches the result for 12 hours (if valid)
+	 * or 1 hour (if invalid).
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @return   string License status: 'valid', 'invalid', 'missing', or 'error'.
+	 */
 	private function get_cached_license_status()
 	{
 		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
@@ -294,7 +320,21 @@ class MpesaPaywallPro
 		return $status;
 	}
 
-
+	/**
+	 * Verify the license key with the remote license server.
+	 *
+	 * Makes a POST request to the license server with the license key to verify
+	 * its validity. Returns the verification status without caching, allowing the
+	 * caller to handle caching as needed.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @param    string $license_key The license key to verify.
+	 * @return   string License status: 'valid', 'invalid', or 'error'.
+	 *                   - 'valid': License is active and valid.
+	 *                   - 'invalid': License key is not valid or has expired.
+	 *                   - 'error': Server communication error occurred.
+	 */
 	private function verify_license_with_server($license_key)
 	{
 		$response = wp_remote_post(MPP_LICENSE_SERVER, array(
@@ -318,6 +358,18 @@ class MpesaPaywallPro
 		return 'invalid';
 	}
 
+	/**
+	 * Get a user-friendly license status message.
+	 *
+	 * Returns a localized message based on the license status. Messages include
+	 * a link to the plugin settings page where users can add or update their
+	 * license key.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @param    string $status The license status: 'valid', 'invalid', 'missing', or 'error'.
+	 * @return   string Localized HTML message. Empty string if status is 'valid'.
+	 */
 	private function get_license_message($status)
 	{
 		$settings_url = admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings');
@@ -343,7 +395,17 @@ class MpesaPaywallPro
 		}
 	}
 
-	// clear cache when license is updated
+	/**
+	 * Clear the cached license status.
+	 *
+	 * Removes the transient that stores the cached license verification status.
+	 * This method should be called whenever the license key is updated to ensure
+	 * the next verification uses fresh data from the license server.
+	 *
+	 * @since    1.0.0
+	 * @access   public
+	 * @return   void
+	 */
 	public function clear_license_cache()
 	{
 		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
