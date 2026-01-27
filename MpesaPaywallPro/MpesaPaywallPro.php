@@ -47,7 +47,7 @@ define('MPP_VERSION', '1.0.0');
 define('MPP_URL', plugin_dir_url(__FILE__));
 define('MPP_PATH', plugin_dir_path(__FILE__));
 define('MPP_BASENAME', plugin_basename(__FILE__));
-define('MPP_LICENSE_SERVER', 'https://bp-mpesa-gateway-license.vercel.app/');
+define('MPP_LICENSE_SERVER', 'https://bp-mpesa-gateway-license.vercel.app/api/mpesapaywallpro');
 
 // namespace imports
 use MpesaPaywallPro\base\MpesaPaywallProActivator;

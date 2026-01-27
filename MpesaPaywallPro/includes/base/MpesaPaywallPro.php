@@ -255,9 +255,38 @@ class MpesaPaywallPro
 		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
 
 		if (empty($license_key)) {
-			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
+			echo '<tr class="plugin-update-tr active"><td colspan="4" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
 			_e('⚠️ License key is missing. <a href="' . admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings') . '">Add your license key</a> to enable updates and support.', 'mpesapaywallpro');
 			echo '</p></div></td></tr>';
+			return;
 		}
+
+		// check if license is valid
+		$response = wp_remote_post(MPP_LICENSE_SERVER, array(
+			'method'      => 'POST',
+			'body'        => array('license_key' => $license_key),
+			'timeout'     => 45,
+			'headers'     => array('Content-Type' => 'application/json'),
+		));
+
+		// check for wordpress errors
+		if(is_wp_error($response)) {
+			
+			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
+			_e('⚠️ Unable to verify license. Please try again later.', 'mpesapaywallpro');
+			echo '</p></div></td></tr>';
+			return;
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if (isset($data['status']) && $data['status'] !== 'valid') {
+			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
+			_e('⚠️ Your license key is invalid or has expired. <a href="' . admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings') . '">Please check your license details</a>.', 'mpesapaywallpro');
+			echo '</p></div></td></tr>';
+			return;
+		}
+
 	}
 }
