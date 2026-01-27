@@ -104,9 +104,9 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->plugin_name, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), false, true);
+		wp_enqueue_script($this->plugin_name . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), false, true);
+		wp_enqueue_script($this->plugin_name . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), false, true);
 	}
 
 	/**
@@ -304,11 +304,13 @@ class MpesaPaywallProPublic
 	 */
 	public function process_payment()
 	{
+		error_log('Processing M-Pesa payment request via AJAX.');
 		//check nonce for security
 		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_ajax_nonce')) {
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
 			wp_die();
 		}
+		error_log('Nonce verified successfully.');
 
 		// Validate required fields
 		if (empty($_POST['phone_number']) || empty($_POST['amount'])) {
