@@ -132,6 +132,7 @@ class MpesaPaywallProPublic
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
+				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
 				'post_id' => $post_id,
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
@@ -302,49 +303,50 @@ class MpesaPaywallProPublic
 	 * @since      1.0.0
 	 * @return     void    Sends JSON response and terminates execution
 	 */
-	public function process_payment()
+	public function process_payment(\WP_REST_Request $request)
 	{
-		error_log('Processing M-Pesa payment request via AJAX.');
-		//check nonce for security
-		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_ajax_nonce')) {
-			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
-			wp_die();
+		error_log('=== REST API PROCESS PAYMENT CALLED ===');
+
+		$params = $request->get_json_params();
+		$phone_number = sanitize_text_field($params['phone_number'] ?? '');
+		$amount = absint($params['amount'] ?? 0);
+		$nonce = sanitize_text_field($params['nonce'] ?? '');
+
+		// Verify nonce
+		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => 'Invalid request']
+			], 403);
 		}
-		error_log('Nonce verified successfully.');
 
 		// Validate required fields
-		if (empty($_POST['phone_number']) || empty($_POST['amount'])) {
-			wp_send_json_error([
-				'message' => __('Phone number and amount are required.', 'mpesapaywallpro')
-			]);
+		if (empty($phone_number) || $amount < 1 || $amount > 150000) {
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => __('Invalid phone number or amount.', 'mpesapaywallpro')]
+			], 400);
 		}
 
-		// get phone number, amount  and post id from body of request
-		$phone_number = sanitize_text_field($_POST['phone_number']);
-		$amount = absint($_POST['amount']);
-
-		if ($amount < 1 || $amount > 150000) {
-			wp_send_json_error([
-				'message' => __('Invalid payment amount.', 'mpesapaywallpro')
-			]);
-		}
-
-		// instantiate mpesa class and send payment request
+		// Process payment
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
 
 		if ($response['status'] === 'success') {
-
 			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
 
-			wp_send_json_success([
-				'message' => 'Payment initiated. Please complete the payment on your phone.',
-				'checkout_request_id' => $checkout_request_id,
-			]);
+			return new \WP_REST_Response([
+				'success' => true,
+				'data' => [
+					'message' => 'Payment initiated. Please complete the payment on your phone.',
+					'checkout_request_id' => $checkout_request_id,
+				]
+			], 200);
 		} else {
-			wp_send_json_error([
-				'message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error'),
-			]);
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error')]
+			], 500);
 		}
 	}
 
@@ -390,6 +392,12 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/callback', [
 			'methods' => ['POST', 'GET'],
 			'callback' => [$mpesa, 'handle_callback'],
+			'permission_callback' => '__return_true',
+		]);
+
+		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
+			'methods' => 'POST',
+			'callback' => [$this, 'process_payment'],
 			'permission_callback' => '__return_true',
 		]);
 	}

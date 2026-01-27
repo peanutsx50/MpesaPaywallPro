@@ -15,20 +15,21 @@ function displayPaymentError(submitBtn, phoneInput, errorMsg, message) {
  */
 async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
   try {
-    const response = await fetch(mpp_ajax_object.ajax_url, {
+    const response = await fetch(mpp_ajax_object.process_payment_url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Content-Type": "application/json",
       },
-      body: new URLSearchParams({
-        action: "mpp_process_payment",
+      body: JSON.stringify({
         phone_number: phoneNumber,
-        mpp_nonce: mpp_ajax_object.nonce,
         amount: mpp_ajax_object.amount,
+        nonce: mpp_ajax_object.nonce,
       }),
     });
 
-    const data = await response.json();
+    const text = await response.text();
+
+    const data = JSON.parse(text);
 
     if (data.success) {
       console.log("Payment initiated:", data);
@@ -40,6 +41,11 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
     }
   } catch (error) {
     console.error("Error initiating payment:", error);
-    displayPaymentError(submitBtn, phoneInput, errorMsg, "An error occurred. Please try again.");
+    displayPaymentError(
+      submitBtn,
+      phoneInput,
+      errorMsg,
+      "An error occurred. Please try again.",
+    );
   }
 }
