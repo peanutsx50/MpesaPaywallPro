@@ -203,7 +203,7 @@ class MpesaPaywallPro
 		$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
 
 		//add license check on admin init
-		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'check_license', 10, 3);
+		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'display_license_notice', 10, 3);
 	}
 
 	/**
@@ -250,43 +250,105 @@ class MpesaPaywallPro
 		return $this->version;
 	}
 
-	public function check_license($plugin_file, $plugin_data, $status)
+	public function display_license_notice($plugin_file, $plugin_data, $status)
+	{
+		$license_status = $this->get_cached_license_status();
+
+		if ($license_status === 'valid') {
+			return; // Don't show anything if license is valid
+		}
+
+		$message = $this->get_license_message($license_status);
+
+		echo '<tr class="plugin-update-tr active" id="mpesapaywallpro-license-notice">
+        <td colspan=4 class="plugin-update colspanchange">
+            <div class="update-message notice inline notice-error notice-alt">
+                <p>' . $message . '</p>
+            </div>
+        </td>
+    </tr>';
+	}
+
+	private function get_cached_license_status()
 	{
 		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
 
 		if (empty($license_key)) {
-			echo '<tr class="plugin-update-tr active"><td colspan="4" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
-			_e('⚠️ License key is missing. <a href="' . admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings') . '">Add your license key</a> to enable updates and support.', 'mpesapaywallpro');
-			echo '</p></div></td></tr>';
-			return;
+			return 'missing';
 		}
 
-		// check if license is valid
+		// Cache based on license key hash
+		$cache_key = 'mpesapaywallpro_license_' . md5($license_key);
+		$cached_status = get_transient($cache_key);
+
+		if ($cached_status !== false) {
+			return $cached_status;
+		}
+
+		$status = $this->verify_license_with_server($license_key);
+
+		// Cache for 12 hours if valid, 1 hour if invalid
+		$cache_time = ($status === 'valid') ? 12 * HOUR_IN_SECONDS : HOUR_IN_SECONDS;
+		set_transient($cache_key, $status, $cache_time);
+
+		return $status;
+	}
+
+
+	private function verify_license_with_server($license_key)
+	{
 		$response = wp_remote_post(MPP_LICENSE_SERVER, array(
-			'method'      => 'POST',
-			'body'        => array('license_key' => $license_key),
-			'timeout'     => 45,
-			'headers'     => array('Content-Type' => 'application/json'),
+			'method'  => 'POST',
+			'body'    => json_encode(array('license_key' => sanitize_text_field($license_key))),
+			'timeout' => 15, // Reduced timeout
+			'headers' => array('Content-Type' => 'application/json'),
 		));
 
-		// check for wordpress errors
-		if(is_wp_error($response)) {
-			
-			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
-			_e('⚠️ Unable to verify license. Please try again later.', 'mpesapaywallpro');
-			echo '</p></div></td></tr>';
-			return;
+		if (is_wp_error($response)) {
+			return 'error';
 		}
 
 		$body = wp_remote_retrieve_body($response);
 		$data = json_decode($body, true);
 
-		if (isset($data['status']) && $data['status'] !== 'valid') {
-			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
-			_e('⚠️ Your license key is invalid or has expired. <a href="' . admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings') . '">Please check your license details</a>.', 'mpesapaywallpro');
-			echo '</p></div></td></tr>';
-			return;
+		if (isset($data['status']) && $data['status'] === 'valid') {
+			return 'valid';
 		}
 
+		return 'invalid';
+	}
+
+	private function get_license_message($status)
+	{
+		$settings_url = admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings');
+
+		switch ($status) {
+			case 'missing':
+				return sprintf(
+					__('⚠️ License key is missing. <a href="%s">Add your license key</a> to enable updates and support.', 'mpesapaywallpro'),
+					esc_url($settings_url)
+				);
+
+			case 'invalid':
+				return sprintf(
+					__('⚠️ Your license key is invalid or has expired. <a href="%s">Please check your license details</a>.', 'mpesapaywallpro'),
+					esc_url($settings_url)
+				);
+
+			case 'error':
+				return __('⚠️ Unable to verify license. Please try again later.', 'mpesapaywallpro');
+
+			default:
+				return '';
+		}
+	}
+
+	// clear cache when license is updated
+	public function clear_license_cache()
+	{
+		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
+		if (!empty($license_key)) {
+			delete_transient('mpesapaywallpro_license_' . md5($license_key));
+		}
 	}
 }
