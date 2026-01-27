@@ -5,7 +5,6 @@ async function checkPaymentStatus(
   maxAttempts = 20,
   pollInterval = 3000,
 ) {
-  console.log("Checking payment status for:", checkoutRequestId);
 
   let pollCount = 0;
   let continuePolling = true;
@@ -22,7 +21,6 @@ async function checkPaymentStatus(
       const data = await response.json();
 
       if (data.status === "success") {
-        console.log("Payment successful:", data);
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Payment Complete ✓";
         submitBtn.style.backgroundColor = "#4CAF50";

@@ -263,7 +263,6 @@ class MpesaPaywallProMpesa
     // handle callback
     public function handle_callback($request)
     {
-        error_log('BPMG Callback hit - Method: ' . $request->get_method());
 
         /*
      * ======================================================
@@ -309,7 +308,6 @@ class MpesaPaywallProMpesa
             }
 
             if (is_wp_error($post_id)) {
-                error_log('BPMG: Failed to create mpesa post');
                 return rest_ensure_response(['status' => 'error']);
             }
 

@@ -305,7 +305,6 @@ class MpesaPaywallProPublic
 	 */
 	public function process_payment(\WP_REST_Request $request)
 	{
-		error_log('=== REST API PROCESS PAYMENT CALLED ===');
 
 		$params = $request->get_json_params();
 		$phone_number = sanitize_text_field($params['phone_number'] ?? '');

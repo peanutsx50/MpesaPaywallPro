@@ -32,7 +32,6 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
     const data = JSON.parse(text);
 
     if (data.success) {
-      console.log("Payment initiated:", data);
       checkPaymentStatus(data.data.checkout_request_id, submitBtn, phoneNumber);
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
