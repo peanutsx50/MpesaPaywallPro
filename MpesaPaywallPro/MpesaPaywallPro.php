@@ -17,7 +17,7 @@
  * Plugin URI:        https://surgetech.co.ke/mpesapaywallpro
  * Description:       MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.
  * Version:           1.0.0
- * Author:            Surge Technologies
+ * Author:            SurgeTech
  * Author URI:        https://surgetech.co.ke/
  * License:           GNU General Public License v2
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt

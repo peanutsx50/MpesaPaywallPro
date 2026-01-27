@@ -18,7 +18,7 @@
  *
  * @package    MpesaPaywallPro
  * @subpackage MpesaPaywallPro/admin
- * @author     Surge Technologies <admin@surgetech.co.ke>
+ * @author     SurgeTech <admin@surgetech.co.ke>
  */
 
 namespace MpesaPaywallPro\admin;
