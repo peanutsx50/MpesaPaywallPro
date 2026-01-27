@@ -201,6 +201,9 @@ class MpesaPaywallPro
 		// wp_ajax allows authenticated users to process payments
 		$this->loader->add_action('wp_ajax_nopriv_mpp_process_payment', $plugin_public, 'process_payment');
 		$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
+
+		//add license check on admin init
+		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'check_license', 10, 3);
 	}
 
 	/**
@@ -245,5 +248,16 @@ class MpesaPaywallPro
 	public function get_version()
 	{
 		return $this->version;
+	}
+
+	public function check_license($plugin_file, $plugin_data, $status)
+	{
+		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
+
+		if (empty($license_key)) {
+			echo '<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>';
+			_e('⚠️ License key is missing. <a href="' . admin_url('admin.php?page=mpesa-paywall-pro&tab=paywall_settings') . '">Add your license key</a> to enable updates and support.', 'mpesapaywallpro');
+			echo '</p></div></td></tr>';
+		}
 	}
 }
