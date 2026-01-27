@@ -8,8 +8,9 @@ async function checkPaymentStatus(
   console.log("Checking payment status for:", checkoutRequestId);
 
   let pollCount = 0;
+  let continuePolling = true;
 
-  while (pollCount < maxAttempts) {
+  while (pollCount < maxAttempts && continuePolling) {
     pollCount++;
 
     try {
@@ -25,6 +26,7 @@ async function checkPaymentStatus(
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Payment Complete ✓";
         submitBtn.style.backgroundColor = "#4CAF50";
+        
         //set cookie to indicate payment
         document.cookie = `mpp_paid_${mpp_ajax_object.post_id}=${checkoutRequestId}; max-age=${
           mpp_ajax_object.access_expiry * 86400
@@ -36,6 +38,9 @@ async function checkPaymentStatus(
           // Reload page to show unlocked content
           window.location.reload();
         }, 1500);
+        
+        continuePolling = false; // Stop polling
+        return; // Exit function
       }
 
       if (data.status === "failed") {
@@ -43,21 +48,26 @@ async function checkPaymentStatus(
         submitBtn.innerHTML = data.message || "Payment cancelled";
         submitBtn.style.backgroundColor = "#f44336";
         console.warn("Payment failed:", data);
+        
+        continuePolling = false; // Stop polling
+        return; // Exit function
       }
       
     } catch (error) {
       console.warn(`Poll attempt ${pollCount} failed:`, error);
     }
 
-    // sleep for pollInterval before next attempt
-    if (pollCount < maxAttempts) {
+    // Wait for pollInterval before next attempt
+    if (pollCount < maxAttempts && continuePolling) {
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
   }
 
-  // Max polls exceeded
-  console.error("Payment verification timeout after", maxAttempts, "attempts");
-  submitBtn.disabled = false;
-  submitBtn.innerHTML = "Payment timeout. Please try again.";
-  submitBtn.style.backgroundColor = "#ff9800";
+  // Only reach here if max attempts exceeded without success or failure
+  if (continuePolling) {
+    console.error("Payment verification timeout after", maxAttempts, "attempts");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Payment timeout. Please try again.";
+    submitBtn.style.backgroundColor = "#ff9800";
+  }
 }
