@@ -1,0 +1,10 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    # Define the paths you want to analyze (e.g., 'src', 'wp-content/plugins/your-plugin')
+    paths:
+        - includes/
+
+    # Optionally, set a higher rule level as you improve your codebase (default is 0)
+    level: 1

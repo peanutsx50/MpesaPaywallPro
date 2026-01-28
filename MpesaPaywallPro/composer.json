@@ -18,5 +18,9 @@
   "minimum-stability": "dev",
   "require": {
     "yahnis-elsts/plugin-update-checker": "dev-master"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "2.1.x-dev",
+    "szepeviktor/phpstan-wordpress": "2.x-dev"
   }
 }

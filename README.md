@@ -51,6 +51,19 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 3. Select the plugin zip file and click **Install Now**
 4. Click **Activate Plugin**
 
+### Installing Composer Dependencies for Production
+
+After installation, install the required Composer dependencies optimized for production:
+
+```bash
+composer install --no-dev --optimize-autoloader --no-interaction
+```
+
+This command:
+- `--no-dev`: Excludes development dependencies
+- `--optimize-autoloader`: Optimizes the autoloader for production performance
+- `--no-interaction`: Runs without prompting for user input
+
 ## Configuration
 
 ### Initial Setup
