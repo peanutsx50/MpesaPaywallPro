@@ -51,19 +51,6 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 3. Select the plugin zip file and click **Install Now**
 4. Click **Activate Plugin**
 
-### Installing Composer Dependencies for Production
-
-After installation, install the required Composer dependencies optimized for production:
-
-```bash
-composer install --no-dev --optimize-autoloader --no-interaction
-```
-
-This command:
-- `--no-dev`: Excludes development dependencies
-- `--optimize-autoloader`: Optimizes the autoloader for production performance
-- `--no-interaction`: Runs without prompting for user input
-
 ## Configuration
 
 ### Initial Setup
@@ -240,6 +227,29 @@ We welcome contributions! Here's how you can help:
    ```
 
 6. Submit a Pull Request on the main repository
+
+### Installing Composer Dependencies for Production
+
+After installation, install the required Composer dependencies optimized for production:
+
+```bash
+composer install --no-dev --optimize-autoloader --no-interaction
+```
+
+This command:
+- `--no-dev`: Excludes development dependencies
+- `--optimize-autoloader`: Optimizes the autoloader for production performance
+- `--no-interaction`: Runs without prompting for user input
+
+### Using PHPStan
+
+Run PHPStan to analyze your code for potential errors and type issues:
+
+```bash
+./vendor/bin/phpstan analyse
+```
+
+This will perform static analysis on the plugin code according to the configuration in `phpstan.neon.dist`.
 
 ### Code Standards
 
