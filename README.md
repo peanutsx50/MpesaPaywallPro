@@ -325,6 +325,6 @@ Future enhancements planned:
 
 ---
 
-**Need help?** Create an issue on GitHub or contact the author directly.
+**Need help?** Create an issue on GitHub or contact the me directly via email.
 
 **Enjoying the plugin?** Please give it a ⭐ on GitHub!
