@@ -166,21 +166,25 @@ class MpesaPaywallProMpesa
                 "CallBackURL" => $this->callbackurl,
             ];
 
-            // Initialize HTTP client and configure request parameters
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $this->url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $this->access_token,
-                'Content-Type: application/json',
+            // moving to wp_remote_post to fix vulnerable code
+            $response = wp_remote_post($this->url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->access_token,
+                    'Content-Type'  => 'application/json',
+                ],
+                'body'    => json_encode($data),
+                'timeout' => 60,
             ]);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
 
-            // Execute the API request and capture the response
-            $response = curl_exec($curl);
-            $decoded_response = json_decode($response, true);
+            if(is_wp_error($response)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'HTTP Request failed: ' . $response->get_error_message(),
+                ];
+            }
+
+            $body = wp_remote_retrieve_body($response);
+            $decoded_response = json_decode($body, true);
 
             // Check if M-Pesa API returned an error code
             if (isset($decoded_response['errorCode'])) {
@@ -217,17 +221,23 @@ class MpesaPaywallProMpesa
 
         $credentials = base64_encode($this->consumer_key . ':' . $this->consumer_secret);
 
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $auth_url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            'Authorization: Basic ' . $credentials
+        // moving to wp_remote_get to fix vulnerable code
+        $response = wp_remote_get($auth_url, [
+            'headers' => [
+                'Authorization' => 'Basic ' . $credentials,
+            ],
+            'timeout' => 60,
         ]);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
-        $response = curl_exec($curl);
+        if(is_wp_error($response)) {
+            return [
+                'status' => 'error',
+                'message' => 'HTTP Request failed: ' . $response->get_error_message(),
+            ];
+        }
 
-        $result = json_decode($response, true);
+        $body = wp_remote_retrieve_body($response);
+        $result = json_decode($body, true);
 
         return isset($result['access_token']) ? $result['access_token'] : '';
     }
