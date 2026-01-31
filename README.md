@@ -324,6 +324,9 @@ You are free to:
 - Admin dashboard
 - Plugin update checker
 
+### V1.1 (Stable version)
+- Fixed SSL Peer Verification vulnerability
+
 ## Roadmap
 
 Future enhancements planned:

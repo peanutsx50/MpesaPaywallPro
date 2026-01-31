@@ -25,6 +25,7 @@ namespace MpesaPaywallPro\public;
 
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 
+// TODO: Need to implement cookie signing to avoid tampering
 class MpesaPaywallProPublic
 {
 
