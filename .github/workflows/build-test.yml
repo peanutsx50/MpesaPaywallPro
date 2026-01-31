@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup PHP
-        uses: shivam1646/setup-php@v1
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
       - name: Install Composer dependencies
