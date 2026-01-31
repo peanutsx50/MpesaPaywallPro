@@ -1,19 +1,23 @@
-name: "build-test"
-
+name: 'build-test'
 on:
   pull_request:
   push:
     branches:
       - main
-      - dev
-      - "releases/*"
-
+      - 'releases/*'
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivam1646/setup-php@v1
+        with:
+          php-version: '8.2'
+      - name: Install Composer dependencies
+        working-directory: ./MpesaPaywallPro
+        run: composer install --no-dev --optimize-autoloader
       - name: List plugin files
         run: ls -R ./MpesaPaywallPro
       - name: Run plugin check
