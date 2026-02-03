@@ -125,7 +125,7 @@ class MpesaPaywallProPublic
 	{
 		$mpesa = new MpesaPaywallProMpesa();
 		register_rest_route('mpesapaywallpro/v1', '/callback', [
-			'methods' => ['POST', 'GET'],
+			'methods' => ['POST'],
 			'callback' => [$mpesa, 'handle_callback'],
 			'permission_callback' => '__return_true',
 		]);
@@ -137,7 +137,7 @@ class MpesaPaywallProPublic
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
-			'methods' => 'GET',
+			'methods' => 'POST',
 			'callback' => [$this, 'confirm_payment'],
 			'permission_callback' => '__return_true',
 		]);
@@ -169,7 +169,7 @@ class MpesaPaywallProPublic
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
-				'post_id' => $post_id,
+				'post_id' => $post_id, // locked post ID
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
 			)
 		);
@@ -281,25 +281,109 @@ class MpesaPaywallProPublic
 			}
 		}
 
-		// Check for payment cookie (for immediate access after payment)
-		$cookie_name = 'mpp_paid_' . $post_id;
-		if (isset($_COOKIE[$cookie_name])) {
-			/** @disregard */
-			$checkout_id = sanitize_text_field($_COOKIE[$cookie_name]);
-			// get post meta to verify
-			$posts = get_posts([
-				'post_type'   => 'mpesa',
-				'meta_key'    => 'checkout_id',
-				'meta_value'  => $checkout_id,
-				'numberposts' => 1,
-			]);
+		// For logged-in users: use Server side transients with expiry
+		if (is_user_logged_in()) {
+			$transient_key = 'mpp_access_' . $current_user->ID . '_' . $post_id;
+			$checkout_id = get_transient($transient_key);
 
-			if (!empty($posts)) {
-				return true;
+			if ($checkout_id) {
+				return $this->verify_payment_record($checkout_id, $post_id);
 			}
 		}
 
+		// For guests: Use WordPress cookies with nonces (signed, time-limited)
+		if (isset($_COOKIE['mpp_paid_' . $post_id])) {
+			return $this->verify_guest_payment_cookie($post_id);
+		}
+
 		return false;
+	}
+
+	/**
+	 * Verify payment record exists and is successful
+	 */
+	private function verify_payment_record($checkout_id, $content_post_id)
+	{
+		$posts = get_posts([
+			'post_type'   => 'mpesa',
+			'meta_query'  => [
+				'relation' => 'AND',
+				[
+					'key'     => 'checkout_id',
+					'value'   => $checkout_id,
+					'compare' => '='
+				],
+				[
+					'key'     => 'status',
+					'value'   => 'success',
+					'compare' => '='
+				],
+				[
+					'key'     => 'content_post_id',
+					'value'   => $content_post_id,
+					'compare' => '='
+				]
+			],
+			'numberposts' => 1,
+			'fields'      => 'ids'
+		]);
+
+		return !empty($posts);
+	}
+
+	/**
+	 * Verify guest payment cookie using WordPress nonces
+	 */
+	private function verify_guest_payment_cookie($post_id)
+	{
+		error_log('Verifying guest payment cookie for post ID: ' . $post_id);
+		/** @disregard P1008 Undefined type */
+		$cookie_value = sanitize_text_field($_COOKIE['mpp_paid_' . $post_id]);
+
+		// Cookie format: checkout_id|nonce|expiry
+		$parts = explode('|', $cookie_value);
+
+		if (count($parts) !== 3) {
+			return false;
+		}
+
+		// takes array and unpacks into variables based on order
+		list($checkout_id, $nonce, $expiry) = $parts;
+
+		// Check expiration
+		if (time() > (int)$expiry) {
+			$this->clear_payment_cookie($post_id);
+			return false;
+		}
+
+		// Verify nonce (uses WordPress salts internally)
+		$expected_nonce = wp_hash($checkout_id . $post_id . $expiry, 'nonce');
+
+		/** @disregard P1010 Undefined type */
+		if (!hash_equals($expected_nonce, $nonce)) {
+			return false;
+		}
+
+		// Verify against database
+		return $this->verify_payment_record($checkout_id, $post_id);
+	}
+
+
+	/**
+	 * Clear payment cookie
+	 */
+	private function clear_payment_cookie($post_id)
+	{
+		setcookie(
+			'mpp_paid_' . $post_id,
+			'',
+			[
+				'expires'  => time() - 3600,
+				'path'     => '/',
+				'secure'   => is_ssl(),
+				'httponly' => true
+			]
+		);
 	}
 
 	/**
@@ -411,7 +495,7 @@ class MpesaPaywallProPublic
 
 	public function confirm_payment($request)
 	{
-		if ($request->get_method() !== 'GET') {
+		if ($request->get_method() !== 'POST') {
 			return rest_ensure_response([
 				'status'  => 'error',
 				'message' => 'Invalid request method',
@@ -419,14 +503,24 @@ class MpesaPaywallProPublic
 		}
 
 		// polling function to confirm payment status
-		$checkoutId = sanitize_text_field($request->get_param('checkout_id'));
-		$phone = sanitize_text_field($request->get_param('phone'));
+		$params = $request->get_json_params();
+		$checkoutId = sanitize_text_field($params['checkout_id'] ?? '');
+		$nonce = sanitize_text_field($params['nonce'] ?? '');
+		$content_post_id = absint($params['locked_post_id'] ?? 0);
 
-
-		if (!$checkoutId || !$phone) {
+		// Verify nonce
+		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
 			return rest_ensure_response([
 				'status'  => 'error',
-				'message' => 'No checkout id or phone provided',
+				'message' => 'Invalid request',
+			]);
+		}
+
+		// this should never happen
+		if (!$checkoutId) {
+			return rest_ensure_response([
+				'status'  => 'error',
+				'message' => 'No checkout id provided',
 			]);
 		}
 
@@ -444,13 +538,11 @@ class MpesaPaywallProPublic
 			]);
 		}
 
-		$post_id = $posts[0]->ID;
-
-		//store phone number in post meta
-		update_post_meta($post_id, 'phone_number', $phone);
-
+		$post_id = $posts[0]->ID; // this is the meta post ID
 		$status      = get_post_meta($post_id, 'status', true);
 		$result_desc = get_post_meta($post_id, 'result_desc', true);
+
+		update_post_meta($post_id, 'content_post_id', $content_post_id);
 
 		if ($status === 'failed') {
 			return rest_ensure_response([
@@ -460,6 +552,7 @@ class MpesaPaywallProPublic
 		}
 
 		if ($status === 'success') {
+			$this->grant_payment_access($content_post_id, $checkoutId);
 			return rest_ensure_response([
 				'status'  => 'success',
 				'message' => $result_desc ?: 'Payment successful',
@@ -471,5 +564,50 @@ class MpesaPaywallProPublic
 			'status'  => 'pending',
 			'message' => 'Waiting for payment confirmation',
 		]);
+	}
+
+	/**
+	 * Set payment access after successful payment
+	 * Call this from your callback handler after storing payment
+	 */
+	public function grant_payment_access($content_post_id, $checkout_id)
+	{
+		$duration = (get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30) * DAY_IN_SECONDS;
+
+		if (is_user_logged_in()) {
+			// Store in transient (server-side, auto-expires)
+			$transient_key = 'mpp_access_' . get_current_user_id() . '_' . $content_post_id;
+			set_transient($transient_key, $checkout_id, $duration);
+		} else {
+			// Set signed cookie for guests
+			$this->set_payment_cookie($content_post_id, $checkout_id, $duration);
+		}
+	}
+
+	/**
+	 * Create signed cookie for guest users
+	 */
+	private function set_payment_cookie($content_post_id, $checkout_id, $duration)
+	{
+		// gets current time then add duration to set expiry
+		$expiry = time() + $duration;
+
+		// Create nonce using WordPress's wp_hash (uses WordPress salts)
+		$nonce = wp_hash($checkout_id . $content_post_id . $expiry, 'nonce');
+
+		// Cookie format: checkout_id|nonce|expiry
+		$cookie_value = $checkout_id . '|' . $nonce . '|' . $expiry;
+
+		setcookie(
+			'mpp_paid_' . $content_post_id,
+			$cookie_value,
+			[
+				'expires'  => $expiry,
+				'path'     => '/',
+				'secure'   => is_ssl(),
+				'httponly' => true,
+				'samesite' => 'Lax'
+			]
+		);
 	}
 }

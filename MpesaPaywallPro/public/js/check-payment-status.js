@@ -12,10 +12,19 @@ async function checkPaymentStatus(
     pollCount++;
 
     try {
-      const response = await fetch(
-        `${mpp_ajax_object.confirm_payment_url}?checkout_id=${checkoutRequestId}&phone=${phoneNumber}`,
-        { method: "GET", credentials: "same-origin" },
-      );
+      const response = await fetch(`${mpp_ajax_object.confirm_payment_url}`, {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+      },
+        body: JSON.stringify({
+          checkout_id: checkoutRequestId,
+          locked_post_id: mpp_ajax_object.post_id,
+          nonce: mpp_ajax_object.nonce,
+        }),
+      });
+
+      console.log(`Poll attempt ${pollCount} response:`, response);
 
       const data = await response.json();
 
@@ -23,11 +32,6 @@ async function checkPaymentStatus(
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Payment Complete ✓";
         submitBtn.style.backgroundColor = "#4CAF50";
-
-        //set cookie to indicate payment
-        document.cookie = `mpp_paid_${mpp_ajax_object.post_id}=${checkoutRequestId}; max-age=${
-          mpp_ajax_object.access_expiry * 86400
-        }; path=/; SameSite=Strict`;
 
         // Show success message
         setTimeout(() => {
