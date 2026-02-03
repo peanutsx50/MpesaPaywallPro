@@ -279,6 +279,11 @@ class MpesaPaywallProAdmin
 		$phone_number = sanitize_text_field($_POST['phone_number']);
 		$amount = intval($_POST['amount']);
 
+		// Validate required fields
+		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
+			wp_send_json_error(['message' => 'Invalid phone number or amount']);
+		}
+
 		// instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);

@@ -439,7 +439,7 @@ class MpesaPaywallProPublic
 		}
 
 		// Validate required fields
-		if (empty($phone_number) || $amount < 1 || $amount > 150000) {
+		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => __('Invalid phone number or amount.', 'mpesapaywallpro')]
