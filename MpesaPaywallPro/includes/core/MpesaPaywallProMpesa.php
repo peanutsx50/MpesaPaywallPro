@@ -16,6 +16,9 @@
  */
 
 namespace MpesaPaywallPro\core;
+
+use WP_REST_Response;
+
 // If this file is called directly, abort.
 if (! defined('WPINC')) {
     die;
@@ -270,72 +273,142 @@ class MpesaPaywallProMpesa
         return ['status' => 'success', 'message' => 'Mpesa configuration is valid'];
     }
 
-    // safaricom callback
+    /**
+     * Handles M-Pesa STK push callback webhook from Safaricom.
+     *
+     * Receives and processes payment callback notifications from the M-Pesa API
+     * when a customer completes or cancels an STK push payment request. This webhook
+     * handler validates the incoming request, extracts payment result details, and
+     * stores the transaction information for later retrieval and processing.
+     *
+     * The method expects a POST request containing M-Pesa callback data in the following
+     * structure:
+     * {
+     *   "Body": {
+     *     "stkCallback": {
+     *       "CheckoutRequestID": "...",
+     *       "ResultCode": 0,
+     *       "ResultDesc": "..."
+     *     }
+     *   }
+     * }
+     *
+     * Result codes from M-Pesa:
+     * - 0: Transaction successful
+     * - Non-zero: Transaction failed or cancelled
+     *
+     * @since      1.0.0
+     * @param      WP_REST_Request $request    The incoming webhook request from M-Pesa containing
+     *                                        callback data with payment results
+     * @return     WP_REST_Response           JSON response indicating callback processing status:
+     *                                        - On ignored callback (missing stkCallback): ['status' => 'ignored']
+     *                                        - On successful processing: ['status' => 'ok']
+     *                                        - On error storing data: ['status' => 'error']
+     *
+     * @uses       WP_REST_Request::get_method() To verify the request method is POST
+     * @uses       WP_REST_Request::get_body() To retrieve the raw JSON callback payload
+     * @uses       json_decode() To parse the JSON callback data
+     * @uses       sanitize_text_field() To sanitize CheckoutRequestID and ResultDesc
+     * @uses       rest_ensure_response() To format the response as WP REST response
+     * @uses       store_details_meta() To persist transaction data to the database
+     */
     public function handle_callback($request)
     {
-        if ($request->get_method() === 'POST') {
-
-            $raw_body = $request->get_body();
-            $body = json_decode($raw_body, true);
-
-            $stk = $body['Body']['stkCallback'] ?? null;
-
-            if (!$stk) {
-                return rest_ensure_response(['status' => 'ignored']);
-            }
-
-            error_log('Mpesa STK Callback Received: ' . print_r($stk, true));
-
-            $checkoutId = sanitize_text_field($stk['CheckoutRequestID']);
-            $resultCode = (int) $stk['ResultCode'];
-            $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
-
-            $status = ($resultCode === 0) ? 'success' : 'failed';
-
-            /*
-         * Prevent duplicates (Safaricom retries callbacks)
-         */
-            $existing = get_posts([
-                'post_type'   => 'mpesa',
-                'meta_key'    => 'checkout_id',
-                'meta_value'  => $checkoutId,
-                'fields'      => 'ids',
-                'numberposts' => 1,
+        if ($request->get_method() !== 'POST') {
+            return rest_ensure_response([
+                'status'  => 'error',
+                'message' => 'Invalid request method',
             ]);
-
-            if ($existing) {
-                $post_id = $existing[0]; // returns back the post id
-            } else {
-                $post_id = wp_insert_post([
-                    'post_type'   => 'mpesa',
-                    'post_status' => 'publish',
-                    'post_title'  => 'Mpesa STK ' . $checkoutId,
-                ]); // after create complete returns back the post id
-            }
-
-            if (is_wp_error($post_id)) {
-                return rest_ensure_response(['status' => 'error']);
-            }
-
-            /*
-         * Store callback data
-         */
-            // store relevant data in post meta
-
-            update_post_meta($post_id, 'checkout_id', $checkoutId);
-            update_post_meta($post_id, 'status', $status);
-            update_post_meta($post_id, 'amount', $this->amount);
-            update_post_meta($post_id, 'result_code', $resultCode);
-            update_post_meta($post_id, 'result_desc', $resultDesc);
-            update_post_meta($post_id, 'account_ref', $this->account_reference ?? '');
-            update_post_meta($post_id, 'date', current_time('mysql'));
-
-            return rest_ensure_response(['status' => 'ok']);
         }
+
+        $raw_body = $request->get_body();
+        $body = json_decode($raw_body, true);
+
+        $stk = $body['Body']['stkCallback'] ?? null;
+
+        if (!$stk) {
+            return rest_ensure_response(['status' => 'ignored']);
+        }
+
+        $checkoutId = sanitize_text_field($stk['CheckoutRequestID']);
+        $resultCode = (int) $stk['ResultCode'];
+        $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
+
+        $status = ($resultCode === 0) ? 'success' : 'failed';
+        return $this->store_details_meta($checkoutId, $status, $resultCode, $resultDesc);
     }
 
-    public function store_details_meta()
+    /**
+     * Stores M-Pesa transaction details and callback metadata to the database.
+     *
+     * Persists M-Pesa payment callback information to a custom post type, handling both
+     * initial transaction recording and duplicate prevention for callback retries. This method
+     * creates or retrieves an existing 'mpesa' post record and stores all transaction metadata
+     * including checkout ID, payment status, result codes, and timestamp for audit and
+     * reconciliation purposes.
+     *
+     * The method prevents duplicate entries by checking if a transaction with the same
+     * CheckoutRequestID already exists in the database. If found, it updates the existing
+     * post; otherwise, it creates a new post record. All transaction details are stored
+     * as post metadata for flexible querying and reporting.
+     *
+     * @since      1.0.0
+     * @param      string    $checkoutId     The unique M-Pesa checkout request ID for transaction identification
+     * @param      string    $status         The transaction status: 'success' or 'failed'
+     * @param      int       $resultCode     The M-Pesa result code (0 = success, non-zero = failure)
+     * @param      string    $resultDesc     The M-Pesa result description message
+     * @return     WP_REST_Response        JSON response indicating storage operation status:
+     *                                     - On success: ['status' => 'ok']
+     *                                     - On error creating/retrieving post: ['status' => 'error']
+     *
+     * @uses       get_posts() To query existing 'mpesa' posts by checkout_id meta value
+     * @uses       wp_insert_post() To create a new 'mpesa' post record for new transactions
+     * @uses       is_wp_error() To validate post creation was successful
+     * @uses       update_post_meta() To store transaction metadata fields
+     * @uses       current_time() To generate the transaction processing timestamp
+     * @uses       rest_ensure_response() To format the response as WP REST response
+     */
+    public function store_details_meta($checkoutId, $status, $resultCode, $resultDesc)
     {
-        // function stores transction details in user meta after successful payment
+        /*
+         * Prevent duplicates (Safaricom retries callbacks)
+         */
+        $existing = get_posts([
+            'post_type' => 'mpesa',
+            'meta_query' => [
+                [
+                    'key' => 'checkout_id',
+                    'value' => $checkoutId,
+                    'compare' => '='
+                ]
+            ],
+            'fields' => 'ids',
+            'numberposts' => 1,
+        ]);
+
+        if ($existing) {
+            $post_id = $existing[0]; // returns back the post id
+        } else {
+            $post_id = wp_insert_post([
+                'post_type'   => 'mpesa',
+                'post_status' => 'publish',
+                'post_title'  => 'Mpesa STK ' . $checkoutId,
+            ]); // after create complete returns back the post id
+        }
+
+        if (is_wp_error($post_id)) {
+            return rest_ensure_response(['status' => 'error']);
+        }
+
+        // store relevant data in post meta
+        update_post_meta($post_id, 'checkout_id', $checkoutId);
+        update_post_meta($post_id, 'status', $status);
+        update_post_meta($post_id, 'amount', $this->amount);
+        update_post_meta($post_id, 'result_code', $resultCode);
+        update_post_meta($post_id, 'result_desc', $resultDesc);
+        update_post_meta($post_id, 'account_ref', $this->account_reference ?? '');
+        update_post_meta($post_id, 'date', current_time('mysql'));
+
+        return rest_ensure_response(['status' => 'ok']);
     }
 }
