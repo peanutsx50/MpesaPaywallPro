@@ -330,12 +330,7 @@ class MpesaPaywallProMpesa
             return rest_ensure_response(['status' => 'ignored']);
         }
 
-        $checkoutId = sanitize_text_field($stk['CheckoutRequestID']);
-        $resultCode = (int) $stk['ResultCode'];
-        $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
-
-        $status = ($resultCode === 0) ? 'success' : 'failed';
-        return $this->store_details_meta($checkoutId, $status, $resultCode, $resultDesc);
+        return $this->store_details_meta($stk);
     }
 
     /**
@@ -368,11 +363,46 @@ class MpesaPaywallProMpesa
      * @uses       current_time() To generate the transaction processing timestamp
      * @uses       rest_ensure_response() To format the response as WP REST response
      */
-    public function store_details_meta($checkoutId, $status, $resultCode, $resultDesc)
+    public function store_details_meta($stk)
     {
+        // Extract basic callback data
+        $checkoutId = sanitize_text_field($stk['CheckoutRequestID'] ?? '');
+        $merchantRequestId = sanitize_text_field($stk['MerchantRequestID'] ?? '');
+        $resultCode = (int) ($stk['ResultCode'] ?? -1);
+        $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
+
+        if (empty($checkoutId)) {
+            error_log('Mpesa: Missing CheckoutRequestID in callback');
+            return rest_ensure_response(['status' => 'error', 'message' => 'Missing checkout ID'], 400);
+        }
+
+        // Extract transaction metadata (only present on successful transactions)
+        $amount = 0;
+        $phoneNumber = '';
+        $transactionDate = '';
+
+
+        if ($resultCode === 0 && isset($stk['CallbackMetadata']['Item'])) {
+            foreach ($stk['CallbackMetadata']['Item'] as $item) {
+                switch ($item['Name']) {
+                    case 'Amount':
+                        $amount = floatval($item['Value'] ?? 0);
+                        break;
+                    case 'PhoneNumber':
+                        $phoneNumber = sanitize_text_field($item['Value'] ?? '');
+                        break;
+                    case 'TransactionDate':
+                        $transactionDate = sanitize_text_field($item['Value'] ?? '');
+                        break;
+                }
+            }
+        }
+
+        $status = ($resultCode === 0) ? 'success' : 'failed';
+
         /*
-         * Prevent duplicates (Safaricom retries callbacks)
-         */
+     * Prevent duplicates (Safaricom retries callbacks)
+     */
         $existing = get_posts([
             'post_type' => 'mpesa',
             'meta_query' => [
@@ -387,28 +417,37 @@ class MpesaPaywallProMpesa
         ]);
 
         if ($existing) {
-            $post_id = $existing[0]; // returns back the post id
+            $post_id = $existing[0];
+            error_log("Mpesa: Duplicate callback ignored for CheckoutRequestID: $checkoutId");
         } else {
             $post_id = wp_insert_post([
                 'post_type'   => 'mpesa',
                 'post_status' => 'publish',
                 'post_title'  => 'Mpesa STK ' . $checkoutId,
-            ]); // after create complete returns back the post id
+            ], true); // Return WP_Error on failure
         }
 
         if (is_wp_error($post_id)) {
-            return rest_ensure_response(['status' => 'error']);
+            error_log('Mpesa: Failed to create post - ' . $post_id->get_error_message());
+            return rest_ensure_response(['status' => 'error', 'message' => 'Database error'], 500);
         }
 
-        // store relevant data in post meta
+        // Store relevant data in post meta
         update_post_meta($post_id, 'checkout_id', $checkoutId);
+        update_post_meta($post_id, 'merchant_request_id', $merchantRequestId);
         update_post_meta($post_id, 'status', $status);
-        update_post_meta($post_id, 'amount', $this->amount);
         update_post_meta($post_id, 'result_code', $resultCode);
         update_post_meta($post_id, 'result_desc', $resultDesc);
-        update_post_meta($post_id, 'account_ref', $this->account_reference ?? '');
+
+        // Store transaction details (only available on successful transactions)
+        if ($resultCode === 0) {
+            update_post_meta($post_id, 'amount', $amount);
+            update_post_meta($post_id, 'phone_number', $phoneNumber);
+            update_post_meta($post_id, 'transaction_date', $transactionDate);
+        }
+
         update_post_meta($post_id, 'date', current_time('mysql'));
 
-        return rest_ensure_response(['status' => 'ok']);
+        return rest_ensure_response(['status' => 'ok', 'post_id' => $post_id], 200);
     }
 }
