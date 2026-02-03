@@ -314,6 +314,16 @@ class MpesaPaywallProMpesa
      */
     public function handle_callback($request)
     {
+        // check safaricom ip
+        $client_ip = $this->get_client_ip();
+        if (!$this->is_safaricom_ip($client_ip)) {
+            return rest_ensure_response([
+                'status'  => 'error',
+                'message' => 'Unauthorized IP address',
+            ], 403);
+        }
+
+        // Ensure the request method is POST
         if ($request->get_method() !== 'POST') {
             return rest_ensure_response([
                 'status'  => 'error',
@@ -331,6 +341,49 @@ class MpesaPaywallProMpesa
         }
 
         return $this->store_details_meta($stk);
+    }
+
+    private function get_client_ip()
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $forwarded_ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($forwarded_ips[0]);
+        }
+
+        return sanitize_text_field($ip);
+    }
+
+    private function safaricom_ips()
+    {
+        return [
+            '196.201.212.0/22',   // Covers most Safaricom IPs
+            '196.201.214.0/24',
+        ];
+    }
+
+    private function is_safaricom_ip($ip)
+    {
+        $safaricom_ips = $this->safaricom_ips();
+        foreach ($safaricom_ips as $range) {
+            if ($this->ip_in_range($ip, $range)) {
+                return true;
+            }
+        }
+
+        error_log('Mpesa: Callback from unauthorized IP: ' . $ip);
+        return false;
+    }
+
+    private function ip_in_range($ip, $range)
+    {
+        list($subnet, $bits) = explode('/', $range);
+        $ip = ip2long($ip);
+        $subnet = ip2long($subnet);
+        $mask = -1 << (32 - $bits);
+        $subnet &= $mask;
+        return ($ip & $mask) === $subnet;
     }
 
     /**
