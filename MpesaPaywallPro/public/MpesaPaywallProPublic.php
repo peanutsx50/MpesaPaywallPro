@@ -111,6 +111,39 @@ class MpesaPaywallProPublic
 	}
 
 	/**
+	 * Registers REST API endpoint for M-Pesa payment callbacks.
+	 *
+	 * Registers a custom REST route that handles M-Pesa payment verification callbacks.
+	 * The endpoint is accessible at /wp-json/mppmpesa/v1/callback and accepts both
+	 * POST and GET requests. This endpoint allows the M-Pesa payment gateway to send
+	 * payment status updates without authentication requirements.
+	 *
+	 * @since      1.0.0
+	 * @return     void
+	 */
+	public function register_ajax_endpoints()
+	{
+		$mpesa = new MpesaPaywallProMpesa();
+		register_rest_route('mpesapaywallpro/v1', '/callback', [
+			'methods' => ['POST', 'GET'],
+			'callback' => [$mpesa, 'handle_callback'],
+			'permission_callback' => '__return_true',
+		]);
+
+		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
+			'methods' => 'POST',
+			'callback' => [$this, 'process_payment'],
+			'permission_callback' => '__return_true',
+		]);
+
+		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
+			'methods' => 'GET',
+			'callback' => [$this, 'confirm_payment'],
+			'permission_callback' => '__return_true',
+		]);
+	}
+
+	/**
 	 * Localizes payment data for JavaScript.
 	 *
 	 * Prepares and passes payment-related data to frontend JavaScript via wp_localize_script.
@@ -134,6 +167,7 @@ class MpesaPaywallProPublic
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
+				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
 				'post_id' => $post_id,
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
@@ -375,30 +409,67 @@ class MpesaPaywallProPublic
 		return 0;
 	}
 
-	/**
-	 * Registers REST API endpoint for M-Pesa payment callbacks.
-	 *
-	 * Registers a custom REST route that handles M-Pesa payment verification callbacks.
-	 * The endpoint is accessible at /wp-json/mppmpesa/v1/callback and accepts both
-	 * POST and GET requests. This endpoint allows the M-Pesa payment gateway to send
-	 * payment status updates without authentication requirements.
-	 *
-	 * @since      1.0.0
-	 * @return     void
-	 */
-	public function register_ajax_endpoints()
+	public function confirm_payment($request)
 	{
-		$mpesa = new MpesaPaywallProMpesa();
-		register_rest_route('mpesapaywallpro/v1', '/callback', [
-			'methods' => ['POST', 'GET'],
-			'callback' => [$mpesa, 'handle_callback'],
-			'permission_callback' => '__return_true',
+		if ($request->get_method() !== 'GET') {
+			return rest_ensure_response([
+				'status'  => 'error',
+				'message' => 'Invalid request method',
+			]);
+		}
+
+		// polling function to confirm payment status
+		$checkoutId = sanitize_text_field($request->get_param('checkout_id'));
+		$phone = sanitize_text_field($request->get_param('phone'));
+
+
+		if (!$checkoutId || !$phone) {
+			return rest_ensure_response([
+				'status'  => 'error',
+				'message' => 'No checkout id or phone provided',
+			]);
+		}
+
+		$posts = get_posts([
+			'post_type'   => 'mpesa',
+			'meta_key'    => 'checkout_id',
+			'meta_value'  => $checkoutId,
+			'numberposts' => 1,
 		]);
 
-		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
-			'methods' => 'POST',
-			'callback' => [$this, 'process_payment'],
-			'permission_callback' => '__return_true',
+		if (!$posts) {
+			return rest_ensure_response([
+				'status'  => 'pending',
+				'message' => 'Waiting for payment confirmation',
+			]);
+		}
+
+		$post_id = $posts[0]->ID;
+
+		//store phone number in post meta
+		update_post_meta($post_id, 'phone_number', $phone);
+
+		$status      = get_post_meta($post_id, 'status', true);
+		$result_desc = get_post_meta($post_id, 'result_desc', true);
+
+		if ($status === 'failed') {
+			return rest_ensure_response([
+				'status'  => 'failed',
+				'message' => $result_desc ?: 'Payment was cancelled or failed',
+			]);
+		}
+
+		if ($status === 'success') {
+			return rest_ensure_response([
+				'status'  => 'success',
+				'message' => $result_desc ?: 'Payment successful',
+			]);
+		}
+
+		// fallback (should rarely happen)
+		return rest_ensure_response([
+			'status'  => 'pending',
+			'message' => 'Waiting for payment confirmation',
 		]);
 	}
 }

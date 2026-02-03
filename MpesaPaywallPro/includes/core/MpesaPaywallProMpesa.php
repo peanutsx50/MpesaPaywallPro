@@ -176,7 +176,7 @@ class MpesaPaywallProMpesa
                 'timeout' => 60,
             ]);
 
-            if(is_wp_error($response)) {
+            if (is_wp_error($response)) {
                 return [
                     'status' => 'error',
                     'message' => 'HTTP Request failed: ' . $response->get_error_message(),
@@ -229,7 +229,7 @@ class MpesaPaywallProMpesa
             'timeout' => 60,
         ]);
 
-        if(is_wp_error($response)) {
+        if (is_wp_error($response)) {
             return [
                 'status' => 'error',
                 'message' => 'HTTP Request failed: ' . $response->get_error_message(),
@@ -270,15 +270,9 @@ class MpesaPaywallProMpesa
         return ['status' => 'success', 'message' => 'Mpesa configuration is valid'];
     }
 
-    // handle callback
+    // safaricom callback
     public function handle_callback($request)
     {
-
-        /*
-     * ======================================================
-     * 1. SAFARICOM CALLBACK (POST)
-     * ======================================================
-     */
         if ($request->get_method() === 'POST') {
 
             $raw_body = $request->get_body();
@@ -289,6 +283,8 @@ class MpesaPaywallProMpesa
             if (!$stk) {
                 return rest_ensure_response(['status' => 'ignored']);
             }
+
+            error_log('Mpesa STK Callback Received: ' . print_r($stk, true));
 
             $checkoutId = sanitize_text_field($stk['CheckoutRequestID']);
             $resultCode = (int) $stk['ResultCode'];
@@ -336,63 +332,10 @@ class MpesaPaywallProMpesa
 
             return rest_ensure_response(['status' => 'ok']);
         }
+    }
 
-        /*
-     * ======================================================
-     * 2. JS POLLING (GET)
-     * ======================================================
-     */
-        $checkoutId = sanitize_text_field($request->get_param('checkout_id'));
-        $phone = sanitize_text_field($request->get_param('phone'));
-
-
-        if (!$checkoutId || !$phone) {
-            return rest_ensure_response([
-                'status'  => 'error',
-                'message' => 'No checkout id or phone provided',
-            ]);
-        }
-
-        $posts = get_posts([
-            'post_type'   => 'mpesa',
-            'meta_key'    => 'checkout_id',
-            'meta_value'  => $checkoutId,
-            'numberposts' => 1,
-        ]);
-
-        if (!$posts) {
-            return rest_ensure_response([
-                'status'  => 'pending',
-                'message' => 'Waiting for payment confirmation',
-            ]);
-        }
-
-        $post_id = $posts[0]->ID;
-
-        //store phone number in post meta
-        update_post_meta($post_id, 'phone_number', $phone);
-
-        $status      = get_post_meta($post_id, 'status', true);
-        $result_desc = get_post_meta($post_id, 'result_desc', true);
-
-        if ($status === 'failed') {
-            return rest_ensure_response([
-                'status'  => 'failed',
-                'message' => $result_desc ?: 'Payment was cancelled or failed',
-            ]);
-        }
-
-        if ($status === 'success') {
-            return rest_ensure_response([
-                'status'  => 'success',
-                'message' => $result_desc ?: 'Payment successful',
-            ]);
-        }
-
-        // fallback (should rarely happen)
-        return rest_ensure_response([
-            'status'  => 'pending',
-            'message' => 'Waiting for payment confirmation',
-        ]);
+    public function store_details_meta()
+    {
+        // function stores transction details in user meta after successful payment
     }
 }
