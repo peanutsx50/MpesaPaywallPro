@@ -379,6 +379,7 @@ class MpesaPaywallProMpesa
         // Extract transaction metadata (only present on successful transactions)
         $amount = 0;
         $phoneNumber = '';
+        $mpesaReceipt = '';
         $transactionDate = '';
 
 
@@ -387,6 +388,9 @@ class MpesaPaywallProMpesa
                 switch ($item['Name']) {
                     case 'Amount':
                         $amount = floatval($item['Value'] ?? 0);
+                        break;
+                    case 'MpesaReceiptNumber':
+                        $mpesaReceipt = sanitize_text_field($item['Value'] ?? '');
                         break;
                     case 'PhoneNumber':
                         $phoneNumber = sanitize_text_field($item['Value'] ?? '');
@@ -442,6 +446,7 @@ class MpesaPaywallProMpesa
         // Store transaction details (only available on successful transactions)
         if ($resultCode === 0) {
             update_post_meta($post_id, 'amount', $amount);
+            update_post_meta($post_id, 'mpesa_receipt_number', $mpesaReceipt);
             update_post_meta($post_id, 'phone_number', $phoneNumber);
             update_post_meta($post_id, 'transaction_date', $transactionDate);
         }
