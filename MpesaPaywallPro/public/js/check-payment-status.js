@@ -1,9 +1,8 @@
 async function checkPaymentStatus(
   checkoutRequestId,
   submitBtn,
-  phoneNumber,
-  maxAttempts = 20,
-  pollInterval = 3000,
+  maxAttempts = mpp_ajax_object.maxPollAttempts || 20,
+  pollInterval = mpp_ajax_object.pollInterval || 3000,
 ) {
   let pollCount = 0;
   let continuePolling = true;
