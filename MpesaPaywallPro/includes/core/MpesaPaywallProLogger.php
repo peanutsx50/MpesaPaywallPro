@@ -34,7 +34,7 @@ class MpesaPaywallProLogger
     public static function init()
     {
         self::$date = date('Y-m-d H:i:s');;
-        self::$log_file = MPP_PATH . 'logs/activity{' . self::$date . '}.log';
+        self::$log_file = MPP_PATH . 'logs/activity-' . self::$date . '.log';
         self::$init_errors = [];
 
         // Validate MPP_PATH is defined
@@ -163,10 +163,6 @@ class MpesaPaywallProLogger
             return;
         }
 
-        // Rotate: rename current log to .old and create new file
-        $old_log = self::$log_file . '.old';
-
-        @rename(self::$log_file, $old_log);
         self::init(); // Re-initialize to create new log file
     }
 
