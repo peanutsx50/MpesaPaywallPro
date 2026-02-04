@@ -157,6 +157,27 @@ class MpesaPaywallProAdmin
 		);
 	}
 
+	public function check_ssl()
+	{
+		if (!is_ssl()) {
+			add_action('admin_notices', function () {
+				?>
+					<div class="notice notice-error">
+						<p><?php esc_html_e('Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website.', 'mpesapaywallpro'); ?></p>
+					</div>
+				<?php
+			});
+
+			// disable payment processing if not ssl
+			add_filter('pre_http_request', function ($return, $args, $url) {
+				if (strpos($url, 'wp-json/mpesapaywallpro') !== false && !is_ssl()) {
+					return new \WP_Error('http-not-allowed', 'Payment processing requires HTTPS');
+				}
+				return $return;
+			}, 10, 3);
+		}
+	}
+
 	/**
 	 * Display the admin page content.
 	 *
