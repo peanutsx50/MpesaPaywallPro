@@ -163,18 +163,10 @@ class MpesaPaywallProAdmin
 			add_action('admin_notices', function () {
 				?>
 					<div class="notice notice-error">
-						<p><?php esc_html_e('Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website.', 'mpesapaywallpro'); ?></p>
+						<p style="color: black;"><?php esc_html_e('Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website.', 'mpesapaywallpro'); ?></p>
 					</div>
 				<?php
 			});
-
-			// disable payment processing if not ssl
-			add_filter('pre_http_request', function ($return, $args, $url) {
-				if (strpos($url, 'wp-json/mpesapaywallpro') !== false && !is_ssl()) {
-					return new \WP_Error('http-not-allowed', 'Payment processing requires HTTPS');
-				}
-				return $return;
-			}, 10, 3);
 		}
 	}
 
@@ -291,6 +283,11 @@ class MpesaPaywallProAdmin
 	//test api connection
 	public function test_connection()
 	{
+		//check for ssl first
+		if(!is_ssl()){
+			wp_send_json_error(['message' => 'SSL is not enabled on your site. Please enable HTTPS to ensure secure M-Pesa transactions.']);
+		}
+
 		//check nonce for security
 		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_admin_ajax_nonce')) {
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid

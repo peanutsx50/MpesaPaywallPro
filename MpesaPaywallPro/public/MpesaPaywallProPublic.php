@@ -424,6 +424,13 @@ class MpesaPaywallProPublic
 	 */
 	public function process_payment(\WP_REST_Request $request)
 	{
+		//check for ssl and return error if not enabled
+		if (!is_ssl()) {
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => 'SSL is not enabled on this site, transactions cannot be processed securely']
+			], 403);
+		}
 
 		$params = $request->get_json_params();
 		$phone_number = sanitize_text_field($params['phone_number'] ?? '');
