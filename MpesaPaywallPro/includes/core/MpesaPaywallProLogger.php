@@ -232,22 +232,6 @@ class MpesaPaywallProLogger
     }
 
     /**
-     * Set maximum log file size before rotation
-     */
-    public static function set_max_log_size($bytes)
-    {
-        self::$max_log_size = max(1024, (int)$bytes); // Minimum 1KB
-    }
-
-    /**
-     * Enable or disable fallback logging
-     */
-    public static function set_fallback_enabled($enabled)
-    {
-        self::$fallback_enabled = (bool)$enabled;
-    }
-
-    /**
      * Get client IP address with fallback handling
      */
     private static function get_client_ip()
