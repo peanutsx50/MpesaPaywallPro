@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Validate Kenyan number format
-    const phonePattern = /^254(?:7[01][0-9]|10[0-9]|11[0-9])[0-9]{6}$/;
+    const phonePattern = /^254(7|1)\d{8}$/;
 
     if (!phonePattern.test(cleaned)) {
       return false;
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Handle form submission
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    
+
     // clean phone number
     const phoneNumber = cleanPhoneNumber(phoneInput.value);
 
