@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Validate Kenyan number format
-    const phonePattern = /^254(7|1)\d{8}$/;
+    const phonePattern = /^254(7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89])|11[0-5])\d{6}$/;
 
     if (!phonePattern.test(cleaned)) {
       return false;
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!phoneNumber) {
       phoneInput.classList.add("mpp-error");
       errorMsg.textContent =
-        "Invalid Kenyan phone number. Please use format: 254XXXXXXXXX, +254XXXXXXXXX, or 07XXXXXXXX";
+        "Invalid Kenyan Mpesa phone number, enter in format: 254XXXXXXXXX, +254XXXXXXXXX, or 07XXXXXXXX";
       errorMsg.classList.add("mpp-visible");
       return;
     }
