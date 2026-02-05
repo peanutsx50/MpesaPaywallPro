@@ -16,6 +16,7 @@
  * 
  * 
  */
+namespace MpesaPaywallPro\core;
 
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -33,9 +34,9 @@ class MpesaPaywallProLogger
 
     public static function init()
     {
-        self::$date = date('Y-m-d H:i:s');;
+        self::$date = date('Y-m-d');;
         self::$log_file = MPP_PATH . 'logs/activity-' . self::$date . '.log';
-        self::$init_errors = [];
+        self::$init_errors = []; 
 
         // Validate MPP_PATH is defined
         if (!defined('MPP_PATH') || empty(MPP_PATH)) {
@@ -45,7 +46,7 @@ class MpesaPaywallProLogger
             return false;
         }
 
-        $log_dir = dirname(self::$log_file);
+        $log_dir = dirname(self::$log_file); 
 
         // Create logs directory if it doesn't exist
         if (!is_dir($log_dir)) {

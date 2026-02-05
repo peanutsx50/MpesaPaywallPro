@@ -22,6 +22,7 @@
  */
 
 namespace MpesaPaywallPro\base;
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 
 class MpesaPaywallProActivator
 {
@@ -33,5 +34,8 @@ class MpesaPaywallProActivator
 	 *
 	 * @since    1.0.0
 	 */
-	public static function activate() {}
+	public static function activate() {
+		// Initialize the logger
+		MpesaPaywallProLogger::info('MpesaPaywallPro plugin activated successfully.');
+	}
 }

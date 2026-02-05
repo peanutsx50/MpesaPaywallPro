@@ -22,6 +22,7 @@
  */
 
 namespace MpesaPaywallPro\base;
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 
 class MpesaPaywallProDeactivator
 {
@@ -33,5 +34,7 @@ class MpesaPaywallProDeactivator
 	 *
 	 * @since    1.0.0
 	 */
-	public static function deactivate() {}
+	public static function deactivate() {
+		MpesaPaywallProLogger::info('MpesaPaywallPro plugin deactivated successfully.');
+	}
 }
