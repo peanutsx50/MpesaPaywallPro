@@ -23,6 +23,7 @@
 
 namespace MpesaPaywallPro\admin;
 
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 
 class MpesaPaywallProAdmin
@@ -160,6 +161,7 @@ class MpesaPaywallProAdmin
 	public function check_ssl()
 	{
 		if (!is_ssl()) {
+			MpesaPaywallProLogger::warning("Site is running without SSL - M-Pesa transactions may be insecure.");
 			add_action('admin_notices', function () {
 				?>
 					<div class="notice notice-error is-dismissible">
@@ -177,6 +179,7 @@ class MpesaPaywallProAdmin
 	 */
 	public function display_admin_page()
 	{
+		 MpesaPaywallProLogger::info("Admin settings page accessed by user: " . wp_get_current_user()->user_login);
 		// Include the admin page HTML template
 		$admin_template = MPP_PATH . 'admin/partials/admin-settings.php';
 		require_once $admin_template;
@@ -254,6 +257,7 @@ class MpesaPaywallProAdmin
 			!isset($_POST['mpp_paywall_nonce']) ||
 			!wp_verify_nonce($_POST['mpp_paywall_nonce'], 'mpp_save_paywall_meta')
 		) {
+			MpesaPaywallProLogger::warning("Possible CSRF attempt. Nonce verification failed when saving paywall meta box data for post ID: $post_id.");
 			return;
 		}
 
@@ -264,6 +268,7 @@ class MpesaPaywallProAdmin
 
 		// Check user permissions, if user can't edit post, exit
 		if (!current_user_can('edit_post', $post_id)) {
+			MpesaPaywallProLogger::warning("Unauthorized attempt to save paywall meta box data for post ID: $post_id by user ID: " . get_current_user_id());
 			return;
 		}
 
@@ -274,9 +279,11 @@ class MpesaPaywallProAdmin
 		// Price
 		if ($is_locked === '1' && isset($_POST['mpp_price']) && intval($_POST['mpp_price']) > 0) {
 			update_post_meta($post_id, 'mpp_price', intval($_POST['mpp_price']));
+			MpesaPaywallProLogger::info("Saved paywall meta box data for post ID: $post_id. Locked: $is_locked, Price: " . intval($_POST['mpp_price']));
 		} else {
 			// removes the price meta if content is unlocked or price is invalid (<= 0)
 			delete_post_meta($post_id, 'mpp_price');
+			MpesaPaywallProLogger::info("Saved paywall meta box data for post ID: $post_id. Locked: $is_locked. Price meta removed due to unlocked status or invalid price.");
 		}
 	}
 
@@ -285,11 +292,13 @@ class MpesaPaywallProAdmin
 	{
 		//check for ssl first
 		if(!is_ssl()){
+			MpesaPaywallProLogger::warning("Test connection failed due to lack of SSL. SSL is required for secure M-Pesa transactions.");
 			wp_send_json_error(['message' => 'SSL is not enabled on your site. Please enable HTTPS to ensure secure M-Pesa transactions.']);
 		}
 
 		//check nonce for security
 		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_admin_ajax_nonce')) {
+			MpesaPaywallProLogger::warning("Test connection failed due to invalid nonce. Possible CSRF attempt.");
 			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
 			wp_die();
 		}
@@ -299,6 +308,7 @@ class MpesaPaywallProAdmin
 
 		// Validate required fields
 		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
+			MpesaPaywallProLogger::warning("Test connection failed due to invalid input. Phone number: $phone_number, Amount: $amount. Amount must be between " . MPESA_MIN . " and " . MPESA_MAX . ".");
 			wp_send_json_error(['message' => 'Invalid phone number or amount']);
 		}
 
@@ -309,8 +319,10 @@ class MpesaPaywallProAdmin
 		//handle response
 		if ($response['status'] === 'success') {
 			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.']);
+			MpesaPaywallProLogger::info("Test payment initiated successfully for phone number: $phone_number with amount: $amount");
 		} else {
 			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
+			MpesaPaywallProLogger::error("Test payment initiation failed for phone number: $phone_number with amount: $amount. Error: " . $response['message']);
 		}
 	}
 
@@ -351,8 +363,11 @@ class MpesaPaywallProAdmin
 	{
 		// NOW it's safe to save settings
 		if (!current_user_can('manage_options')) {
+			MpesaPaywallProLogger::warning("Unauthorized attempt to save settings by user ID: " . get_current_user_id());
 			wp_die('Unauthorized');
 		}
+
+		MpesaPaywallProLogger::info("Saving settings for MpesaPaywallPro by user ID: " . get_current_user_id());
 
 		register_setting(
 			'mpesapaywallpro_settings_group',

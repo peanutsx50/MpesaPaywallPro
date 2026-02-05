@@ -93,6 +93,8 @@ class MpesaPaywallProMpesa
         $this->url          = $this->environment === 'production' ?
             'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
             'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+        
+        MpesaPaywallProLogger::info("M-Pesa configuration initialized. Environment: {$this->environment}. API URL set to: {$this->url}");
     }
 
     /**
@@ -147,6 +149,7 @@ class MpesaPaywallProMpesa
         // Validate that all required M-Pesa configuration fields are populated
         $validation_result = $this->validate_config();
         if ($validation_result['status'] === 'error') {
+            MpesaPaywallProLogger::error("M-Pesa configuration validation failed: " . $validation_result['message']);
             return $validation_result;
         }
 
@@ -199,6 +202,7 @@ class MpesaPaywallProMpesa
                 ];
             }
 
+            MpesaPaywallProLogger::info("STK push request sent successfully to M-Pesa API for phone number $phone_number with amount $amount.");
             // Return success response with payment details for client-side tracking
             return [
                 'status' => 'success',
@@ -207,6 +211,7 @@ class MpesaPaywallProMpesa
             ];
         } catch (\Exception $e) {
             // Capture and return any thrown exceptions as error response
+            MpesaPaywallProLogger::error("Exception during STK push request: " . $e->getMessage());
             $this->err = $e->getMessage();
             return [
                 'status' => 'error',
@@ -233,6 +238,7 @@ class MpesaPaywallProMpesa
         ]);
 
         if (is_wp_error($response)) {
+            MpesaPaywallProLogger::error("Failed to generate access token due to HTTP error: " . $response->get_error_message());
             return [
                 'status' => 'error',
                 'message' => 'HTTP Request failed: ' . $response->get_error_message(),
@@ -317,6 +323,7 @@ class MpesaPaywallProMpesa
         // check safaricom ip
         $client_ip = $this->get_client_ip();
         if (!$this->is_safaricom_ip($client_ip)) {
+            MpesaPaywallProLogger::warning("Possible hack attempt: Received callback from unauthorized IP $client_ip. Callback ignored.");
             return rest_ensure_response([
                 'status'  => 'error',
                 'message' => 'Unauthorized IP address',
@@ -372,7 +379,6 @@ class MpesaPaywallProMpesa
             }
         }
 
-        error_log('Mpesa: Callback from unauthorized IP: ' . $ip);
         return false;
     }
 
@@ -425,7 +431,7 @@ class MpesaPaywallProMpesa
         $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
 
         if (empty($checkoutId)) {
-            error_log('Mpesa: Missing CheckoutRequestID in callback');
+            MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data. Callback cannot be processed.");
             return rest_ensure_response(['status' => 'error', 'message' => 'Missing checkout ID'], 400);
         }
 
@@ -475,7 +481,7 @@ class MpesaPaywallProMpesa
 
         if ($existing) {
             $post_id = $existing[0];
-            error_log("Mpesa: Duplicate callback ignored for CheckoutRequestID: $checkoutId");
+            MpesaPaywallProLogger::info("Duplicate callback ignored for CheckoutRequestID: $checkoutId");
         } else {
             $post_id = wp_insert_post([
                 'post_type'   => 'mpesa',
@@ -485,7 +491,7 @@ class MpesaPaywallProMpesa
         }
 
         if (is_wp_error($post_id)) {
-            error_log('Mpesa: Failed to create post - ' . $post_id->get_error_message());
+            MpesaPaywallProLogger::error('Mpesa: Failed to create post - ' . $post_id->get_error_message());
             return rest_ensure_response(['status' => 'error', 'message' => 'Database error'], 500);
         }
 
@@ -505,7 +511,8 @@ class MpesaPaywallProMpesa
         }
 
         update_post_meta($post_id, 'date', current_time('mysql'));
-
+        
+        MpesaPaywallProLogger::info("Mpesa callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
         return rest_ensure_response(['status' => 'ok', 'post_id' => $post_id], 200);
     }
 }

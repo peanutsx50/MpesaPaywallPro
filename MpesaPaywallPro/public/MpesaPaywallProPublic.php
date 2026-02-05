@@ -23,6 +23,7 @@
 
 namespace MpesaPaywallPro\public;
 
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 
 // TODO: Need to implement cookie signing to avoid tampering
@@ -215,6 +216,7 @@ class MpesaPaywallProPublic
 			return $content;
 		}
 
+		MpesaPaywallProLogger::info("User does not have access to post ID: $post_id. Displaying paywall.");
 		// Generate preview content
 		$preview_content = $this->generate_preview($content);
 
@@ -279,6 +281,7 @@ class MpesaPaywallProPublic
 		$allowed_roles = get_option('mpesapaywallpro_options')['allowed_user_roles'] ?? ['administrator'];
 		foreach ($current_user->roles as $role) {
 			if (in_array($role, (array)$allowed_roles)) {
+				MpesaPaywallProLogger::info("User ID: {$current_user->ID} with role '{$role}' has access to post ID: $post_id due to role exemption.");
 				return true;
 			}
 		}
@@ -330,7 +333,12 @@ class MpesaPaywallProPublic
 			'fields'      => 'ids'
 		]);
 
-		return !empty($posts);
+		if (empty($posts)) {
+			MpesaPaywallProLogger::info("No payment record found for checkout ID: $checkout_id, post: $content_post_id");
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -338,7 +346,7 @@ class MpesaPaywallProPublic
 	 */
 	private function verify_guest_payment_cookie($post_id)
 	{
-		error_log('Verifying guest payment cookie for post ID: ' . $post_id);
+		MpesaPaywallProLogger::info('Verifying guest payment cookie for post ID: ' . $post_id);
 		/** @disregard P1008 Undefined type */
 		$cookie_value = sanitize_text_field($_COOKIE['mpp_paid_' . $post_id]);
 
@@ -354,6 +362,7 @@ class MpesaPaywallProPublic
 
 		// Check expiration
 		if (time() > (int)$expiry) {
+			MpesaPaywallProLogger::info("Payment cookie for post ID: $post_id has expired. Clearing cookie.");
 			$this->clear_payment_cookie($post_id);
 			return false;
 		}
@@ -363,6 +372,8 @@ class MpesaPaywallProPublic
 
 		/** @disregard P1010 Undefined type */
 		if (!hash_equals($expected_nonce, $nonce)) {
+			MpesaPaywallProLogger::warning("Possible tampering detected. Payment cookie nonce verification failed for post ID: $post_id. Clearing cookie.");
+			$this->clear_payment_cookie($post_id);
 			return false;
 		}
 
@@ -376,6 +387,8 @@ class MpesaPaywallProPublic
 	 */
 	private function clear_payment_cookie($post_id)
 	{
+		MpesaPaywallProLogger::info("Clearing payment cookie for post ID: $post_id");
+
 		setcookie(
 			'mpp_paid_' . $post_id,
 			'',
@@ -428,6 +441,7 @@ class MpesaPaywallProPublic
 	{
 		//check for ssl and return error if not enabled
 		if (!is_ssl()) {
+			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => 'SSL is not enabled on this site, transactions cannot be processed securely']
@@ -441,6 +455,7 @@ class MpesaPaywallProPublic
 
 		// Verify nonce
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+			MpesaPaywallProLogger::warning("Invalid nonce during payment processing. Possible CSRF attempt. Phone: $phone_number, Amount: $amount");
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => 'Invalid request']
@@ -449,6 +464,7 @@ class MpesaPaywallProPublic
 
 		// Validate required fields
 		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
+			MpesaPaywallProLogger::warning("Payment attempt with invalid data. Phone: $phone_number");
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => __('Invalid phone number or amount.', 'mpesapaywallpro')]
@@ -461,7 +477,7 @@ class MpesaPaywallProPublic
 
 		if ($response['status'] === 'success') {
 			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
-
+			MpesaPaywallProLogger::info("Payment initiated successfully for phone number: $phone_number with amount: $amount. CheckoutRequestID: $checkout_request_id");
 			return new \WP_REST_Response([
 				'success' => true,
 				'data' => [
@@ -470,6 +486,7 @@ class MpesaPaywallProPublic
 				]
 			], 200);
 		} else {
+			MpesaPaywallProLogger::error("Payment initiation failed for phone number: $phone_number with amount: $amount.");
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error')]
@@ -505,6 +522,7 @@ class MpesaPaywallProPublic
 	public function confirm_payment($request)
 	{
 		if ($request->get_method() !== 'POST') {
+			MpesaPaywallProLogger::warning("Possible hacking attempt: Invalid request method for payment confirmation: " . $request->get_method());
 			return rest_ensure_response([
 				'status'  => 'error',
 				'message' => 'Invalid request method',
@@ -519,6 +537,7 @@ class MpesaPaywallProPublic
 
 		// Verify nonce
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+			MpesaPaywallProLogger::warning("Possible CSRF attempt. Invalid nonce during payment confirmation. Checkout ID: $checkoutId");
 			return rest_ensure_response([
 				'status'  => 'error',
 				'message' => 'Invalid request',
@@ -527,6 +546,7 @@ class MpesaPaywallProPublic
 
 		// this should never happen
 		if (!$checkoutId) {
+			MpesaPaywallProLogger::error("Payment confirmation failed: No checkout ID provided in request.");
 			return rest_ensure_response([
 				'status'  => 'error',
 				'message' => 'No checkout id provided',
@@ -554,6 +574,7 @@ class MpesaPaywallProPublic
 		update_post_meta($post_id, 'content_post_id', $content_post_id);
 
 		if ($status === 'failed') {
+			MpesaPaywallProLogger::error("Payment failed for checkout ID: $checkoutId. Reason: $result_desc");
 			return rest_ensure_response([
 				'status'  => 'failed',
 				'message' => $result_desc ?: 'Payment was cancelled or failed',
@@ -561,6 +582,7 @@ class MpesaPaywallProPublic
 		}
 
 		if ($status === 'success') {
+			MpesaPaywallProLogger::info("Payment successful for checkout ID: $checkoutId. Granting access to content post ID: $content_post_id.");
 			$this->grant_payment_access($content_post_id, $checkoutId);
 			return rest_ensure_response([
 				'status'  => 'success',

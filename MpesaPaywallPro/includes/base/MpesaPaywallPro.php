@@ -31,6 +31,7 @@
 namespace MpesaPaywallPro\base;
 
 use MpesaPaywallPro\admin\MpesaPaywallProAdmin;
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\public\MpesaPaywallProPublic;
 
 
@@ -350,6 +351,7 @@ class MpesaPaywallPro
 		));
 
 		if (is_wp_error($response)) {
+			MpesaPaywallProLogger::error("License verification failed due to a communication error: " . $response->get_error_message());
 			return 'error';
 		}
 
@@ -357,9 +359,11 @@ class MpesaPaywallPro
 		$data = json_decode($body, true);
 
 		if (isset($data['status']) && $data['status'] === 'valid') {
+			MpesaPaywallProLogger::info("License verified successfully.");
 			return 'valid';
 		}
-
+		
+		MpesaPaywallProLogger::warning("License verification failed. Server response: " . $body);
 		return 'invalid';
 	}
 
@@ -439,6 +443,7 @@ class MpesaPaywallPro
 		
 		if ( $license_status !== 'valid' ) {
 			if ( isset( $transient->response[MPP_BASENAME] ) ) {
+				MpesaPaywallProLogger::warning("Blocking plugin update due to invalid license status: " . $license_status);
 				unset( $transient->response[MPP_BASENAME] );
 			}
 		}
