@@ -36,13 +36,12 @@ class MpesaPaywallProLogger
     public static function init()
     {
         self::$date = date('Y-m-d');;
-        $log_base = dirname(WP_CONTENT_DIR) . '/mpp-logs/';
-        self::$log_file = $log_base . 'activity-' . self::$date . '.log';
+        self::$log_file = MPP_LOG_DIR . 'activity-' . self::$date . '.log';
         self::$init_errors = [];
 
         // Validate MPP_PATH is defined
-        if (!defined('MPP_PATH') || empty(MPP_PATH)) {
-            self::$init_errors[] = 'MPP_PATH constant is not defined';
+        if (!defined('MPP_LOG_DIR') || empty(MPP_LOG_DIR)) {
+            self::$init_errors[] = 'MPP_LOG_DIR constant is not defined';
             self::$writable = false;
             self::$fallback_enabled = true;
             return false;
