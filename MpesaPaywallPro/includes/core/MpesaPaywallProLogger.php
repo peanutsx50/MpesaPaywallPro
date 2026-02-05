@@ -16,6 +16,7 @@
  * 
  * 
  */
+
 namespace MpesaPaywallPro\core;
 
 if (! defined('ABSPATH')) {
@@ -35,8 +36,9 @@ class MpesaPaywallProLogger
     public static function init()
     {
         self::$date = date('Y-m-d');;
-        self::$log_file = MPP_PATH . 'logs/activity-' . self::$date . '.log';
-        self::$init_errors = []; 
+        $log_base = dirname(WP_CONTENT_DIR) . '/mpp-logs/';
+        self::$log_file = $log_base . 'activity-' . self::$date . '.log';
+        self::$init_errors = [];
 
         // Validate MPP_PATH is defined
         if (!defined('MPP_PATH') || empty(MPP_PATH)) {
@@ -46,7 +48,7 @@ class MpesaPaywallProLogger
             return false;
         }
 
-        $log_dir = dirname(self::$log_file); 
+        $log_dir = dirname(self::$log_file);
 
         // Create logs directory if it doesn't exist
         if (!is_dir($log_dir)) {
