@@ -253,13 +253,10 @@ class MpesaPaywallProLogger
 
         foreach ($ip_keys as $key) {
             if (!empty($_SERVER[$key])) {
-                /** @disregard P1008 Undefined type */
                 $ip_list = explode(',', $_SERVER[$key]);
                 $ip = trim($ip_list[0]);
 
                 // Validate IP address
-                /** @disregard P1010 Undefined type */
-                /** @disregard P1011 Undefined type */
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     break;
                 }

@@ -347,7 +347,6 @@ class MpesaPaywallProPublic
 	private function verify_guest_payment_cookie($post_id)
 	{
 		MpesaPaywallProLogger::info('Verifying guest payment cookie for post ID: ' . $post_id);
-		/** @disregard P1008 Undefined type */
 		$cookie_value = sanitize_text_field($_COOKIE['mpp_paid_' . $post_id]);
 
 		// Cookie format: checkout_id|nonce|expiry
@@ -370,7 +369,6 @@ class MpesaPaywallProPublic
 		// Verify nonce (uses WordPress salts internally)
 		$expected_nonce = wp_hash($checkout_id . $post_id . $expiry, 'nonce');
 
-		/** @disregard P1010 Undefined type */
 		if (!hash_equals($expected_nonce, $nonce)) {
 			MpesaPaywallProLogger::warning("Possible tampering detected. Payment cookie nonce verification failed for post ID: $post_id. Clearing cookie.");
 			$this->clear_payment_cookie($post_id);
