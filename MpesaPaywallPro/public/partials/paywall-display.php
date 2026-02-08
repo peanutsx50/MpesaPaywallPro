@@ -22,8 +22,18 @@ if (! defined('WPINC')) {
 $post_id = get_the_ID();
 // retrieve current value of the content locked meta field
 $price = get_post_meta($post_id, 'mpp_price', true);
-$buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? '#111827';
+$buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? null;
 $paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro');
+
+// Get WordPress theme colors
+$primary_color = get_theme_mod('primary_color');
+$accent_color = get_theme_mod('accent_color');
+$link_color = get_theme_mod('link_color');
+
+// Fallback to button color option or theme mod
+if (!$buttonColor) {
+    $buttonColor = $primary_color ?: $accent_color ?: $link_color ?: '#111827';
+}
 
 ?>
 <div class="mpp-paywall-container">
