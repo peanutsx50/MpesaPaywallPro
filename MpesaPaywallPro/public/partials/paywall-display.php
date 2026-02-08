@@ -21,7 +21,7 @@ if (! defined('WPINC')) {
 // Get the current post ID
 $post_id = get_the_ID();
 // retrieve current value of the content locked meta field
-$price = get_post_meta($post_id, 'mpp_price', true);
+// $price is coming from render_paywall() function in MpesaPaywallProPublic.php and is passed to the paywall-display.php file when it is required
 $buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? null;
 $paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro');
 

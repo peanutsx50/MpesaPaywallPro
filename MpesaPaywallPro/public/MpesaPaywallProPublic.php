@@ -207,7 +207,7 @@ class MpesaPaywallProPublic
 
 		// check if amount is 0, if so return content
 		$amount = $this->get_amount($post_id);
-		if ($amount <= 0) {
+		if ($amount < MPESA_MIN || $amount > MPESA_MAX) {
 			return $content;
 		}
 
@@ -220,8 +220,8 @@ class MpesaPaywallProPublic
 		// Generate preview content
 		$preview_content = $this->generate_preview($content);
 
-		// Display preview html and attach paywall html
-		$paywall_html = $preview_content . $this->render_paywall();
+		// Display preview html and attach paywall html and pass amount (should never be 0 or greater than max)
+		$paywall_html = $preview_content . $this->render_paywall($amount);
 		return $paywall_html;
 	}
 
@@ -409,7 +409,7 @@ class MpesaPaywallProPublic
 	 * @since      1.0.0
 	 * @return     string    The rendered paywall HTML markup.
 	 */
-	public function render_paywall()
+	public function render_paywall($price)
 	{
 		ob_start();
 		require_once MPP_PATH . 'public/partials/paywall-display.php';
@@ -497,7 +497,8 @@ class MpesaPaywallProPublic
 		// Get settings and meta
 		$options = get_option('mpesapaywallpro_options', []);
 		$default_amount = absint($options['default_amount'] ?? 20);
-		$auto_lock = !empty($options['auto_lock']);
+		$auto_lock = absint($options['auto_lock']) === 1;
+		error_log("Auto-lock setting: " . ($auto_lock ? 'true/1' : 'false/0'));
 
 		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true) === '1';
 		$custom_price = get_post_meta($post_id, 'mpp_price', true);
@@ -510,7 +511,7 @@ class MpesaPaywallProPublic
 
 		// Auto-lock disabled: only charge if manually locked
 		if ($is_locked) {
-			return $custom_price > 0 ? $custom_price : $default_amount;
+			return $custom_price > 0 ? $custom_price : 0;
 		}
 
 		// Not locked

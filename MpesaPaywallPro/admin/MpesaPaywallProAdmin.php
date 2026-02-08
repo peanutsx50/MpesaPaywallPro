@@ -398,7 +398,7 @@ class MpesaPaywallProAdmin
 
 						// Paywall Settings
 						'license_key'      => sanitize_text_field($options['license_key'] ?? ''),
-						'auto_lock'        => isset($options['auto_lock']) ? 1 : 0,
+						'auto_lock'        => absint($options['auto_lock'] ?? 0),
 						'default_amount'   => absint($options['default_amount'] ?? 20),
 						'button_color'     => sanitize_hex_color($options['button_color'] ?? '#0073aa'),
 						'excerpt_length'   => absint($options['excerpt_length'] ?? 100),
@@ -407,9 +407,6 @@ class MpesaPaywallProAdmin
 
 						// Access Control Settings
 						'allowed_user_roles'   => array_map('sanitize_text_field', (array) ($options['allowed_user_roles'] ?? ['administrator'])),
-						'enable_auto_unlock'   => isset($options['enable_auto_unlock']) ? 1 : 0,
-						'payment_timeout'      => absint($options['payment_timeout'] ?? 300),
-						'max_payment_attempts' => absint($options['max_payment_attempts'] ?? 3),
 					];
 				},
 				'default' => [
