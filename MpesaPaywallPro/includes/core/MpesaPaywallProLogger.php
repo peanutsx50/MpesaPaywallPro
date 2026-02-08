@@ -267,14 +267,9 @@ class MpesaPaywallProLogger
     }
 
     /**
-     * Manually clear/reset the log file
+     * remove logs older than 30 days
      */
-    public static function clear_log()
+    public static function clear_30day_log()
     {
-        if (self::$log_file && file_exists(self::$log_file)) {
-            return @file_put_contents(self::$log_file, '') !== false;
-        }
-
-        return false;
     }
 }
