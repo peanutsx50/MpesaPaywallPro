@@ -23,8 +23,6 @@ async function checkPaymentStatus(
         }),
       });
 
-      console.log(`Poll attempt ${pollCount} response:`, response);
-
       const data = await response.json();
 
       if (data.status === "success") {
@@ -53,7 +51,12 @@ async function checkPaymentStatus(
         return; // Exit function
       }
     } catch (error) {
-      console.warn(`Poll attempt ${pollCount} failed:`, error);
+      // display error message and stop polling
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Error checking payment";
+      submitBtn.style.backgroundColor = "#f44336";
+      continuePolling = false; // Stop polling
+      return; // Exit function
     }
 
     // Wait for pollInterval before next attempt
