@@ -141,12 +141,14 @@ class MpesaPaywallPro
 
 		$plugin_admin = new MpesaPaywallProAdmin($this->get_mpesapaywallpro(), $this->get_version());
 
+		// Enqueue admin styles and scripts
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 
 		// register admin page
 		$this->loader->add_action('admin_menu', $plugin_admin, 'register_admin_page');
 
+		// check for SSL on plugins_loaded to ensure it runs before any output
 		$this->loader->add_action('plugins_loaded', $plugin_admin, 'check_ssl');
 
 		//register custom meta box
@@ -161,11 +163,11 @@ class MpesaPaywallPro
 		//localize scripts with ajax url
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'localize_scripts');
 
-		// Register AJAX handlers for M-Pesa payment processing
-		// wp_ajax_nopriv allows non-authenticated users to process payments
-		// wp_ajax allows authenticated users to process payments
-		$this->loader->add_action('wp_ajax_nopriv_mpp_admin_test_connection', $plugin_admin, 'test_connection');
+		// wp_ajax allows authenticated users to test connection
 		$this->loader->add_action('wp_ajax_mpp_admin_test_connection', $plugin_admin, 'test_connection');
+
+		// cleanup old logs
+		$this->loader->add_action('mpp_cleanup_old_logs', $plugin_admin, 'cleanup_old_logs_callback');
 	}
 
 	/**
@@ -202,8 +204,8 @@ class MpesaPaywallPro
 		// Register AJAX handlers for M-Pesa payment processing
 		// wp_ajax_nopriv allows non-authenticated users to process payments
 		// wp_ajax allows authenticated users to process payments
-		$this->loader->add_action('wp_ajax_nopriv_mpp_process_payment', $plugin_public, 'process_payment');
-		$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
+		//$this->loader->add_action('wp_ajax_nopriv_mpp_process_payment', $plugin_public, 'process_payment');
+		//$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
 
 		//add license check on admin init
 		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'display_license_notice', 10, 3);

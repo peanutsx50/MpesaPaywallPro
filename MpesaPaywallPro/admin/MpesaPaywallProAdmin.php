@@ -163,11 +163,11 @@ class MpesaPaywallProAdmin
 		if (!is_ssl()) {
 			MpesaPaywallProLogger::warning("Site is running without SSL - M-Pesa transactions may be insecure.");
 			add_action('admin_notices', function () {
-				?>
-					<div class="notice notice-error is-dismissible">
-						<p style="color: black;"><?php esc_html_e('Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website.', 'mpesapaywallpro'); ?></p>
-					</div>
-				<?php
+?>
+				<div class="notice notice-error is-dismissible">
+					<p style="color: black;"><?php esc_html_e('Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website.', 'mpesapaywallpro'); ?></p>
+				</div>
+<?php
 			});
 		}
 	}
@@ -179,7 +179,7 @@ class MpesaPaywallProAdmin
 	 */
 	public function display_admin_page()
 	{
-		 MpesaPaywallProLogger::info("Admin settings page accessed by user: " . wp_get_current_user()->user_login);
+		MpesaPaywallProLogger::info("Admin settings page accessed by user: " . wp_get_current_user()->user_login);
 		// Include the admin page HTML template
 		$admin_template = MPP_PATH . 'admin/partials/admin-settings.php';
 		require_once $admin_template;
@@ -291,7 +291,7 @@ class MpesaPaywallProAdmin
 	public function test_connection()
 	{
 		//check for ssl first
-		if(!is_ssl()){
+		if (!is_ssl()) {
 			MpesaPaywallProLogger::warning("Test connection failed due to lack of SSL. SSL is required for secure M-Pesa transactions.");
 			wp_send_json_error(['message' => 'SSL is not enabled on your site. Please enable HTTPS to ensure secure M-Pesa transactions.']);
 		}
@@ -434,5 +434,24 @@ class MpesaPaywallProAdmin
 				],
 			]
 		);
+	}
+
+
+	/**
+	 * Callback for scheduled log cleanup
+	 * 
+	 * @return void
+	 */
+	public static function cleanup_old_logs_callback()
+	{
+		$results = MpesaPaywallProLogger::clear_old_logs(MPP_LOG_EXPIRY_DAYS);
+
+		// Optionally log the cleanup results
+		if ($results['deleted_count'] > 0) {
+			MpesaPaywallProLogger::info(
+				'Automatic log cleanup completed. Deleted ' . $results['deleted_count'] . ' old log files.',
+				['deleted_files' => $results['deleted_files'], 'errors' => $results['errors']]
+			);
+		}
 	}
 }

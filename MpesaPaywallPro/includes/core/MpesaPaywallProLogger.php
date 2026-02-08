@@ -267,9 +267,86 @@ class MpesaPaywallProLogger
     }
 
     /**
-     * remove logs older than 30 days
+     * Clear log files older than specified days
+     * 
+     * @param int $days Number of days to retain logs (default: 30)
+     * @return array Results with success status and details
      */
-    public static function clear_30day_log()
+    public static function clear_old_logs($days = 30)
     {
+        $results = [
+            'success' => false,
+            'deleted_count' => 0,
+            'deleted_files' => [],
+            'failed_files' => [],
+            'errors' => []
+        ];
+
+        // Validate MPP_LOG_DIR is defined
+        if (!defined('MPP_LOG_DIR') || empty(MPP_LOG_DIR)) {
+            $results['errors'][] = 'MPP_LOG_DIR constant is not defined';
+            return $results;
+        }
+
+        $log_dir = MPP_LOG_DIR;
+
+        // Check if directory exists
+        if (!is_dir($log_dir)) {
+            $results['errors'][] = "Log directory does not exist: {$log_dir}";
+            return $results;
+        }
+
+        // Check if directory is readable
+        if (!is_readable($log_dir)) {
+            $results['errors'][] = "Log directory is not readable: {$log_dir}";
+            return $results;
+        }
+
+        // Calculate cutoff timestamp
+        $cutoff_time = strtotime("-{$days} days");
+
+        // Get all log files
+        $log_files = glob($log_dir . 'activity-*.log');
+
+        if ($log_files === false) {
+            $results['errors'][] = "Failed to read log files from directory";
+            return $results;
+        }
+
+        if (empty($log_files)) {
+            $results['success'] = true;
+            $results['errors'][] = "No log files found in directory";
+            return $results;
+        }
+
+        foreach ($log_files as $log_file) {
+            // Get file modification time
+            $file_time = filemtime($log_file);
+
+            if ($file_time === false) {
+                $results['failed_files'][] = basename($log_file);
+                $results['errors'][] = "Could not get modification time for: " . basename($log_file);
+                continue;
+            }
+
+            // Check if file is older than cutoff date
+            if ($file_time < $cutoff_time) {
+                // Get file size before deletion
+
+                // Attempt to delete the file
+                if (@unlink($log_file)) {
+                    $results['deleted_count']++;
+                    $results['deleted_files'][] = basename($log_file);
+                } else {
+                    $results['failed_files'][] = basename($log_file);
+                    $results['errors'][] = "Failed to delete: " . basename($log_file);
+                }
+            }
+        }
+
+        // Set success if at least one file was processed without all failing
+        $results['success'] = ($results['deleted_count'] > 0 || empty($results['failed_files']));
+
+        return $results;
     }
 }
