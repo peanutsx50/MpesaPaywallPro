@@ -92,7 +92,7 @@ function mpesapaywallpro_delete_transients()
 function mpesapaywallpro_delete_log_folder(){
 
     // Define the log directory path - same as in the main plugin
-    $log_dir = WP_CONTENT_DIR . '/mpp-logs/';
+    $log_dir = dirname(WP_CONTENT_DIR) . '/mpp-logs/';
 
     if (is_dir($log_dir)) {
         $files = glob($log_dir . '*');
