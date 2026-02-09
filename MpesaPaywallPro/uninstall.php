@@ -91,22 +91,22 @@ function mpesapaywallpro_delete_transients()
  */
 function mpesapaywallpro_delete_log_folder(){
 
-	$log_dir = MPP_LOG_DIR;
+    // Define the log directory path - same as in the main plugin
+    $log_dir = WP_CONTENT_DIR . '/mpp-logs/';
 
-	if (is_dir($log_dir)) {
-		$files = glob($log_dir . '*'); // Get all files in the log directory
+    if (is_dir($log_dir)) {
+        $files = glob($log_dir . '*');
 
-		foreach ($files as $file) {
-			if (is_file($file)) {
-				@unlink($file); // Delete each file
-			}
-		}
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
 
-		@rmdir($log_dir); // Remove the log directory itself
-	}
+        @rmdir($log_dir);
+    }
 
 }
-
 /**
  * Main uninstall function that coordinates all cleanup operations
  */
