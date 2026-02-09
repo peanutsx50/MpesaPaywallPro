@@ -103,19 +103,20 @@ if (class_exists('YahnisElsts\PluginUpdateChecker\v5\PucFactory')) {
 	 * Build and configure the update checker.
 	 *
 	 * Parameters:
-	 * - url: The remote server URL that provides update information
+	 * - url: The remote GitHub repository URL
 	 * - __FILE__: The main plugin file path
 	 * - 'mpesapaywallpro': Unique slug identifier for this plugin
 	 */
 	$myUpdateChecker = PucFactory::buildUpdateChecker(
-		'https://github.com/peanutsx50/MpesaPaywallPro.git',
+		'https://github.com/peanutsx50/MpesaPaywallPro',
 		__FILE__,
 		'mpesapaywallpro'
 	);
-	//Set the branch that contains the stable release.
-	$myUpdateChecker->setBranch('main');
-}
 
+	// Enable releases - this tells the update checker to use GitHub releases
+	/** @disregard P1013 Undefined method */
+	$myUpdateChecker->getVcsApi()->enableReleaseAssets();
+}
 
 /**
  * Begins execution of the plugin.
