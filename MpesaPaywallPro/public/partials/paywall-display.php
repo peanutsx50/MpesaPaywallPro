@@ -64,4 +64,4 @@ if (!$buttonColor) {
 
     <div id="mpp-payment-status"></div>
 </div>
-<?php require_once MPP_PATH . 'public/partials/phone-number-modal.php'; ?>
+<?php require MPP_PATH . 'public/partials/phone-number-modal.php'; ?>
