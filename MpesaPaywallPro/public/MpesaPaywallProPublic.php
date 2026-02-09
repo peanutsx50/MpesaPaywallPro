@@ -412,7 +412,13 @@ class MpesaPaywallProPublic
 	public function render_paywall($price)
 	{
 		ob_start();
-		require_once MPP_PATH . 'public/partials/paywall-display.php';
+		$file_path = MPP_PATH . 'public/partials/paywall-display.php';
+
+		// Debug: Log the path being used
+		MpesaPaywallProLogger::info("Attempting to load paywall from: " . $file_path);
+		error_log("Paywall file exists: " . (file_exists($file_path) ? 'yes' : 'no'));
+
+		require $file_path;
 		return ob_get_clean();
 	}
 
