@@ -250,7 +250,7 @@ class MpesaPaywallProPublic
 		$excerpt = get_option('mpesapaywallpro_options')['excerpt_length'] ?? 100;
 		$preview_words = array_slice($words, 0, $excerpt);
 		$preview_content = implode(' ', $preview_words);
-		$preview_content .= '...<div class="mpp-preview-fade"></div>';
+		//$preview_content .= '...<div class="mpp-preview-fade"></div>';
 		return '<div class="mpp-content-preview">' . wpautop($preview_content) . '</div>';
 	}
 
