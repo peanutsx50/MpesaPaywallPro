@@ -119,6 +119,16 @@
   transition: border-color 0.2s ease;
 }
 
+/* Handle autofill states */
+.mpp-phone-input:-webkit-autofill,
+.mpp-phone-input:-webkit-autofill:hover,
+.mpp-phone-input:-webkit-autofill:focus,
+.mpp-phone-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .mpp-phone-input:focus {
   outline: none;
   border-color: #111827;
