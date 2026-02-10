@@ -37,6 +37,12 @@
 }
 
 .mpp-modal {
+  --theme-form-text-initial-color: #111827;
+  --theme-form-text-focus-color: #111827;
+  --theme-text-color: #111827;
+}
+
+.mpp-modal {
   background: #ffffff;
   border-radius: 12px;
   padding: 32px;
@@ -108,9 +114,9 @@
   margin-bottom: 8px;
 }
 
-/* More specific selector to override theme styles */
-input.mpp-phone-input[type="tel"],
-input.mpp-phone-input[type="tel"]:focus {
+/* Also force the color directly with maximum specificity */
+#mpp-phone-modal .mpp-modal input.mpp-phone-input[type="tel"],
+#mpp-phone-modal .mpp-modal input#mpp-phone-number[type="tel"] {
   color: #111827 !important;
   -webkit-text-fill-color: #111827 !important;
   width: 100%;
@@ -119,23 +125,20 @@ input.mpp-phone-input[type="tel"]:focus {
   border: 1px solid #d1d5db;
   border-radius: 6px;
   box-sizing: border-box;
-  transition: border-color 0.2s ease;
   opacity: 1 !important;
 }
 
-/* Handle autofill states with higher specificity */
-input.mpp-phone-input[type="tel"]:-webkit-autofill,
-input.mpp-phone-input[type="tel"]:-webkit-autofill:hover,
-input.mpp-phone-input[type="tel"]:-webkit-autofill:focus,
-input.mpp-phone-input[type="tel"]:-webkit-autofill:active {
+#mpp-phone-modal .mpp-modal input.mpp-phone-input[type="tel"]:focus,
+#mpp-phone-modal .mpp-modal input#mpp-phone-number[type="tel"]:focus {
+  color: #111827 !important;
   -webkit-text-fill-color: #111827 !important;
-  -webkit-box-shadow: 0 0 0 1000px white inset !important;
-  box-shadow: 0 0 0 1000px white inset !important;
 }
 
-.mpp-phone-input:focus {
-  outline: none;
-  border-color: #111827;
+/* Handle autofill */
+#mpp-phone-modal .mpp-modal input.mpp-phone-input[type="tel"]:-webkit-autofill,
+#mpp-phone-modal .mpp-modal input.mpp-phone-input[type="tel"]:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
 }
 
 .mpp-phone-input.mpp-error {
