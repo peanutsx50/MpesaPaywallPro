@@ -108,8 +108,11 @@
   margin-bottom: 8px;
 }
 
-.mpp-phone-input {
+/* More specific selector to override theme styles */
+input.mpp-phone-input[type="tel"],
+input.mpp-phone-input[type="tel"]:focus {
   color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
   width: 100%;
   padding: 12px 16px;
   font-size: 16px;
@@ -117,16 +120,17 @@
   border-radius: 6px;
   box-sizing: border-box;
   transition: border-color 0.2s ease;
+  opacity: 1 !important;
 }
 
-/* Handle autofill states */
-.mpp-phone-input:-webkit-autofill,
-.mpp-phone-input:-webkit-autofill:hover,
-.mpp-phone-input:-webkit-autofill:focus,
-.mpp-phone-input:-webkit-autofill:active {
+/* Handle autofill states with higher specificity */
+input.mpp-phone-input[type="tel"]:-webkit-autofill,
+input.mpp-phone-input[type="tel"]:-webkit-autofill:hover,
+input.mpp-phone-input[type="tel"]:-webkit-autofill:focus,
+input.mpp-phone-input[type="tel"]:-webkit-autofill:active {
   -webkit-text-fill-color: #111827 !important;
-  -webkit-box-shadow: 0 0 0 30px white inset !important;
-  transition: background-color 5000s ease-in-out 0s;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
 }
 
 .mpp-phone-input:focus {
