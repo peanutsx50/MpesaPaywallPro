@@ -39,10 +39,10 @@ if (! defined('WPINC')) {
                     type="tel"
                     id="mpp-phone-number"
                     class="mpp-phone-input"
-                    placeholder="254712345678"
+                    placeholder="0712345678"
                     maxlength="12"
                     required />
-                <p class="mpp-phone-hint"><?php _e('Enter your Safaricom number (e.g., 254712345678)', 'mpesapaywallpro'); ?></p>
+                <p class="mpp-phone-hint"><?php _e('Enter your Safaricom number (e.g., 0712345678)', 'mpesapaywallpro'); ?></p>
                 <p class="mpp-error-message" id="mpp-phone-error"></p>
             </div>
 
