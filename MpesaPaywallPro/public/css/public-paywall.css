@@ -7,7 +7,7 @@
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0) 0%,
-    var(--wp--preset--color--base, rgba(255, 255, 255, 1)) 100%
+    rgba(255, 255, 255, 1) 100%
   );
   margin-top: -200px;
   position: relative;
@@ -19,7 +19,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--wp--preset--color--base, #ffffff);
+  background: #ffffff;
   padding: 48px 0;
   margin: 0;
   text-align: center;
@@ -27,7 +27,7 @@
 }
 
 .mpp-paywall-title {
-  color: var(--wp--preset--color--contrast, #111827);
+  color: #111827;
   font-size: 28px;
   font-weight: 600;
   margin: 0 0 16px 0;
@@ -35,7 +35,7 @@
 }
 
 .mpp-paywall-description {
-  color: var(--wp--preset--color--contrast-2, #6b7280);
+  color: #6b7280;
   font-size: 17px;
   margin: 0 0 24px 0;
   line-height: 1.6;
@@ -53,7 +53,7 @@
 }
 
 .mpp-benefit-item {
-  color: var(--wp--preset--color--contrast-2, #374151);
+  color: #374151;
   font-size: 15px;
   display: flex;
   align-items: center;
@@ -62,7 +62,7 @@
 
 .mpp-benefit-item::before {
   content: "✓";
-  color: var(--wp--preset--color--vivid-green-cyan, #10b981);
+  color: #10b981;
   font-weight: 700;
   font-size: 16px;
 }
@@ -76,7 +76,7 @@
 
 .mpp-price-tag {
   display: inline-block;
-  color: var(--wp--preset--color--contrast, #111827);
+  color: #111827;
   font-size: 32px;
   font-weight: 700;
 }
@@ -84,11 +84,11 @@
 .mpp-price-tag small {
   font-size: 16px;
   font-weight: 500;
-  color: var(--wp--preset--color--contrast-2, #6b7280);
+  color: #6b7280;
 }
 
 #mpp-pay-button {
-  color: var(--wp--preset--color--base, #ffffff);
+  color: #ffffff;
   border: none;
   padding: 14px 32px;
   font-size: 16px;
