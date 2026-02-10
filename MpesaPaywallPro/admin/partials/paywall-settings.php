@@ -162,7 +162,7 @@ $options = get_option('mpesapaywallpro_options', []);
                     class="small-text"
                     min="0"
                     step="1">
-                <span><?php esc_html_e('days (0 = never expires)', 'mpesapaywallpro'); ?></span>
+                <span><?php esc_html_e('days', 'mpesapaywallpro'); ?></span>
                 <p class="description">
                     <?php esc_html_e('Duration before paid access expires', 'mpesapaywallpro'); ?>
                 </p>
