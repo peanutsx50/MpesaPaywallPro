@@ -109,7 +109,7 @@
 }
 
 .mpp-phone-input {
-  color: #111827;
+  color: #111827 !important;
   width: 100%;
   padding: 12px 16px;
   font-size: 16px;
