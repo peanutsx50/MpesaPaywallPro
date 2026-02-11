@@ -201,17 +201,16 @@ class MpesaPaywallPro
 		// Register REST API endpoints for payment processing
 		$this->loader->add_action('rest_api_init', $plugin_public, 'register_ajax_endpoints');
 
-		// Register AJAX handlers for M-Pesa payment processing
-		// wp_ajax_nopriv allows non-authenticated users to process payments
-		// wp_ajax allows authenticated users to process payments
-		//$this->loader->add_action('wp_ajax_nopriv_mpp_process_payment', $plugin_public, 'process_payment');
-		//$this->loader->add_action('wp_ajax_mpp_process_payment', $plugin_public, 'process_payment');
-
 		//add license check on admin init
 		$this->loader->add_action('after_plugin_row_' . MPP_BASENAME, $this, 'display_license_notice', 10, 3);
 
 		//disable update if license fails
 		$this->loader->add_filter('pre_set_site_transient_update_plugins', $this, 'block_updates');
+
+		// Add HSTS header globally
+		$this->loader->add_action('send_headers', function() {
+			header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+		});
 	}
 
 	/**

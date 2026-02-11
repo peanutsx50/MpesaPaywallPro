@@ -502,6 +502,12 @@ class MpesaPaywallProPublic
 
 	public function validate_safaricom_IP()
 	{
+		//check for ssl
+		if(!is_ssl()) {
+			MpesaPaywallProLogger::error("Unauthorized callback attempt from non-SSL connection.");
+			return new \WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
+		}
+		
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
 			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
