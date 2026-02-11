@@ -32,6 +32,7 @@ namespace MpesaPaywallPro\base;
 
 use MpesaPaywallPro\admin\MpesaPaywallProAdmin;
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
+use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 use MpesaPaywallPro\public\MpesaPaywallProPublic;
 
 
@@ -208,9 +209,15 @@ class MpesaPaywallPro
 		$this->loader->add_filter('pre_set_site_transient_update_plugins', $this, 'block_updates');
 
 		// Add HSTS header globally
-		$this->loader->add_action('send_headers', function() {
+		$this->loader->add_action('send_headers', function () {
 			header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 		});
+		
+		//custom 50min schedule for token refresh
+		$this->loader->add_filter('cron_schedules', [$this, 'add_50min_interval']);
+
+		// Hook function to refresh access token every 50 minutes
+		$this->loader->add_action('mpp_refresh_access_token', [$this, 'refresh_access_token']);
 	}
 
 	/**
@@ -256,7 +263,7 @@ class MpesaPaywallPro
 	{
 		return $this->version;
 	}
-	
+
 	/**
 	 * Display a license status notice on the plugins page.
 	 *
@@ -363,7 +370,7 @@ class MpesaPaywallPro
 			MpesaPaywallProLogger::info("License verified successfully.");
 			return 'valid';
 		}
-		
+
 		MpesaPaywallProLogger::warning("License verification failed. Server response: " . $body);
 		return 'invalid';
 	}
@@ -439,16 +446,104 @@ class MpesaPaywallPro
 	 * @return   object The modified plugin updates transient with MpesaPaywallPro
 	 *                  updates removed if license is invalid.
 	 */
-	public function block_updates( $transient ) {
+	public function block_updates($transient)
+	{
 		$license_status = $this->get_cached_license_status();
-		
-		if ( $license_status !== 'valid' ) {
-			if ( isset( $transient->response[MPP_BASENAME] ) ) {
+
+		if ($license_status !== 'valid') {
+			if (isset($transient->response[MPP_BASENAME])) {
 				MpesaPaywallProLogger::warning("Blocking plugin update due to invalid license status: " . $license_status);
-				unset( $transient->response[MPP_BASENAME] );
+				unset($transient->response[MPP_BASENAME]);
 			}
 		}
-		
+
 		return $transient;
+	}
+
+	public function add_50min_interval($schedules)
+	{
+		$schedules['every50minutes'] = array(
+			'interval' => 50 * MINUTE_IN_SECONDS,
+			'display'  => __('Every 50 Minutes')
+		);
+		return $schedules;
+	}
+
+	public function refresh_access_token() {
+		$cached_token = get_transient('mpp_mpesa_access_token');
+		// if token is still valid, skip refresh
+		if ($cached_token) {
+			MpesaPaywallProLogger::info('Access token is still valid, skipping refresh.');
+			return;
+		}
+
+		// fetch a new token and log the result
+		$results = (bool) $this->fetch_access_token();
+		if ($results){
+			MpesaPaywallProLogger::info('Access token refreshed successfully.');
+		} else {
+			//else log the failure and increment failure count
+			MpesaPaywallProLogger::error('Failed to refresh access token.');
+			$failed_attempts = get_transient('mpp_token_refresh_failures') ?: 0;
+			$failed_attempts++;
+			set_transient('mpp_token_refresh_failures', $failed_attempts, HOUR_IN_SECONDS);
+
+			if ($failed_attempts >= 3) {
+				MpesaPaywallProLogger::error('Multiple consecutive token refresh failures. Admin should investigate.');
+				// Reset the failure count after logging critical error
+				delete_transient('mpp_token_refresh_failures');
+			}
+
+		}
+	}
+
+	public function fetch_access_token(){
+		$options = get_option('mpesapaywallpro_options', []);
+		if(empty($options['consumer_key']) || empty($options['consumer_secret'])) {
+			MpesaPaywallProLogger::error('Consumer key or secret is missing. Cannot fetch access token.');
+			return false;
+		}
+		// Use class constants for URLs (defined once, reused always)
+        static $auth_urls = [
+            'production' => 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+            'sandbox'    => 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+        ];
+
+        $auth_url = $auth_urls[$options['env'] ?? 'sandbox'] ?? $auth_urls['sandbox'];
+
+        // Pre-build authorization header (avoid string concatenation in array)
+        $credentials = base64_encode($options['consumer_key'] . ':' . $options['consumer_secret']);
+
+        // Optimized HTTP request with minimal timeout
+        $response = wp_remote_get($auth_url, [
+            'headers' => [
+                'Authorization' => 'Basic ' . $credentials,
+            ],
+            'timeout' => 30, // Reduced from 60 - M-Pesa typically responds in <5s
+            'sslverify' => true, // Explicit for security
+        ]);
+
+        // Early error handling
+        if (is_wp_error($response)) {
+            $error_msg = $response->get_error_message();
+            MpesaPaywallProLogger::error("Failed to generate access token: {$error_msg}");
+            return false;
+        }
+
+        // Parse response
+        $result = json_decode(wp_remote_retrieve_body($response), true);
+
+        // Validate token exists
+        if (empty($result['access_token'])) {
+            MpesaPaywallProLogger::error("Access token missing in API response");
+            return false;
+        }
+
+        $access_token = $result['access_token'];
+
+        // Cache for 50 minutes
+        set_transient('mpp_mpesa_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+
+        return true;
 	}
 }

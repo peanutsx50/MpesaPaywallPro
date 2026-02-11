@@ -40,6 +40,7 @@ class MpesaPaywallProActivator
 		// Initialize the logger
 		MpesaPaywallProLogger::info('MpesaPaywallPro plugin activated successfully.');
 		self::schedule_log_cleanup();
+		self::start_token_refresh_schedule();
 	}
 
 	/**
@@ -51,6 +52,13 @@ class MpesaPaywallProActivator
 	{
 		if (!wp_next_scheduled('mpp_cleanup_old_logs')) {
 			wp_schedule_event(time(), 'daily', 'mpp_cleanup_old_logs');
+		}
+	}
+
+	public static function start_token_refresh_schedule()
+	{
+		if (!wp_next_scheduled('mpp_refresh_access_token')) {
+			wp_schedule_event(time(), 'fifty_minutes', 'mpp_refresh_access_token');
 		}
 	}
 }
