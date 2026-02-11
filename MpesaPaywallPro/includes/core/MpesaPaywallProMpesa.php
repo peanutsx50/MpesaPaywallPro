@@ -275,7 +275,10 @@ class MpesaPaywallProMpesa
         $access_token = $result['access_token'];
 
         // Cache for 50 minutes
-        set_transient('mpp_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+        $result = set_transient('mpp_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+        if (!$result) {
+            MpesaPaywallProLogger::warning("Failed to cache access token in transient");
+        }
 
         return $access_token;
     }

@@ -14,8 +14,8 @@ async function checkPaymentStatus(
       const response = await fetch(`${mpp_ajax_object.confirm_payment_url}`, {
         method: "POST",
         headers: {
-        "Content-Type": "application/json",
-      },
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           checkout_id: checkoutRequestId,
           locked_post_id: mpp_ajax_object.post_id,
@@ -23,6 +23,8 @@ async function checkPaymentStatus(
         }),
       });
 
+      // 1. Check if the server actually responded with a 200-level status
+      if (!response.ok) throw new Error(`Server Error: ${response.status}`);
       const data = await response.json();
 
       if (data.status === "success") {
@@ -49,17 +51,13 @@ async function checkPaymentStatus(
         return; // Exit function
       }
     } catch (error) {
-      // display error message and stop polling
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = "Error checking payment";
-      submitBtn.style.backgroundColor = "#f44336";
-      continuePolling = false; // Stop polling
-      return; // Exit function
+     console.warn(`Attempt ${pollCount} failed:`, error.message);
     }
 
     // Wait for pollInterval before next attempt
     if (pollCount < maxAttempts && continuePolling) {
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      pollInterval = Math.min(pollInterval * 1.2, 3000); // Cap at 3 seconds
     }
   }
 

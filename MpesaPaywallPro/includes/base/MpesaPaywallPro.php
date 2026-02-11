@@ -468,7 +468,7 @@ class MpesaPaywallPro
 
 	public function add_50min_interval($schedules)
 	{
-		$schedules['every50minutes'] = array(
+		$schedules['fifty_minutes'] = array(
 			'interval' => 50 * MINUTE_IN_SECONDS,
 			'display'  => __('Every 50 Minutes')
 		);

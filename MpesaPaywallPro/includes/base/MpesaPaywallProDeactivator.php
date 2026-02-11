@@ -39,6 +39,7 @@ class MpesaPaywallProDeactivator
 	{
 		MpesaPaywallProLogger::info('MpesaPaywallPro plugin deactivated successfully.');
 		self::unschedule_log_cleanup();
+		self::stop_token_refresh_schedule();
 	}
 
 	/**

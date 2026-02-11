@@ -84,8 +84,8 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
-		wp_enqueue_style($this->mpesapaywallpro . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'public/css/public-paywall.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -108,9 +108,9 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->mpesapaywallpro . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->mpesapaywallpro . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), $this->version, true);
 	}
 
 	/**
@@ -202,10 +202,10 @@ class MpesaPaywallProPublic
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
-				'post_id' => $post_id, // locked post ID
+				'post_id' => $post_id ? (int)$post_id : 0, // locked post ID
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
-				'pollInterval' => 1000, // 1 second
-				'maxPollAttempts' => 60, // total 1 minute of polling
+				'pollInterval' => 500, // 500 milisecs
+				'maxPollAttempts' => 30, // total 1 minute of polling
 			)
 		);
 	}
