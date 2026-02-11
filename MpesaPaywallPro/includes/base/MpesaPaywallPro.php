@@ -209,7 +209,7 @@ class MpesaPaywallPro
 		$this->loader->add_filter('pre_set_site_transient_update_plugins', $this, 'block_updates');
 
 		// Add HSTS header globally
-		$this->loader->add_action('send_headers', $this, 'add_hsts_header');
+		$this->loader->add_action('send_headers', $this, 'add_security_headers');
 
 		//custom 50min schedule for token refresh
 		$this->loader->add_filter('cron_schedules', $this, 'add_50min_interval');
@@ -262,9 +262,12 @@ class MpesaPaywallPro
 		return $this->version;
 	}
 
-	public function add_hsts_header()
+	public function add_security_headers()
 	{
 		header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+		header("X-Content-Type-Options: nosniff");
+		header("X-Frame-Options: SAMEORIGIN");
+		header("Referrer-Policy: strict-origin-when-cross-origin");
 	}
 
 	/**
