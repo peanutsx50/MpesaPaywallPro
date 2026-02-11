@@ -230,14 +230,9 @@ class MpesaPaywallProMpesa
     // generate access token for mpesa api
     private function generate_access_token()
     {
-        // Start timing
-        $start_time = microtime(true);
-
         // Check for cache first (early return for best performance)
         $cached_token = get_transient('mpp_mpesa_access_token');
         if ($cached_token) {
-            $execution_time = round((microtime(true) - $start_time) * 1000, 2);
-            error_log("[CACHE HIT] Access token retrieved in {$execution_time}ms");
             return $cached_token;
         }
 
@@ -265,7 +260,6 @@ class MpesaPaywallProMpesa
         if (is_wp_error($response)) {
             $error_msg = $response->get_error_message();
             MpesaPaywallProLogger::error("Failed to generate access token: {$error_msg}");
-            error_log("[ERROR] Access token generation failed in " . round((microtime(true) - $start_time) * 1000, 2) . "ms");
             return '';
         }
 
@@ -275,17 +269,13 @@ class MpesaPaywallProMpesa
         // Validate token exists
         if (empty($result['access_token'])) {
             MpesaPaywallProLogger::error("Access token missing in API response");
-            error_log("[ERROR] Invalid token response in " . round((microtime(true) - $start_time) * 1000, 2) . "ms");
             return '';
         }
 
         $access_token = $result['access_token'];
 
-        // Cache for 50 minutes (safer margin than 40)
+        // Cache for 50 minutes
         set_transient('mpp_mpesa_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
-
-        $execution_time = round((microtime(true) - $start_time) * 1000, 2);
-        error_log("[API CALL] Access token generated in {$execution_time}ms");
 
         return $access_token;
     }
