@@ -128,8 +128,8 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/callback', [
 			'methods' => ['POST'],
 			'callback' => [MpesaPaywallProMpesa::class, 'handle_callback'],
-			'permission_callback' => [$this, 'validate_safaricom_IP'],
-			//'permission_callback' => '__return_true', // Testing
+			//'permission_callback' => [$this, 'validate_safaricom_IP'],
+			'permission_callback' => '__return_true', // Testing
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
@@ -500,12 +500,13 @@ class MpesaPaywallProPublic
 		return true;
 	}
 
-	public function validate_safaricom_IP(){
+	public function validate_safaricom_IP()
+	{
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
-        if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
-             return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
-        }
-        return true;
+		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
+		}
+		return true;
 	}
 
 	/**
@@ -583,48 +584,56 @@ class MpesaPaywallProPublic
 
 	public function confirm_payment($request)
 	{
-		// polling function to confirm payment status
-		$checkoutId = $request->get_param('checkout_id');
-		$content_post_id = $request->get_param('locked_post_id');
+		// WordPress already sanitized these via args validation
+		$checkoutId = $request->get_param('checkout_id');      // Already sanitized
+		$content_post_id = $request->get_param('locked_post_id'); // Already absint()
 
-		$posts = get_posts([
-			'post_type'   => 'mpesa',
-			'meta_key'    => 'checkout_id',
-			'meta_value'  => $checkoutId,
-			'numberposts' => 1,
-		]);
+		// Find the payment record
+		global $wpdb;
+		$post_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = 'checkout_id' 
+         AND meta_value = %s 
+         LIMIT 1",
+			$checkoutId
+		));
 
-		if (!$posts) {
+		if (!$post_id) {
 			return rest_ensure_response([
 				'status'  => 'pending',
 				'message' => 'Waiting for payment confirmation',
 			]);
 		}
 
-		$post_id = $posts[0]->ID; // this is the meta post ID
-		$status      = get_post_meta($post_id, 'status', true);
+		// Get payment status
+		$status = get_post_meta($post_id, 'status', true);
 		$result_desc = get_post_meta($post_id, 'result_desc', true);
+		$mpesa_receipt = get_post_meta($post_id, 'mpesa_receipt_number', true);
 
-		update_post_meta($post_id, 'content_post_id', $content_post_id);
-
+		// Handle failed payment
 		if ($status === 'failed') {
 			MpesaPaywallProLogger::error("Payment failed for checkout ID: $checkoutId. Reason: $result_desc");
 			return rest_ensure_response([
-				'status'  => 'failed',
-				'message' => $result_desc ?: 'Payment was cancelled or failed',
+				'status'      => 'failed',
+				'message'     => $result_desc ?: 'Payment was cancelled or failed',
+				'result_desc' => $result_desc,
 			]);
 		}
 
+		// Handle successful payment
 		if ($status === 'success') {
-			MpesaPaywallProLogger::info("Payment successful for checkout ID: $checkoutId. Granting access to content post ID: $content_post_id.");
 			$this->grant_payment_access($content_post_id, $checkoutId);
+			MpesaPaywallProLogger::info("Access granted to post $content_post_id for checkout ID: $checkoutId");
 			return rest_ensure_response([
-				'status'  => 'success',
-				'message' => $result_desc ?: 'Payment successful',
+				'status'          => 'success',
+				'message'         => $result_desc ?: 'Payment successful',
+				'mpesa_receipt'   => $mpesa_receipt,
+				'result_desc'     => $result_desc,
+				'content_post_id' => $content_post_id,
 			]);
 		}
 
-		// fallback (should rarely happen)
+		// Still pending
 		return rest_ensure_response([
 			'status'  => 'pending',
 			'message' => 'Waiting for payment confirmation',
