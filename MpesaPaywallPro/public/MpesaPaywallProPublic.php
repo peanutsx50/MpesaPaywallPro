@@ -454,11 +454,11 @@ class MpesaPaywallProPublic
 		//1. check for ssl and return error if not enabled
 		if (!is_ssl()) {
 			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
-			return new WP_Error([
+			return new WP_Error(
 				'ssl_required',
 				'SSL is not enabled on this site, transactions cannot be processed securely',
 				['status' => 403]
-			]);
+			);
 		}
 
 		//2. verify nonce
@@ -467,11 +467,11 @@ class MpesaPaywallProPublic
 		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
 			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
-			return new WP_Error([
+			return new WP_Error(
 				'invalid_nonce',
 				'Invalid request',
 				['status' => 403]
-			]);
+			);
 		}
 		return true;
 	}
