@@ -18,23 +18,6 @@ if (! defined('ABSPATH')) {
 class MpesaPaywallProUtils
 {
 
-    /**
-     * Get the client's IP address.
-     *
-     * This function attempts to retrieve the client's IP address from remote addr,
-     * It returns a sanitized IP address or 'UNKNOWN' if it cannot be determined.
-     *
-     * @return string The client's IP address or 'UNKNOWN' if not available.
-     * @since 1.0.0
-     * @access public
-     * @static
-     */
-    public static function get_client_ip()
-    {
-        // return remote address with fallback to unknown if not available
-        return sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
-    }
-
     public static function safaricom_ips()
     {
         return [

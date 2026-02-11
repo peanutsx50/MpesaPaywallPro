@@ -357,15 +357,16 @@ class MpesaPaywallProMpesa
             ]);
         }
 
-        // // check if safaricom ip
-        // $client_ip = MpesaPaywallProUtils::get_client_ip();
-        // if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
-        //     MpesaPaywallProLogger::warning("Possible hack attempt: Received callback from unauthorized IP $client_ip. Callback ignored.");
-        //     return rest_ensure_response([
-        //         'status'  => 'error',
-        //         'message' => 'Unauthorized IP address',
-        //     ], 403);
-        // }
+        // check if safaricom ip
+        $client_ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
+        error_log("Received M-Pesa callback from IP: $client_ip");
+        if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+            MpesaPaywallProLogger::warning("Possible hack attempt: Received callback from unauthorized IP $client_ip. Callback ignored.");
+            return rest_ensure_response([
+                'status'  => 'error',
+                'message' => 'Unauthorized IP address',
+            ], 403);
+        }
 
         $raw_body = $request->get_body();
         $body = json_decode($raw_body, true);

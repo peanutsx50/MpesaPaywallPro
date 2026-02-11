@@ -109,7 +109,7 @@ class MpesaPaywallProLogger
         $message = is_string($message) ? $message : print_r($message, true);
 
         $timestamp = current_time('Y-m-d H:i:s');
-        $ip = MpesaPaywallProUtils::get_client_ip();
+        $ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
 
         // Safely encode context
         $context_json = 'null';
