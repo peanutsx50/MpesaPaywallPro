@@ -44,11 +44,9 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
 
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
-      console.error("Payment initiation failed:", errorMessage);
       displayPaymentError(submitBtn, phoneInput, errorMsg, errorMessage);
     }
   } catch (error) {
-    console.error("Error initiating payment:", error);
     displayPaymentError(
       submitBtn,
       phoneInput,

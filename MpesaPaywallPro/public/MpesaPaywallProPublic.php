@@ -26,6 +26,7 @@ namespace MpesaPaywallPro\public;
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 use MpesaPaywallPro\core\MpesaPaywallProUtils;
+use WP_Error;
 
 // TODO: Need to implement cookie signing to avoid tampering
 class MpesaPaywallProPublic
@@ -453,10 +454,11 @@ class MpesaPaywallProPublic
 		//1. check for ssl and return error if not enabled
 		if (!is_ssl()) {
 			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => 'SSL is not enabled on this site, transactions cannot be processed securely']
-			], 403);
+			return new WP_Error([
+				'ssl_required',
+				'SSL is not enabled on this site, transactions cannot be processed securely',
+				['status' => 403]
+			]);
 		}
 
 		//2. verify nonce
@@ -465,10 +467,11 @@ class MpesaPaywallProPublic
 		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
 			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
-			return rest_ensure_response([
-				'status' => 'error',
-				'message' => 'Invalid request'
-			], 403);
+			return new WP_Error([
+				'invalid_nonce',
+				'Invalid request',
+				['status' => 403]
+			]);
 		}
 		return true;
 	}

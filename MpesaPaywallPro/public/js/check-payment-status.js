@@ -45,8 +45,6 @@ async function checkPaymentStatus(
         submitBtn.disabled = false;
         submitBtn.innerHTML = data.message || "Payment cancelled";
         submitBtn.style.backgroundColor = "#f44336";
-        console.warn("Payment failed:", data);
-
         continuePolling = false; // Stop polling
         return; // Exit function
       }
@@ -67,11 +65,6 @@ async function checkPaymentStatus(
 
   // Only reach here if max attempts exceeded without success or failure
   if (continuePolling) {
-    console.error(
-      "Payment verification timeout after",
-      maxAttempts,
-      "attempts",
-    );
     submitBtn.disabled = false;
     submitBtn.innerHTML = "Payment timeout. Please try again.";
     submitBtn.style.backgroundColor = "#ff9800";
