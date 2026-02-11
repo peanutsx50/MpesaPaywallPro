@@ -357,15 +357,15 @@ class MpesaPaywallProMpesa
             ]);
         }
 
-        // check if safaricom ip
-        $client_ip = MpesaPaywallProUtils::get_client_ip();
-        if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
-            MpesaPaywallProLogger::warning("Possible hack attempt: Received callback from unauthorized IP $client_ip. Callback ignored.");
-            return rest_ensure_response([
-                'status'  => 'error',
-                'message' => 'Unauthorized IP address',
-            ], 403);
-        }
+        // // check if safaricom ip
+        // $client_ip = MpesaPaywallProUtils::get_client_ip();
+        // if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+        //     MpesaPaywallProLogger::warning("Possible hack attempt: Received callback from unauthorized IP $client_ip. Callback ignored.");
+        //     return rest_ensure_response([
+        //         'status'  => 'error',
+        //         'message' => 'Unauthorized IP address',
+        //     ], 403);
+        // }
 
         $raw_body = $request->get_body();
         $body = json_decode($raw_body, true);
@@ -412,23 +412,28 @@ class MpesaPaywallProMpesa
      */
     public function store_details_meta($stk)
     {
+        $start_time = microtime(true);
+        $timings = [];
+
         // Extract basic callback data
+        $step_start = microtime(true);
         $checkoutId = sanitize_text_field($stk['CheckoutRequestID'] ?? '');
         $merchantRequestId = sanitize_text_field($stk['MerchantRequestID'] ?? '');
         $resultCode = (int) ($stk['ResultCode'] ?? -1);
         $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
+        $timings['data_extraction'] = round((microtime(true) - $step_start) * 1000, 2);
 
         if (empty($checkoutId)) {
-            MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data. Callback cannot be processed.");
+            MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data.");
             return rest_ensure_response(['status' => 'error', 'message' => 'Missing checkout ID'], 400);
         }
 
-        // Extract transaction metadata (only present on successful transactions)
+        // Extract transaction metadata
+        $step_start = microtime(true);
         $amount = 0;
         $phoneNumber = '';
         $mpesaReceipt = '';
         $transactionDate = '';
-
 
         if ($resultCode === 0 && isset($stk['CallbackMetadata']['Item'])) {
             foreach ($stk['CallbackMetadata']['Item'] as $item) {
@@ -448,59 +453,76 @@ class MpesaPaywallProMpesa
                 }
             }
         }
-
         $status = ($resultCode === 0) ? 'success' : 'failed';
+        $timings['metadata_parsing'] = round((microtime(true) - $step_start) * 1000, 2);
 
-        /*
-     * Prevent duplicates (Safaricom retries callbacks)
-     */
-        $existing = get_posts([
-            'post_type' => 'mpesa',
-            'meta_query' => [
-                [
-                    'key' => 'checkout_id',
-                    'value' => $checkoutId,
-                    'compare' => '='
-                ]
-            ],
-            'fields' => 'ids',
-            'numberposts' => 1,
-        ]);
+        // STEP 1: Duplicate check
+        $step_start = microtime(true);
+        global $wpdb;
+        $existing_post_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = 'checkout_id' 
+         AND meta_value = %s 
+         LIMIT 1",
+            $checkoutId
+        ));
+        $timings['duplicate_check'] = round((microtime(true) - $step_start) * 1000, 2);
 
-        if ($existing) {
-            $post_id = $existing[0];
+        if ($existing_post_id) {
+            $total_time = round((microtime(true) - $start_time) * 1000, 2);
             MpesaPaywallProLogger::info("Duplicate callback ignored for CheckoutRequestID: $checkoutId");
-        } else {
-            $post_id = wp_insert_post([
-                'post_type'   => 'mpesa',
-                'post_status' => 'publish',
-                'post_title'  => 'Mpesa STK ' . $checkoutId,
-            ], true); // Return WP_Error on failure
+            error_log("[DUPLICATE] Processed in {$total_time}ms");
+            return rest_ensure_response(['status' => 'ok', 'post_id' => $existing_post_id, 'duplicate' => true], 200);
         }
 
+        // STEP 2: Build meta array
+        $step_start = microtime(true);
+        $meta_data = [
+            'checkout_id' => $checkoutId,
+            'merchant_request_id' => $merchantRequestId,
+            'status' => $status,
+            'result_code' => $resultCode,
+            'result_desc' => $resultDesc,
+            'date' => current_time('mysql'),
+        ];
+
+        if ($resultCode === 0) {
+            $meta_data['amount'] = $amount;
+            $meta_data['mpesa_receipt_number'] = $mpesaReceipt;
+            $meta_data['phone_number'] = $phoneNumber;
+            $meta_data['transaction_date'] = $transactionDate;
+        }
+        $timings['meta_array_build'] = round((microtime(true) - $step_start) * 1000, 2);
+
+        // STEP 3: Insert post with meta
+        $step_start = microtime(true);
+        $post_id = wp_insert_post([
+            'post_type'   => 'mpesa',
+            'post_status' => 'publish',
+            'post_title'  => 'Mpesa STK ' . $checkoutId,
+            'meta_input'  => $meta_data,
+        ], true);
+        $timings['wp_insert_post'] = round((microtime(true) - $step_start) * 1000, 2);
+
         if (is_wp_error($post_id)) {
-            MpesaPaywallProLogger::error('Mpesa: Failed to create post - ' . $post_id->get_error_message());
+            MpesaPaywallProLogger::error('Failed to create post: ' . $post_id->get_error_message());
             return rest_ensure_response(['status' => 'error', 'message' => 'Database error'], 500);
         }
 
-        // Store relevant data in post meta
-        update_post_meta($post_id, 'checkout_id', $checkoutId);
-        update_post_meta($post_id, 'merchant_request_id', $merchantRequestId);
-        update_post_meta($post_id, 'status', $status);
-        update_post_meta($post_id, 'result_code', $resultCode);
-        update_post_meta($post_id, 'result_desc', $resultDesc);
+        MpesaPaywallProLogger::info("Callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
 
-        // Store transaction details (only available on successful transactions)
-        if ($resultCode === 0) {
-            update_post_meta($post_id, 'amount', $amount);
-            update_post_meta($post_id, 'mpesa_receipt_number', $mpesaReceipt);
-            update_post_meta($post_id, 'phone_number', $phoneNumber);
-            update_post_meta($post_id, 'transaction_date', $transactionDate);
-        }
+        $total_time = round((microtime(true) - $start_time) * 1000, 2);
 
-        update_post_meta($post_id, 'date', current_time('mysql'));
+        error_log(sprintf(
+            "[CALLBACK TIMING] extraction: %.2fms | parsing: %.2fms | dup_check: %.2fms | meta_build: %.2fms | insert: %.2fms | TOTAL: %.2fms",
+            $timings['data_extraction'],
+            $timings['metadata_parsing'],
+            $timings['duplicate_check'],
+            $timings['meta_array_build'],
+            $timings['wp_insert_post'],
+            $total_time
+        ));
 
-        MpesaPaywallProLogger::info("Mpesa callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
         return rest_ensure_response(['status' => 'ok', 'post_id' => $post_id], 200);
     }
 }
