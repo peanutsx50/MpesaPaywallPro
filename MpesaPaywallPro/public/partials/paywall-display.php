@@ -46,10 +46,10 @@ if (!$buttonColor) {
     </p>
 
     <ul class="mpp-benefits-list">
-        <li class="mpp-benefit-item"><?php _e('Instant access to full article', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('Read on any device', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('No subscription required', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('Secure M-Pesa payment', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Instant access to full article', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Read on any device', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('No subscription required', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Secure M-Pesa payment', 'mpesapaywallpro'); ?></li>
     </ul>
 
     <div class="mpp-paywall-action">
@@ -58,7 +58,7 @@ if (!$buttonColor) {
         </div>
 
         <button id="mpp-pay-button" type="button" style="background-color: <?php echo esc_attr($buttonColor); ?>;">
-            <?php _e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
+            <?php esc_html_e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
         </button>
     </div>
 
