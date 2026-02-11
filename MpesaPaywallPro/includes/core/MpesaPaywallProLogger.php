@@ -109,7 +109,7 @@ class MpesaPaywallProLogger
         $message = is_string($message) ? $message : print_r($message, true);
 
         $timestamp = current_time('Y-m-d H:i:s');
-        $ip = self::get_client_ip();
+        $ip = MpesaPaywallProUtils::get_client_ip();
 
         // Safely encode context
         $context_json = 'null';
@@ -231,39 +231,6 @@ class MpesaPaywallProLogger
         }
 
         return self::$writable === true;
-    }
-
-    /**
-     * Get client IP address with fallback handling
-     */
-    private static function get_client_ip()
-    {
-        $ip = 'UNKNOWN';
-
-        // Try various methods to get IP
-        $ip_keys = [
-            'HTTP_CLIENT_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_X_FORWARDED',
-            'HTTP_X_CLUSTER_CLIENT_IP',
-            'HTTP_FORWARDED_FOR',
-            'HTTP_FORWARDED',
-            'REMOTE_ADDR'
-        ];
-
-        foreach ($ip_keys as $key) {
-            if (!empty($_SERVER[$key])) {
-                $ip_list = explode(',', $_SERVER[$key]);
-                $ip = trim($ip_list[0]);
-
-                // Validate IP address
-                if (filter_var($ip, FILTER_VALIDATE_IP)) {
-                    break;
-                }
-            }
-        }
-
-        return $ip;
     }
 
     /**
