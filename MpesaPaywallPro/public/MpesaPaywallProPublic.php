@@ -25,6 +25,7 @@ namespace MpesaPaywallPro\public;
 
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use MpesaPaywallPro\core\MpesaPaywallProUtils;
 
 // TODO: Need to implement cookie signing to avoid tampering
 class MpesaPaywallProPublic
@@ -134,13 +135,28 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'process_payment'],
-			'permission_callback' => '__return_true',
+			'permission_callback' => [$this, 'validate_nonce'],
+			'args' => [
+				'phone_number' => [
+					'required' => true,
+					'validate_callback' => [$this, 'validate_phone_number'],
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'amount' => [
+					'required' => true,
+					'validate_callback' => [$this, 'validate_amount'],
+				],
+				'nonce' => [
+					'required' => true,
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+			],
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'confirm_payment'],
-			'permission_callback' => '__return_true',
+			'permission_callback' => [$this, 'validate_nonce'],
 		]);
 	}
 
@@ -417,6 +433,49 @@ class MpesaPaywallProPublic
 		return ob_get_clean();
 	}
 
+	public function validate_nonce($request)
+	{
+		$nonce = $request->get_param('nonce');
+		$ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
+		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
+			return rest_ensure_response([
+				'status' => 'error',
+				'message' => 'Invalid request'
+			], 403);
+		}
+		return true;
+	}
+
+	public function validate_phone_number($phone, $request, $key)
+	{
+		$results = MpesaPaywallProUtils::check_phone_number($phone);
+
+		// Kenyan phone number validation
+		if (!$results) {
+			return new \WP_Error(
+				'invalid_phone',
+				'Invalid phone number. Use format: 254XXXXXXXXX',
+				['status' => 400]
+			);
+		}
+
+		return true;
+	}
+
+	public function validate_amount($amount, $request, $key)
+	{
+		if (!is_numeric($amount) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
+			return new \WP_Error(
+				'invalid_amount',
+				'Invalid amount. Must be between ' . MPESA_MIN . ' and ' . MPESA_MAX,
+				['status' => 400]
+			);
+		}
+		return true;
+	}
+
+
 	/**
 	 * Processes M-Pesa payment requests via AJAX.
 	 *
@@ -447,28 +506,9 @@ class MpesaPaywallProPublic
 			], 403);
 		}
 
-		$params = $request->get_json_params();
-		$phone_number = sanitize_text_field($params['phone_number'] ?? '');
-		$amount = absint($params['amount'] ?? 0);
-		$nonce = sanitize_text_field($params['nonce'] ?? '');
-
-		// Verify nonce
-		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
-			MpesaPaywallProLogger::warning("Invalid nonce during payment processing. Possible CSRF attempt. Phone: $phone_number, Amount: $amount");
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => 'Invalid request']
-			], 403);
-		}
-
-		// Validate required fields
-		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
-			MpesaPaywallProLogger::warning("Payment attempt with invalid data. Phone: $phone_number");
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => __('Invalid phone number or amount.', 'mpesapaywallpro')]
-			], 400);
-		}
+		// Get parameters already validated by REST API args
+		$phone_number = $request->get_param('phone_number');
+		$amount       = $request->get_param('amount');
 
 		// Process payment
 		$mpesa = new MpesaPaywallProMpesa();
@@ -533,15 +573,6 @@ class MpesaPaywallProPublic
 		$checkoutId = sanitize_text_field($params['checkout_id'] ?? '');
 		$nonce = sanitize_text_field($params['nonce'] ?? '');
 		$content_post_id = absint($params['locked_post_id'] ?? 0);
-
-		// Verify nonce
-		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
-			MpesaPaywallProLogger::warning("Possible CSRF attempt. Invalid nonce during payment confirmation. Checkout ID: $checkoutId");
-			return rest_ensure_response([
-				'status'  => 'error',
-				'message' => 'Invalid request',
-			]);
-		}
 
 		// this should never happen
 		if (!$checkoutId) {

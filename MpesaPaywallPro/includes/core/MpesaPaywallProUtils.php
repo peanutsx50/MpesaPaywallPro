@@ -47,4 +47,13 @@ class MpesaPaywallProUtils
         $subnet &= $mask;
         return ($ip & $mask) === $subnet;
     }
+
+    public static function check_phone_number($number)
+    {
+        $preg_match = '/^254(7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89])|11[0-5])\d{6}$/';
+
+        /** @disregard P1010 Undefined type */
+        return preg_match($preg_match, $number);
+
+    }
 }
