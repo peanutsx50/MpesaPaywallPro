@@ -231,7 +231,7 @@ class MpesaPaywallProMpesa
     private function generate_access_token()
     {
         // Check for cache first (early return for best performance)
-        $cached_token = get_transient('mpp_mpesa_access_token');
+        $cached_token = get_transient('mpp_access_token');
         if ($cached_token) {
             return $cached_token;
         }
@@ -275,7 +275,7 @@ class MpesaPaywallProMpesa
         $access_token = $result['access_token'];
 
         // Cache for 50 minutes
-        set_transient('mpp_mpesa_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+        set_transient('mpp_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
 
         return $access_token;
     }

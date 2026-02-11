@@ -377,6 +377,9 @@ class MpesaPaywallProAdmin
 
 		MpesaPaywallProLogger::info("Saving settings for MpesaPaywallPro by user ID: " . get_current_user_id());
 
+		// delete cached access token when saving settings to ensure new credentials are used
+		delete_transient('mpp_access_token');
+
 		register_setting(
 			'mpesapaywallpro_settings_group',
 			'mpesapaywallpro_options',

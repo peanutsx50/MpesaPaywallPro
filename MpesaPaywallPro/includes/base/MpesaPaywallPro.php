@@ -470,7 +470,7 @@ class MpesaPaywallPro
 	}
 
 	public function refresh_access_token() {
-		$cached_token = get_transient('mpp_mpesa_access_token');
+		$cached_token = get_transient('mpp_access_token');
 		// if token is still valid, skip refresh
 		if ($cached_token) {
 			MpesaPaywallProLogger::info('Access token is still valid, skipping refresh.');
@@ -542,7 +542,7 @@ class MpesaPaywallPro
         $access_token = $result['access_token'];
 
         // Cache for 50 minutes
-        set_transient('mpp_mpesa_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+        set_transient('mpp_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
 
         return true;
 	}
