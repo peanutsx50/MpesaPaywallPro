@@ -256,7 +256,7 @@ class MpesaPaywallProAdmin
 		// Verify nonce prevent cross site request forgery (CSRF)
 		if (
 			!isset($_POST['mpp_paywall_nonce']) ||
-			!wp_verify_nonce($_POST['mpp_paywall_nonce'], 'mpp_save_paywall_meta')
+			!wp_verify_nonce(wp_unslash($_POST['mpp_paywall_nonce']), 'mpp_save_paywall_meta')
 		) {
 			MpesaPaywallProLogger::warning("Possible CSRF attempt. Nonce verification failed when saving paywall meta box data for post ID: $post_id.");
 			return;
