@@ -465,8 +465,8 @@ class MpesaPaywallProMpesa
         }
 
         // ULTRA-OPTIMIZED Single database transaction
-        $current_time = current_time('mysql');
-        $gmt_time = get_gmt_from_date($current_time);
+        $current_time = current_time('mysql'); // get local time for post
+        $gmt_time = get_gmt_from_date($current_time); // gets UTC time for consistency in storage
 
         // Start transaction for atomic insert
         $wpdb->query('START TRANSACTION');
@@ -476,15 +476,16 @@ class MpesaPaywallProMpesa
             "INSERT INTO {$wpdb->posts} 
         (post_type, post_status, post_title, post_date, post_date_gmt, post_modified, post_modified_gmt) 
         VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            'mpesa',
-            'publish',
-            'Mpesa STK ' . $checkoutId,
-            $current_time,
-            $gmt_time,
-            $current_time,
-            $gmt_time
+            'mpesa', // custom post type for M-Pesa transactions
+            'publish', // publish immediately for visibility in admin
+            'Mpesa STK ' . $checkoutId, // title with checkout ID for easy identification
+            $current_time, // local time for post_date
+            $gmt_time, // UTC time for post_date_gmt
+            $current_time, // local time for post_modified
+            $gmt_time // UTC time for post_modified_gmt
         ));
 
+        // get id of newly inserted post
         $post_id = $wpdb->insert_id;
 
         if (!$post_id) {
@@ -503,6 +504,7 @@ class MpesaPaywallProMpesa
             [$post_id, 'date', $current_time],
         ];
 
+        // add more meta if transaction was successful
         if ($resultCode === 0) {
             $meta_rows[] = [$post_id, 'amount', (string)$amount];
             $meta_rows[] = [$post_id, 'mpesa_receipt_number', $mpesaReceipt];
@@ -511,7 +513,7 @@ class MpesaPaywallProMpesa
         }
 
         // Single bulk insert for all meta
-        $placeholders = implode(', ', array_fill(0, count($meta_rows), '(%d, %s, %s)'));
+        $placeholders = implode(', ', array_fill(0, count($meta_rows), '(%d, %s, %s)')); // build placeholders for prepared statement
         $values = [];
         foreach ($meta_rows as $row) {
             $values = array_merge($values, $row);
