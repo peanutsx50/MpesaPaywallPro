@@ -38,7 +38,7 @@ if (!$buttonColor) {
 ?>
 <div class="mpp-paywall-container">
     <h3 class="mpp-paywall-title">
-        <?php _e('Read the full story', 'mpesapaywallpro'); ?>
+        <?php esc_html_e('Read the full story', 'mpesapaywallpro'); ?>
     </h3>
 
     <p class="mpp-paywall-description">
