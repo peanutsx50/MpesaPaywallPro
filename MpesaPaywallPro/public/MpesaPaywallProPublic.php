@@ -461,7 +461,8 @@ class MpesaPaywallProPublic
 
 		//2. verify nonce
 		$nonce = $request->get_param('nonce');
-		$ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
+		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
 			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
 			return rest_ensure_response([
@@ -503,11 +504,11 @@ class MpesaPaywallProPublic
 	public function validate_safaricom_IP()
 	{
 		//check for ssl
-		if(!is_ssl()) {
+		if (!is_ssl()) {
 			MpesaPaywallProLogger::error("Unauthorized callback attempt from non-SSL connection.");
 			return new \WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
 		}
-		
+
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
 			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
