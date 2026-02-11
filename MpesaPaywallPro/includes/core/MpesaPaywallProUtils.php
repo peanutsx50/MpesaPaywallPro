@@ -54,6 +54,18 @@ class MpesaPaywallProUtils
 
         /** @disregard P1010 Undefined type */
         return preg_match($preg_match, $number);
+    }
 
+    // Decrypt when reading
+    private static function encrypt_credential($value)
+    {
+        if (empty($value)) return '';
+        return base64_encode(openssl_encrypt($value, 'AES-256-CBC', wp_salt('auth'), 0, substr(wp_salt('nonce'), 0, 16)));
+    }
+
+    private static function decrypt_credential($value)
+    {
+        if (empty($value)) return '';
+        return openssl_decrypt(base64_decode($value), 'AES-256-CBC', wp_salt('auth'), 0, substr(wp_salt('nonce'), 0, 16));
     }
 }
