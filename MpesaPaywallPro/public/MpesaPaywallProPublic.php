@@ -128,8 +128,8 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/callback', [
 			'methods' => ['POST'],
 			'callback' => [MpesaPaywallProMpesa::class, 'handle_callback'],
-			//'permission_callback' => [$this, 'validate_safaricom_IP'],
-			'permission_callback' => '__return_true', // Testing
+			'permission_callback' => [$this, 'validate_safaricom_IP'],
+			//'permission_callback' => '__return_true', // Testing
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
