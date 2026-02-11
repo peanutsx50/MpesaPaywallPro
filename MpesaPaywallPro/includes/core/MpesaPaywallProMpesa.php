@@ -412,16 +412,11 @@ class MpesaPaywallProMpesa
      */
     public function store_details_meta($stk)
     {
-        $start_time = microtime(true);
-        $timings = [];
-
         // Extract basic callback data
-        $step_start = microtime(true);
         $checkoutId = sanitize_text_field($stk['CheckoutRequestID'] ?? '');
         $merchantRequestId = sanitize_text_field($stk['MerchantRequestID'] ?? '');
         $resultCode = (int) ($stk['ResultCode'] ?? -1);
         $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
-        $timings['data_extraction'] = round((microtime(true) - $step_start) * 1000, 2);
 
         if (empty($checkoutId)) {
             MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data.");
@@ -429,7 +424,6 @@ class MpesaPaywallProMpesa
         }
 
         // Extract transaction metadata
-        $step_start = microtime(true);
         $amount = 0;
         $phoneNumber = '';
         $mpesaReceipt = '';
@@ -454,10 +448,8 @@ class MpesaPaywallProMpesa
             }
         }
         $status = ($resultCode === 0) ? 'success' : 'failed';
-        $timings['metadata_parsing'] = round((microtime(true) - $step_start) * 1000, 2);
 
-        // STEP 1: Duplicate check
-        $step_start = microtime(true);
+        // Duplicate check
         global $wpdb;
         $existing_post_id = $wpdb->get_var($wpdb->prepare(
             "SELECT post_id FROM {$wpdb->postmeta} 
@@ -466,62 +458,77 @@ class MpesaPaywallProMpesa
          LIMIT 1",
             $checkoutId
         ));
-        $timings['duplicate_check'] = round((microtime(true) - $step_start) * 1000, 2);
 
         if ($existing_post_id) {
-            $total_time = round((microtime(true) - $start_time) * 1000, 2);
             MpesaPaywallProLogger::info("Duplicate callback ignored for CheckoutRequestID: $checkoutId");
-            error_log("[DUPLICATE] Processed in {$total_time}ms");
             return rest_ensure_response(['status' => 'ok', 'post_id' => $existing_post_id, 'duplicate' => true], 200);
         }
 
-        // STEP 2: Build meta array
-        $step_start = microtime(true);
-        $meta_data = [
-            'checkout_id' => $checkoutId,
-            'merchant_request_id' => $merchantRequestId,
-            'status' => $status,
-            'result_code' => $resultCode,
-            'result_desc' => $resultDesc,
-            'date' => current_time('mysql'),
-        ];
+        // ULTRA-OPTIMIZED Single database transaction
+        $current_time = current_time('mysql');
+        $gmt_time = get_gmt_from_date($current_time);
 
-        if ($resultCode === 0) {
-            $meta_data['amount'] = $amount;
-            $meta_data['mpesa_receipt_number'] = $mpesaReceipt;
-            $meta_data['phone_number'] = $phoneNumber;
-            $meta_data['transaction_date'] = $transactionDate;
-        }
-        $timings['meta_array_build'] = round((microtime(true) - $step_start) * 1000, 2);
+        // Start transaction for atomic insert
+        $wpdb->query('START TRANSACTION');
 
-        // STEP 3: Insert post with meta
-        $step_start = microtime(true);
-        $post_id = wp_insert_post([
-            'post_type'   => 'mpesa',
-            'post_status' => 'publish',
-            'post_title'  => 'Mpesa STK ' . $checkoutId,
-            'meta_input'  => $meta_data,
-        ], true);
-        $timings['wp_insert_post'] = round((microtime(true) - $step_start) * 1000, 2);
+        // Insert post
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->posts} 
+        (post_type, post_status, post_title, post_date, post_date_gmt, post_modified, post_modified_gmt) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            'mpesa',
+            'publish',
+            'Mpesa STK ' . $checkoutId,
+            $current_time,
+            $gmt_time,
+            $current_time,
+            $gmt_time
+        ));
 
-        if (is_wp_error($post_id)) {
-            MpesaPaywallProLogger::error('Failed to create post: ' . $post_id->get_error_message());
+        $post_id = $wpdb->insert_id;
+
+        if (!$post_id) {
+            $wpdb->query('ROLLBACK');
+            MpesaPaywallProLogger::error('Failed to insert post into database');
             return rest_ensure_response(['status' => 'error', 'message' => 'Database error'], 500);
         }
 
-        MpesaPaywallProLogger::info("Callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
+        // Build meta values
+        $meta_rows = [
+            [$post_id, 'checkout_id', $checkoutId],
+            [$post_id, 'merchant_request_id', $merchantRequestId],
+            [$post_id, 'status', $status],
+            [$post_id, 'result_code', (string)$resultCode],
+            [$post_id, 'result_desc', $resultDesc],
+            [$post_id, 'date', $current_time],
+        ];
 
-        $total_time = round((microtime(true) - $start_time) * 1000, 2);
+        if ($resultCode === 0) {
+            $meta_rows[] = [$post_id, 'amount', (string)$amount];
+            $meta_rows[] = [$post_id, 'mpesa_receipt_number', $mpesaReceipt];
+            $meta_rows[] = [$post_id, 'phone_number', $phoneNumber];
+            $meta_rows[] = [$post_id, 'transaction_date', $transactionDate];
+        }
 
-        error_log(sprintf(
-            "[CALLBACK TIMING] extraction: %.2fms | parsing: %.2fms | dup_check: %.2fms | meta_build: %.2fms | insert: %.2fms | TOTAL: %.2fms",
-            $timings['data_extraction'],
-            $timings['metadata_parsing'],
-            $timings['duplicate_check'],
-            $timings['meta_array_build'],
-            $timings['wp_insert_post'],
-            $total_time
+        // Single bulk insert for all meta
+        $placeholders = implode(', ', array_fill(0, count($meta_rows), '(%d, %s, %s)'));
+        $values = [];
+        foreach ($meta_rows as $row) {
+            $values = array_merge($values, $row);
+        }
+
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES {$placeholders}",
+            ...$values
         ));
+
+        // Commit transaction
+        $wpdb->query('COMMIT');
+
+        // Clean cache
+        clean_post_cache($post_id);
+
+        MpesaPaywallProLogger::info("Callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
 
         return rest_ensure_response(['status' => 'ok', 'post_id' => $post_id], 200);
     }
