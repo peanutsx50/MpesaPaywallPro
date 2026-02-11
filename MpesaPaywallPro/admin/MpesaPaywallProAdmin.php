@@ -25,6 +25,7 @@ namespace MpesaPaywallPro\admin;
 
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use WP_REST_Response;
 
 class MpesaPaywallProAdmin
 {
@@ -288,41 +289,48 @@ class MpesaPaywallProAdmin
 	}
 
 	//test api connection
-	public function test_connection()
+	public function test_connection($request)
 	{
-		//check for ssl first
+		// 1. Check for SSL first
 		if (!is_ssl()) {
 			MpesaPaywallProLogger::warning("Test connection failed due to lack of SSL. SSL is required for secure M-Pesa transactions.");
-			wp_send_json_error(['message' => 'SSL is not enabled on your site. Please enable HTTPS to ensure secure M-Pesa transactions.']);
+			return new WP_REST_Response([
+				'message' => 'SSL is not enabled on your site. Please enable HTTPS to ensure secure M-Pesa transactions.'
+			], 400);
 		}
 
-		//check nonce for security
-		if (!isset($_POST['mpp_nonce']) || !wp_verify_nonce($_POST['mpp_nonce'], 'mpp_admin_ajax_nonce')) {
+		// 2. Check nonce/security (Note: REST API usually handles this via permission_callback)
+		$nonce = $request->get_param('mpp_nonce');
+		if (!$nonce || !wp_verify_nonce($nonce, 'mpp_admin_ajax_nonce')) {
 			MpesaPaywallProLogger::warning("Test connection failed due to invalid nonce. Possible CSRF attempt.");
-			wp_send_json_error(['message' => 'Invalid request']); // deny request if nonce is invalid
-			wp_die();
+			return new WP_REST_Response(['message' => 'Invalid request'], 403);
 		}
-		// get phone number and amount from ajax request
-		$phone_number = sanitize_text_field($_POST['phone_number']);
-		$amount = intval($_POST['amount']);
 
-		// Validate required fields
+		// 3. Get phone number and amount from the request object
+		$phone_number = sanitize_text_field($request->get_param('phone_number'));
+		$amount = intval($request->get_param('amount'));
+
+		// 4. Validate required fields
 		if (empty($phone_number) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
-			MpesaPaywallProLogger::warning("Test connection failed due to invalid input. Phone number: $phone_number, Amount: $amount. Amount must be between " . MPESA_MIN . " and " . MPESA_MAX . ".");
-			wp_send_json_error(['message' => 'Invalid phone number or amount']);
+			MpesaPaywallProLogger::warning("Test connection failed due to invalid input. Phone number: $phone_number, Amount: $amount.");
+			return new WP_REST_Response(['message' => 'Invalid phone number or amount'], 400);
 		}
 
-		// instantiate mpesa class and send payment request
+		// 5. Instantiate mpesa class and send payment request
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
 
-		//handle response
-		if ($response['status'] === 'success') {
-			wp_send_json_success(['message' => 'Payment initiated. Please complete the payment on your phone.']);
+		// 6. Handle response
+		if (isset($response['status']) && $response['status'] === 'success') {
 			MpesaPaywallProLogger::info("Test payment initiated successfully for phone number: $phone_number with amount: $amount");
+			return new WP_REST_Response([
+				'message' => 'Payment initiated. Please check payment prompt on your phone.'
+			], 200);
 		} else {
-			wp_send_json_error(['message' => 'Payment initiation failed: ' . $response['message']]);
-			MpesaPaywallProLogger::error("Test payment initiation failed for phone number: $phone_number with amount: $amount. Error: " . $response['message']);
+			MpesaPaywallProLogger::error("Test payment initiation failed for phone number: $phone_number. Error: " . $response['message']);
+			return new WP_REST_Response([
+				'message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error')
+			], 400);
 		}
 	}
 
