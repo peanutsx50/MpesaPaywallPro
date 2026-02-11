@@ -203,8 +203,8 @@ class MpesaPaywallProPublic
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
 				'post_id' => $post_id, // locked post ID
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
-				'pollInterval' => 3000, // 5 seconds
-				'maxPollAttempts' => 20, // total 1 minute
+				'pollInterval' => 1000, // 1 second
+				'maxPollAttempts' => 60, // total 1 minute of polling
 			)
 		);
 	}

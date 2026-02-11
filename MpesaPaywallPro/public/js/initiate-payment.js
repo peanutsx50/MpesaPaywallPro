@@ -6,6 +6,13 @@ function displayPaymentError(submitBtn, phoneInput, errorMsg, message) {
   errorMsg.classList.add("mpp-visible");
 }
 
+function displayVerifying(submitBtn, phoneInput, errorMsg) {
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = "Verifying payment...";
+  phoneInput.classList.remove("mpp-error");
+  errorMsg.classList.remove("mpp-visible");
+}
+
 /**
  * Initiates an M-Pesa payment request via AJAX
  * @param {string} phoneNumber - Customer's phone number
@@ -33,6 +40,8 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
 
     if (data.success) {
       checkPaymentStatus(data.data.checkout_request_id, submitBtn, phoneNumber);
+      displayVerifying(submitBtn, phoneInput, errorMsg);
+
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
       console.error("Payment initiation failed:", errorMessage);
