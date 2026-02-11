@@ -42,6 +42,9 @@ class MpesaPaywallProMpesa
     private $url;
     private $amount;
     private $transactionType = 'CustomerPayBillOnline';
+    private const MPESA_PRODUCTION_URL = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    private const MPESA_SANDBOX_URL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+
 
 
     /**
@@ -68,31 +71,35 @@ class MpesaPaywallProMpesa
      */
     private function run()
     {
-        // Retrieve M-Pesa API credentials from WordPress options
-        $this->consumer_key            = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
-        $this->consumer_secret         = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
-        $this->shortcode               = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
-        $this->passkey                 = get_option('mpesapaywallpro_options')['passkey'] ?? '';
-        $this->environment             = get_option('mpesapaywallpro_options')['env'] ?? 'sandbox';
-        $this->account_reference       = get_option('mpesapaywallpro_options')['account_reference'] ?? '';
-        $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
+        //Options retrieval
+        $options = get_option('mpesapaywallpro_options', []);
 
-        // Generate OAuth access token for M-Pesa API authentication
+        // Retrieve M-Pesa API credentials from WordPress options
+        $this->consumer_key            = $options['consumer_key'] ?? '';
+        $this->consumer_secret         = $options['consumer_secret'] ?? '';
+        $this->shortcode               = $options['shortcode'] ?? '';
+        $this->passkey                 = $options['passkey'] ?? '';
+        $this->environment             = $options['env'] ?? 'sandbox';
+        $this->account_reference       = $options['account_reference'] ?? '';
+        $this->transaction_description = $options['transaction_description'] ?? '';
+
+        //Access token generation
         $this->access_token = $this->generate_access_token();
 
-        // Create timestamp in YYYYMMDDHHmmss format for password generation
-        $this->timestamp    = date('YmdHis');
+        //Timestamp
+        $this->timestamp = date('YmdHis');
 
-        // Generate base64-encoded password for STK push authentication
-        $this->password     = $this->generate_password();
+        //Password generation
+        $this->password = $this->generate_password();
 
-        // Set the callback URL where M-Pesa will send payment confirmation webhooks
-        $this->callbackurl  = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
+        // Callback URL
+        $this->callbackurl = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
 
         // Set the appropriate M-Pesa API endpoint URL based on environment
         $this->url          = $this->environment === 'production' ?
-            'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
-            'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+            self::MPESA_PRODUCTION_URL :
+            self::MPESA_SANDBOX_URL;
+
 
         MpesaPaywallProLogger::info("M-Pesa configuration initialized. Environment: {$this->environment}. API URL set to: {$this->url}");
     }
@@ -223,32 +230,64 @@ class MpesaPaywallProMpesa
     // generate access token for mpesa api
     private function generate_access_token()
     {
-        $auth_url = $this->environment === 'production' ?
-            'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials' :
-            'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+        // Start timing
+        $start_time = microtime(true);
 
+        // Check for cache first (early return for best performance)
+        $cached_token = get_transient('mpp_mpesa_access_token');
+        if ($cached_token) {
+            $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+            error_log("[CACHE HIT] Access token retrieved in {$execution_time}ms");
+            return $cached_token;
+        }
+
+        // Use class constants for URLs (defined once, reused always)
+        static $auth_urls = [
+            'production' => 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+            'sandbox'    => 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+        ];
+
+        $auth_url = $auth_urls[$this->environment] ?? $auth_urls['sandbox'];
+
+        // Pre-build authorization header (avoid string concatenation in array)
         $credentials = base64_encode($this->consumer_key . ':' . $this->consumer_secret);
 
-        // moving to wp_remote_get to fix vulnerable code
+        // Optimized HTTP request with minimal timeout
         $response = wp_remote_get($auth_url, [
             'headers' => [
                 'Authorization' => 'Basic ' . $credentials,
             ],
-            'timeout' => 60,
+            'timeout' => 30, // Reduced from 60 - M-Pesa typically responds in <5s
+            'sslverify' => true, // Explicit for security
         ]);
 
+        // Early error handling
         if (is_wp_error($response)) {
-            MpesaPaywallProLogger::error("Failed to generate access token due to HTTP error: " . $response->get_error_message());
-            return [
-                'status' => 'error',
-                'message' => 'HTTP Request failed: ' . $response->get_error_message(),
-            ];
+            $error_msg = $response->get_error_message();
+            MpesaPaywallProLogger::error("Failed to generate access token: {$error_msg}");
+            error_log("[ERROR] Access token generation failed in " . round((microtime(true) - $start_time) * 1000, 2) . "ms");
+            return '';
         }
 
-        $body = wp_remote_retrieve_body($response);
-        $result = json_decode($body, true);
+        // Parse response
+        $result = json_decode(wp_remote_retrieve_body($response), true);
 
-        return isset($result['access_token']) ? $result['access_token'] : '';
+        // Validate token exists
+        if (empty($result['access_token'])) {
+            MpesaPaywallProLogger::error("Access token missing in API response");
+            error_log("[ERROR] Invalid token response in " . round((microtime(true) - $start_time) * 1000, 2) . "ms");
+            return '';
+        }
+
+        $access_token = $result['access_token'];
+
+        // Cache for 50 minutes (safer margin than 40)
+        set_transient('mpp_mpesa_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+
+        $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+        error_log("[API CALL] Access token generated in {$execution_time}ms");
+
+        return $access_token;
     }
 
     // generate password for stk push
