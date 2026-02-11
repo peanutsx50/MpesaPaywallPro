@@ -160,9 +160,6 @@ class MpesaPaywallProMpesa
             return $validation_result;
         }
 
-        // Store the transaction amount for use in the callback handler
-        $this->amount = $amount;
-
         try {
             // Construct the payment request payload for M-Pesa STK push API
             $data = [
@@ -186,7 +183,9 @@ class MpesaPaywallProMpesa
                     'Content-Type'  => 'application/json',
                 ],
                 'body'    => json_encode($data),
-                'timeout' => 60,
+                'timeout' => 30, // Reduced from 60 - M-Pesa responds quickly
+                'httpversion' => '1.1', // Force HTTP/1.1 for better compatibility
+                'sslverify' => true, // Explicit for security
             ]);
 
             if (is_wp_error($response)) {
@@ -210,6 +209,7 @@ class MpesaPaywallProMpesa
             }
 
             MpesaPaywallProLogger::info("STK push request sent successfully to M-Pesa API for phone number $phone_number with amount $amount.");
+
             // Return success response with payment details for client-side tracking
             return [
                 'status' => 'success',
