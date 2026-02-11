@@ -125,29 +125,32 @@ class MpesaPaywallProPublic
 	 */
 	public function register_ajax_endpoints()
 	{
-		$mpesa = new MpesaPaywallProMpesa();
 		register_rest_route('mpesapaywallpro/v1', '/callback', [
 			'methods' => ['POST'],
-			'callback' => [$mpesa, 'handle_callback'],
-			'permission_callback' => '__return_true',
+			'callback' => [MpesaPaywallProMpesa::class, 'handle_callback'],
+			'permission_callback' => [$this, 'validate_safaricom_IP'],
+			//'permission_callback' => '__return_true', // Testing
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'process_payment'],
-			'permission_callback' => [$this, 'validate_nonce'],
+			'permission_callback' => [$this, 'validate_request'],
 			'args' => [
 				'phone_number' => [
-					'required' => true,
+					'required'          => true,
+					'type'              => 'string',
 					'validate_callback' => [$this, 'validate_phone_number'],
 					'sanitize_callback' => 'sanitize_text_field',
 				],
 				'amount' => [
-					'required' => true,
+					'required' 			=> true,
+					'type'              => 'integer',
 					'validate_callback' => [$this, 'validate_amount'],
 				],
 				'nonce' => [
-					'required' => true,
+					'required' 			=> true,
+					'type'     			=> 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				],
 			],
@@ -156,7 +159,19 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'confirm_payment'],
-			'permission_callback' => [$this, 'validate_nonce'],
+			'permission_callback' => [$this, 'validate_request'],
+			'args'                => [
+				'checkout_id' => [
+					'required'          => true,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'locked_post_id' => [
+					'required'          => true,
+					'type'              => 'integer',
+					'sanitize_callback' => 'absint',
+				]
+			]
 		]);
 	}
 
@@ -433,8 +448,18 @@ class MpesaPaywallProPublic
 		return ob_get_clean();
 	}
 
-	public function validate_nonce($request)
+	public function validate_request($request)
 	{
+		//1. check for ssl and return error if not enabled
+		if (!is_ssl()) {
+			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => 'SSL is not enabled on this site, transactions cannot be processed securely']
+			], 403);
+		}
+
+		//2. verify nonce
 		$nonce = $request->get_param('nonce');
 		$ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN');
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
@@ -475,6 +500,13 @@ class MpesaPaywallProPublic
 		return true;
 	}
 
+	public function validate_safaricom_IP(){
+		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+        if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+             return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
+        }
+        return true;
+	}
 
 	/**
 	 * Processes M-Pesa payment requests via AJAX.
@@ -497,15 +529,6 @@ class MpesaPaywallProPublic
 	 */
 	public function process_payment(\WP_REST_Request $request)
 	{
-		//check for ssl and return error if not enabled
-		if (!is_ssl()) {
-			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => 'SSL is not enabled on this site, transactions cannot be processed securely']
-			], 403);
-		}
-
 		// Get parameters already validated by REST API args
 		$phone_number = $request->get_param('phone_number');
 		$amount       = $request->get_param('amount');
@@ -560,28 +583,9 @@ class MpesaPaywallProPublic
 
 	public function confirm_payment($request)
 	{
-		if ($request->get_method() !== 'POST') {
-			MpesaPaywallProLogger::warning("Possible hacking attempt: Invalid request method for payment confirmation: " . $request->get_method());
-			return rest_ensure_response([
-				'status'  => 'error',
-				'message' => 'Invalid request method',
-			]);
-		}
-
 		// polling function to confirm payment status
-		$params = $request->get_json_params();
-		$checkoutId = sanitize_text_field($params['checkout_id'] ?? '');
-		$nonce = sanitize_text_field($params['nonce'] ?? '');
-		$content_post_id = absint($params['locked_post_id'] ?? 0);
-
-		// this should never happen
-		if (!$checkoutId) {
-			MpesaPaywallProLogger::error("Payment confirmation failed: No checkout ID provided in request.");
-			return rest_ensure_response([
-				'status'  => 'error',
-				'message' => 'No checkout id provided',
-			]);
-		}
+		$checkoutId = $request->get_param('checkout_id');
+		$content_post_id = $request->get_param('locked_post_id');
 
 		$posts = get_posts([
 			'post_type'   => 'mpesa',
