@@ -400,12 +400,14 @@ class MpesaPaywallPro
 		switch ($status) {
 			case 'missing':
 				return sprintf(
+					/* translators: %s: The link to the settings page. */
 					__('⚠️ License key is missing. <a href="%s">Add your license key</a> to enable updates and support.', 'mpesapaywallpro'),
 					esc_url($settings_url)
 				);
 
 			case 'invalid':
 				return sprintf(
+					/* translators: %s: The link to the settings page. */
 					__('⚠️ Your license key is invalid or has expired. <a href="%s">Please check your license details</a>.', 'mpesapaywallpro'),
 					esc_url($settings_url)
 				);

@@ -1,0 +1,398 @@
+# Copyright (C) 2026 SurgeTech
+# This file is distributed under the GNU General Public License v2.
+msgid ""
+msgstr ""
+"Project-Id-Version: MpesaPaywallPro 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/MpesaPaywallPro\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-02-12T14:27:02+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: mpesapaywallpro\n"
+
+#. Plugin Name of the plugin
+#: MpesaPaywallPro.php
+msgid "MpesaPaywallPro"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: MpesaPaywallPro.php
+msgid "https://surgetech.co.ke/mpesapaywallpro"
+msgstr ""
+
+#. Description of the plugin
+#: MpesaPaywallPro.php
+msgid "MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively."
+msgstr ""
+
+#. Author of the plugin
+#: MpesaPaywallPro.php
+msgid "SurgeTech"
+msgstr ""
+
+#. Author URI of the plugin
+#: MpesaPaywallPro.php
+msgid "https://surgetech.co.ke/"
+msgstr ""
+
+#: admin/MpesaPaywallProAdmin.php:168
+msgid "Warning: Your site is not using SSL. For secure M-Pesa transactions, please enable HTTPS on your website."
+msgstr ""
+
+#: admin/MpesaPaywallProAdmin.php:203
+msgid "MpesaPaywall"
+msgstr ""
+
+#: admin/partials/access-control.php:22
+msgid "Access Control & Security"
+msgstr ""
+
+#: admin/partials/access-control.php:27
+msgid "Configure security settings and access controls for your paywall system."
+msgstr ""
+
+#: admin/partials/access-control.php:35
+msgid "Exempt User Roles"
+msgstr ""
+
+#: admin/partials/access-control.php:54
+msgid "Selected user roles will bypass the paywall without payment"
+msgstr ""
+
+#: admin/partials/access-control.php:64
+msgid "Security Tips"
+msgstr ""
+
+#: admin/partials/access-control.php:67
+msgid "Always use SSL/HTTPS for your website when processing payments"
+msgstr ""
+
+#: admin/partials/access-control.php:68
+msgid "Keep your M-Pesa API credentials secure and never share them"
+msgstr ""
+
+#: admin/partials/access-control.php:69
+msgid "Regularly update WordPress and the MpesaPaywallPro plugin"
+msgstr ""
+
+#: admin/partials/access-control.php:70
+msgid "Monitor transaction logs for suspicious activity"
+msgstr ""
+
+#: admin/partials/access-control.php:71
+msgid "Use IP whitelisting for internal testing only"
+msgstr ""
+
+#: admin/partials/admin-settings.php:53
+msgid "Turn your WordPress content into revenue. Accept M-Pesa payments, control access to premium posts, and build a sustainable income stream."
+msgstr ""
+
+#: admin/partials/admin-settings.php:61
+msgid "Contact us for custom plugin"
+msgstr ""
+
+#: admin/partials/admin-settings.php:67
+msgid "Read how to use this plugin"
+msgstr ""
+
+#: admin/partials/admin-settings.php:93
+msgid "Welcome to MpesaPaywallPro"
+msgstr ""
+
+#: admin/partials/admin-settings.php:97
+msgid "MpesaPaywallPro allows you to restrict access to content and require users to complete an M-Pesa payment before viewing it. To get started, enter your M-Pesa API credentials and configure the payment settings below."
+msgstr ""
+
+#: admin/partials/admin-settings.php:104
+msgid "You can use either Sandbox (Test) credentials or Live (Production) credentials. If you are testing, select the Sandbox environment and use your test credentials. If you are accepting real payments, select the Production environment and use your live credentials."
+msgstr ""
+
+#: admin/partials/admin-settings.php:111
+msgid "After entering your credentials, always click “Save Changes” first. Only test the API connection after your settings have been saved."
+msgstr ""
+
+#: admin/partials/admin-settings.php:118
+msgid "Enter your M-Pesa Consumer Key, Consumer Secret, Shortcode, and Passkey"
+msgstr ""
+
+#: admin/partials/admin-settings.php:119
+msgid "Select the correct environment: Sandbox for testing, Production for live payments"
+msgstr ""
+
+#: admin/partials/admin-settings.php:120
+msgid "Save your settings before testing the API connection"
+msgstr ""
+
+#: admin/partials/admin-settings.php:121
+msgid "Configure payment amounts and access duration after payment"
+msgstr ""
+
+#: admin/partials/admin-settings.php:122
+msgid "Control how locked content previews are displayed to users"
+msgstr ""
+
+#: admin/partials/admin-settings.php:126
+msgid "WARNING: Never share your M-Pesa API credentials with third parties, contractors, or employees. Anyone with access to these details can initiate payments on your behalf."
+msgstr ""
+
+#: admin/partials/content-locked-meta-box.php:39
+msgid "Lock this post behind a paywall"
+msgstr ""
+
+#: admin/partials/content-locked-meta-box.php:45
+msgid "Price (KES)"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:22
+msgid "M-Pesa API Configuration"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:27
+msgid "Enter your M-Pesa Daraja API credentials. These are required to process payments through Safaricom."
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:28
+msgid "Get API credentials"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:37
+msgid "Consumer Key"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:47
+msgid "Your M-Pesa Daraja API Consumer Key"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:55
+msgid "Consumer Secret"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:65
+msgid "Your M-Pesa Daraja API Consumer Secret"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:73
+msgid "Business Shortcode"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:83
+msgid "Your M-Pesa Business Shortcode (PayBill or Till Number)"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:91
+msgid "Passkey"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:101
+msgid "Your M-Pesa Daraja API Passkey"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:109
+msgid "Account Reference"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:119
+msgid "An identifier of the transaction e.g., WebsiteName"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:127
+msgid "Transaction Description"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:137
+msgid "A brief description of the transaction e.g., Payment for article access"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:145
+msgid "Environment"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:150
+msgid "Sandbox (Testing)"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:153
+msgid "Production (Live)"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:157
+msgid "If you are using test credentials, select Sandbox. For live transactions, select Production."
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:165
+msgid "Test Phone Number"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:175
+msgid "Phone number to use for testing the API connection (in international format)"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:185
+msgid "Test Connection"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:187
+msgid "Test if your M-Pesa API credentials are working correctly:"
+msgstr ""
+
+#: admin/partials/mpesa-setup.php:189
+msgid "Test API Connection"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:22
+msgid "Paywall Configuration"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:27
+msgid "Configure how your paywall works, including payment amounts, content restriction, and user experience."
+msgstr ""
+
+#: admin/partials/paywall-settings.php:36
+msgid "License Key"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:45
+msgid "Enter your license key to enable updates and support."
+msgstr ""
+
+#: admin/partials/paywall-settings.php:53
+msgid "Auto-Lock New Posts"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:58
+msgid "No"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:61
+msgid "Yes"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:65
+msgid "Automatically lock all new posts behind the paywall"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:73
+msgid "Default Payment Amount"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:85
+msgid "Default amount charged for automatically locked content"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:93
+msgid "Paywall Button Color"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:103
+msgid "Color of the paywall payment button"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:111
+msgid "Free Content Length"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:121
+msgid "words"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:123
+msgid "Number of words shown before the paywall (0 disables preview)"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:131
+msgid "Paywall Message"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:136
+msgid "This content is locked. Please make a payment to unlock full access."
+msgstr ""
+
+#: admin/partials/paywall-settings.php:147
+msgid "Message displayed when content is paywalled"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:155
+msgid "Access Expiry"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:165
+msgid "days"
+msgstr ""
+
+#: admin/partials/paywall-settings.php:167
+msgid "Duration before paid access expires"
+msgstr ""
+
+#. translators: %s: The link to the settings page.
+#: includes/base/MpesaPaywallPro.php:404
+#, php-format
+msgid "⚠️ License key is missing. <a href=\"%s\">Add your license key</a> to enable updates and support."
+msgstr ""
+
+#. translators: %s: The link to the settings page.
+#: includes/base/MpesaPaywallPro.php:411
+#, php-format
+msgid "⚠️ Your license key is invalid or has expired. <a href=\"%s\">Please check your license details</a>."
+msgstr ""
+
+#: includes/base/MpesaPaywallPro.php:416
+msgid "⚠️ Unable to verify license. Please try again later."
+msgstr ""
+
+#: public/partials/paywall-display.php:26
+msgid "This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment."
+msgstr ""
+
+#: public/partials/paywall-display.php:41
+msgid "Read the full story"
+msgstr ""
+
+#: public/partials/paywall-display.php:49
+msgid "Instant access to full article"
+msgstr ""
+
+#: public/partials/paywall-display.php:50
+msgid "Read on any device"
+msgstr ""
+
+#: public/partials/paywall-display.php:51
+msgid "No subscription required"
+msgstr ""
+
+#: public/partials/paywall-display.php:52
+msgid "Secure M-Pesa payment"
+msgstr ""
+
+#: public/partials/paywall-display.php:61
+msgid "Unlock with M-Pesa"
+msgstr ""
+
+#: public/partials/phone-number-modal.php:27
+msgid "Enter your M-Pesa number"
+msgstr ""
+
+#. translators: %s: The total amount in KES.
+#: public/partials/phone-number-modal.php:31
+#, php-format
+msgid "You'll receive an M-Pesa prompt to pay KES %s"
+msgstr ""
+
+#: public/partials/phone-number-modal.php:40
+msgid "Phone Number"
+msgstr ""
+
+#: public/partials/phone-number-modal.php:49
+msgid "Enter your Safaricom number (e.g., 0712345678)"
+msgstr ""
+
+#: public/partials/phone-number-modal.php:55
+msgid "Cancel"
+msgstr ""
+
+#: public/partials/phone-number-modal.php:58
+msgid "Continue"
+msgstr ""

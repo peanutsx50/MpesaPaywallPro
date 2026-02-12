@@ -26,7 +26,11 @@ if (! defined('WPINC')) {
         <div class="mpp-modal-header">
             <h3 class="mpp-modal-title"><?php esc_html_e('Enter your M-Pesa number', 'mpesapaywallpro'); ?></h3>
             <p class="mpp-modal-subtitle">
-                <?php echo sprintf(esc_html__('You\'ll receive an M-Pesa prompt to pay KES %s', 'mpesapaywallpro'), esc_html($price)); ?>
+                <?php echo sprintf(
+                    /* translators: %s: The total amount in KES. */
+                    esc_html__('You\'ll receive an M-Pesa prompt to pay KES %s', 'mpesapaywallpro'),
+                    esc_html($price)
+                ); ?>
             </p>
         </div>
 
