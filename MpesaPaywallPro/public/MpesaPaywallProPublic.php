@@ -198,7 +198,7 @@ class MpesaPaywallProPublic
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
-				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
+				//'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
