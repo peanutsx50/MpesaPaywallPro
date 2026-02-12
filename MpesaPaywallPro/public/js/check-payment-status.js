@@ -51,7 +51,7 @@ async function checkPaymentStatus(
         return; // Exit function
       }
     } catch (error) {
-     console.warn(`Attempt ${pollCount} failed:`, error.message);
+     console.warn(`Attempt ${pollCount} failed`);
     }
 
     // Wait for pollInterval before next attempt
