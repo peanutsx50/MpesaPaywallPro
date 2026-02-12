@@ -132,6 +132,12 @@ class MpesaPaywallProPublic
 			'permission_callback' => [$this, 'validate_safaricom_IP'],
 			'show_in_index' => false, // Hide from REST API index for security through obscurity
 			//'permission_callback' => '__return_true', // Testing
+			'args'                => [
+				'mpp_auth' => [
+					'required' => true,
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+			],
 		]);
 
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
@@ -505,7 +511,7 @@ class MpesaPaywallProPublic
 		return true;
 	}
 
-	public function validate_safaricom_IP()
+	public function validate_safaricom_IP($request)
 	{
 		//check for ssl
 		if (!is_ssl()) {
@@ -516,6 +522,16 @@ class MpesaPaywallProPublic
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
 			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
+		}
+		// validate auth token
+		$url_token = $request->get_param('mpp_auth');
+
+		// We use a hash of your NONCE_SALT to create a unique-to-you key
+		$secret_key = md5(wp_salt('nonce'));
+
+		if (!hash_equals($secret_key, $url_token)) {
+			MpesaPaywallProLogger::error("Unauthorized Callback: Token mismatch.");
+			return false;
 		}
 		return true;
 	}

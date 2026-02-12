@@ -93,7 +93,12 @@ class MpesaPaywallProMpesa
         $this->password = $this->generate_password();
 
         // Callback URL
-        $this->callbackurl = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
+        $secret_key = md5(wp_salt('nonce')); // unique auth
+        $this->callbackurl = add_query_arg(
+            'mpp_auth',
+            $secret_key,
+            rest_url('mpesapaywallpro/v1/callback')
+        );
 
         // Set the appropriate M-Pesa API endpoint URL based on environment
         $this->url          = $this->environment === 'production' ?
