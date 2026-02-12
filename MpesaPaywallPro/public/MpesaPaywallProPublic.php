@@ -130,6 +130,7 @@ class MpesaPaywallProPublic
 			'methods' => ['POST'],
 			'callback' => [MpesaPaywallProMpesa::class, 'handle_callback'],
 			'permission_callback' => [$this, 'validate_safaricom_IP'],
+			'show_in_index' => false, // Hide from REST API index for security through obscurity
 			//'permission_callback' => '__return_true', // Testing
 		]);
 
