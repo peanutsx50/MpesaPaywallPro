@@ -40,7 +40,7 @@ class MpesaPaywallProI18n
 	{
 
 		load_plugin_textdomain(
-			'plugin-name',
+			'mpesapaywallpro',
 			false,
 			dirname(dirname(plugin_basename(__FILE__))) . '/languages/'
 		);

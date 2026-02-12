@@ -21,14 +21,24 @@ if (! defined('WPINC')) {
 // Get the current post ID
 $post_id = get_the_ID();
 // retrieve current value of the content locked meta field
-$price = get_post_meta($post_id, 'mpp_price', true);
-$buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? '#111827';
+// $price is coming from render_paywall() function in MpesaPaywallProPublic.php and is passed to the paywall-display.php file when it is required
+$buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? null;
 $paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro');
+
+// Get WordPress theme colors
+$primary_color = get_theme_mod('primary_color');
+$accent_color = get_theme_mod('accent_color');
+$link_color = get_theme_mod('link_color');
+
+// Fallback to button color option or theme mod
+if (!$buttonColor) {
+    $buttonColor = $primary_color ?: $accent_color ?: $link_color ?: '#111827';
+}
 
 ?>
 <div class="mpp-paywall-container">
     <h3 class="mpp-paywall-title">
-        <?php _e('Read the full story', 'mpesapaywallpro'); ?>
+        <?php esc_html_e('Read the full story', 'mpesapaywallpro'); ?>
     </h3>
 
     <p class="mpp-paywall-description">
@@ -36,10 +46,10 @@ $paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? es
     </p>
 
     <ul class="mpp-benefits-list">
-        <li class="mpp-benefit-item"><?php _e('Instant access to full article', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('Read on any device', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('No subscription required', 'mpesapaywallpro'); ?></li>
-        <li class="mpp-benefit-item"><?php _e('Secure M-Pesa payment', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Instant access to full article', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Read on any device', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('No subscription required', 'mpesapaywallpro'); ?></li>
+        <li class="mpp-benefit-item"><?php esc_html_e('Secure M-Pesa payment', 'mpesapaywallpro'); ?></li>
     </ul>
 
     <div class="mpp-paywall-action">
@@ -48,10 +58,10 @@ $paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? es
         </div>
 
         <button id="mpp-pay-button" type="button" style="background-color: <?php echo esc_attr($buttonColor); ?>;">
-            <?php _e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
+            <?php esc_html_e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
         </button>
     </div>
 
     <div id="mpp-payment-status"></div>
 </div>
-<?php require_once MPP_PATH . 'public/partials/phone-number-modal.php'; ?>
+<?php require MPP_PATH . 'public/partials/phone-number-modal.php'; ?>

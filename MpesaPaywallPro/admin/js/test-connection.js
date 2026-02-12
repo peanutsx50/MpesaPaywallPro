@@ -33,11 +33,9 @@ async function testConnection(phoneNumber, testButton, resultDiv) {
       resultDiv.classList.add("mpp-visible");
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
-      console.error("Payment initiation failed:", errorMessage);
       displayConnectionError(testButton, resultDiv, errorMessage);
     }
   } catch (error) {
-    console.error("Error initiating payment:", error);
     displayConnectionError(
       testButton,
       resultDiv,

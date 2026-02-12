@@ -85,6 +85,28 @@ function mpesapaywallpro_delete_transients()
 	);
 }
 
+
+/**
+ * Delete log folder and its contents
+ */
+function mpesapaywallpro_delete_log_folder(){
+
+    // Define the log directory path - same as in the main plugin
+    $log_dir = dirname(WP_CONTENT_DIR) . '/mpp-logs/';
+
+    if (is_dir($log_dir)) {
+        $files = glob($log_dir . '*');
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+
+        @rmdir($log_dir);
+    }
+
+}
 /**
  * Main uninstall function that coordinates all cleanup operations
  */
@@ -94,6 +116,7 @@ function mpesapaywallpro_uninstall_plugin()
 	mpesapaywallpro_delete_post_meta();
 	mpesapaywallpro_delete_plugin_options();
 	mpesapaywallpro_delete_transients();
+	mpesapaywallpro_delete_log_folder();
 }
 
 // Execute the uninstall process

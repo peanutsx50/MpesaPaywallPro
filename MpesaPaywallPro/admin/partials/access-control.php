@@ -45,7 +45,7 @@ $options = get_option('mpesapaywallpro_options', []);
                             <input type="checkbox"
                                 name="mpesapaywallpro_options[allowed_user_roles][]"
                                 value="<?php echo esc_attr($role_value); ?>"
-                                <?php checked(in_array($role_value, (array)$selected_roles)); ?>>
+                                <?php checked(in_array($role_value, (array)$selected_roles, true)); ?>>
                             <?php echo esc_html(translate_user_role($role_name)); ?>
                         </label>
                     <?php endforeach; ?>

@@ -323,9 +323,11 @@ You are free to:
 - Content paywall functionality
 - Admin dashboard
 - Plugin update checker
-
-### V1.1 (Stable version)
 - Fixed SSL Peer Verification vulnerability
+- added ip validation in callback
+- added ssl check to website and block request for non ssl
+- strengthen phone number validation in js
+- implemented an error logging system
 
 ## Roadmap
 

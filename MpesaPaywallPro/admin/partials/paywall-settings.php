@@ -53,12 +53,17 @@ $options = get_option('mpesapaywallpro_options', []);
                 <label for="auto_lock"><?php esc_html_e('Auto-Lock New Posts', 'mpesapaywallpro'); ?></label>
             </th>
             <td>
-                <input type="checkbox"
-                    id="auto_lock"
-                    name="mpesapaywallpro_options[auto_lock]"
-                    value="1"
-                    <?php checked($options['auto_lock'] ?? 0, 1); ?>>
-                <span><?php esc_html_e('Automatically lock all new posts behind the paywall', 'mpesapaywallpro'); ?></span>
+                <select id="auto_lock" name="mpesapaywallpro_options[auto_lock]">
+                    <option value="0" <?php selected($options['auto_lock'] ?? 0, 0); ?>>
+                        <?php esc_html_e('No', 'mpesapaywallpro'); ?>
+                    </option>
+                    <option value="1" <?php selected($options['auto_lock'] ?? 0, 1); ?>>
+                        <?php esc_html_e('Yes', 'mpesapaywallpro'); ?>
+                    </option>
+                </select>
+                <p class="description">
+                    <?php esc_html_e('Automatically lock all new posts behind the paywall', 'mpesapaywallpro'); ?>
+                </p>
             </td>
         </tr>
 
@@ -157,7 +162,7 @@ $options = get_option('mpesapaywallpro_options', []);
                     class="small-text"
                     min="0"
                     step="1">
-                <span><?php esc_html_e('days (0 = never expires)', 'mpesapaywallpro'); ?></span>
+                <span><?php esc_html_e('days', 'mpesapaywallpro'); ?></span>
                 <p class="description">
                     <?php esc_html_e('Duration before paid access expires', 'mpesapaywallpro'); ?>
                 </p>

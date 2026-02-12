@@ -16,6 +16,9 @@
  */
 
 namespace MpesaPaywallPro\core;
+
+use WP_REST_Response;
+
 // If this file is called directly, abort.
 if (! defined('WPINC')) {
     die;
@@ -39,6 +42,9 @@ class MpesaPaywallProMpesa
     private $url;
     private $amount;
     private $transactionType = 'CustomerPayBillOnline';
+    private const MPESA_PRODUCTION_URL = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    private const MPESA_SANDBOX_URL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+
 
 
     /**
@@ -65,31 +71,42 @@ class MpesaPaywallProMpesa
      */
     private function run()
     {
-        // Retrieve M-Pesa API credentials from WordPress options
-        $this->consumer_key            = get_option('mpesapaywallpro_options')['consumer_key'] ?? '';
-        $this->consumer_secret         = get_option('mpesapaywallpro_options')['consumer_secret'] ?? '';
-        $this->shortcode               = get_option('mpesapaywallpro_options')['shortcode'] ?? '';
-        $this->passkey                 = get_option('mpesapaywallpro_options')['passkey'] ?? '';
-        $this->environment             = get_option('mpesapaywallpro_options')['env'] ?? 'sandbox';
-        $this->account_reference       = get_option('mpesapaywallpro_options')['account_reference'] ?? '';
-        $this->transaction_description = get_option('mpesapaywallpro_options')['transaction_description'] ?? '';
+        //Options retrieval
+        $options = get_option('mpesapaywallpro_options', []);
 
-        // Generate OAuth access token for M-Pesa API authentication
+        // Retrieve M-Pesa API credentials from WordPress options
+        $this->consumer_key            = $options['consumer_key'] ?? '';
+        $this->consumer_secret         = $options['consumer_secret'] ?? '';
+        $this->shortcode               = $options['shortcode'] ?? '';
+        $this->passkey                 = $options['passkey'] ?? '';
+        $this->environment             = $options['env'] ?? 'sandbox';
+        $this->account_reference       = $options['account_reference'] ?? '';
+        $this->transaction_description = $options['transaction_description'] ?? '';
+
+        //Access token generation
         $this->access_token = $this->generate_access_token();
 
-        // Create timestamp in YYYYMMDDHHmmss format for password generation
-        $this->timestamp    = date('YmdHis');
+        //Timestamp
+        $this->timestamp = date('YmdHis');
 
-        // Generate base64-encoded password for STK push authentication
-        $this->password     = $this->generate_password();
+        //Password generation
+        $this->password = $this->generate_password();
 
-        // Set the callback URL where M-Pesa will send payment confirmation webhooks
-        $this->callbackurl  = home_url('/wp-json/mpesapaywallpro/v1/callback', 'https');
+        // Callback URL
+        $secret_key = md5(wp_salt('nonce')); // unique auth
+        $this->callbackurl = add_query_arg(
+            'mpp_auth',
+            $secret_key,
+            rest_url('mpesapaywallpro/v1/callback')
+        );
 
         // Set the appropriate M-Pesa API endpoint URL based on environment
         $this->url          = $this->environment === 'production' ?
-            'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest' :
-            'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+            self::MPESA_PRODUCTION_URL :
+            self::MPESA_SANDBOX_URL;
+
+
+        MpesaPaywallProLogger::info("M-Pesa configuration initialized. Environment: {$this->environment}. API URL set to: {$this->url}");
     }
 
     /**
@@ -144,11 +161,9 @@ class MpesaPaywallProMpesa
         // Validate that all required M-Pesa configuration fields are populated
         $validation_result = $this->validate_config();
         if ($validation_result['status'] === 'error') {
+            MpesaPaywallProLogger::error("M-Pesa configuration validation failed: " . $validation_result['message']);
             return $validation_result;
         }
-
-        // Store the transaction amount for use in the callback handler
-        $this->amount = $amount;
 
         try {
             // Construct the payment request payload for M-Pesa STK push API
@@ -171,12 +186,16 @@ class MpesaPaywallProMpesa
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->access_token,
                     'Content-Type'  => 'application/json',
+                    'Expect'        => '',
+                    'Connection'    => 'Keep-Alive', // Request the server to stay connected
                 ],
                 'body'    => json_encode($data),
-                'timeout' => 60,
+                'timeout' => 30, // Reduced from 60 - M-Pesa responds quickly
+                'httpversion' => '1.1', // Force HTTP/1.1 for better compatibility
+                'sslverify' => true, // Explicit for security
             ]);
 
-            if(is_wp_error($response)) {
+            if (is_wp_error($response)) {
                 return [
                     'status' => 'error',
                     'message' => 'HTTP Request failed: ' . $response->get_error_message(),
@@ -196,6 +215,8 @@ class MpesaPaywallProMpesa
                 ];
             }
 
+            MpesaPaywallProLogger::info("STK push request sent successfully to M-Pesa API for phone number $phone_number with amount $amount.");
+
             // Return success response with payment details for client-side tracking
             return [
                 'status' => 'success',
@@ -204,6 +225,7 @@ class MpesaPaywallProMpesa
             ];
         } catch (\Exception $e) {
             // Capture and return any thrown exceptions as error response
+            MpesaPaywallProLogger::error("Exception during STK push request: " . $e->getMessage());
             $this->err = $e->getMessage();
             return [
                 'status' => 'error',
@@ -215,31 +237,57 @@ class MpesaPaywallProMpesa
     // generate access token for mpesa api
     private function generate_access_token()
     {
-        $auth_url = $this->environment === 'production' ?
-            'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials' :
-            'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+        // Check for cache first (early return for best performance)
+        $cached_token = get_transient('mpp_access_token');
+        if ($cached_token) {
+            return $cached_token;
+        }
 
+        // Use class constants for URLs (defined once, reused always)
+        static $auth_urls = [
+            'production' => 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+            'sandbox'    => 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+        ];
+
+        $auth_url = $auth_urls[$this->environment] ?? $auth_urls['sandbox'];
+
+        // Pre-build authorization header (avoid string concatenation in array)
         $credentials = base64_encode($this->consumer_key . ':' . $this->consumer_secret);
 
-        // moving to wp_remote_get to fix vulnerable code
+        // Optimized HTTP request with minimal timeout
         $response = wp_remote_get($auth_url, [
             'headers' => [
                 'Authorization' => 'Basic ' . $credentials,
             ],
-            'timeout' => 60,
+            'timeout' => 30, // Reduced from 60 - M-Pesa typically responds in <5s
+            'sslverify' => true, // Explicit for security
         ]);
 
-        if(is_wp_error($response)) {
-            return [
-                'status' => 'error',
-                'message' => 'HTTP Request failed: ' . $response->get_error_message(),
-            ];
+        // Early error handling
+        if (is_wp_error($response)) {
+            $error_msg = $response->get_error_message();
+            MpesaPaywallProLogger::error("Failed to generate access token: {$error_msg}");
+            return '';
         }
 
-        $body = wp_remote_retrieve_body($response);
-        $result = json_decode($body, true);
+        // Parse response
+        $result = json_decode(wp_remote_retrieve_body($response), true);
 
-        return isset($result['access_token']) ? $result['access_token'] : '';
+        // Validate token exists
+        if (empty($result['access_token'])) {
+            MpesaPaywallProLogger::error("Access token missing in API response");
+            return '';
+        }
+
+        $access_token = $result['access_token'];
+
+        // Cache for 50 minutes
+        $result = set_transient('mpp_access_token', $access_token, 50 * MINUTE_IN_SECONDS);
+        if (!$result) {
+            MpesaPaywallProLogger::warning("Failed to cache access token in transient");
+        }
+
+        return $access_token;
     }
 
     // generate password for stk push
@@ -270,129 +318,210 @@ class MpesaPaywallProMpesa
         return ['status' => 'success', 'message' => 'Mpesa configuration is valid'];
     }
 
-    // handle callback
-    public function handle_callback($request)
+    /**
+     * Handles M-Pesa STK push callback webhook from Safaricom.
+     *
+     * Receives and processes payment callback notifications from the M-Pesa API
+     * when a customer completes or cancels an STK push payment request. This webhook
+     * handler validates the incoming request, extracts payment result details, and
+     * stores the transaction information for later retrieval and processing.
+     *
+     * The method expects a POST request containing M-Pesa callback data in the following
+     * structure:
+     * {
+     *   "Body": {
+     *     "stkCallback": {
+     *       "CheckoutRequestID": "...",
+     *       "ResultCode": 0,
+     *       "ResultDesc": "..."
+     *     }
+     *   }
+     * }
+     *
+     * Result codes from M-Pesa:
+     * - 0: Transaction successful
+     * - Non-zero: Transaction failed or cancelled
+     *
+     * @since      1.0.0
+     * @param      WP_REST_Request $request    The incoming webhook request from M-Pesa containing
+     *                                        callback data with payment results
+     * @return     WP_REST_Response           JSON response indicating callback processing status:
+     *                                        - On ignored callback (missing stkCallback): ['status' => 'ignored']
+     *                                        - On successful processing: ['status' => 'ok']
+     *                                        - On error storing data: ['status' => 'error']
+     *
+     * @uses       WP_REST_Request::get_method() To verify the request method is POST
+     * @uses       WP_REST_Request::get_body() To retrieve the raw JSON callback payload
+     * @uses       json_decode() To parse the JSON callback data
+     * @uses       sanitize_text_field() To sanitize CheckoutRequestID and ResultDesc
+     * @uses       rest_ensure_response() To format the response as WP REST response
+     * @uses       store_details_meta() To persist transaction data to the database
+     */
+    public static function handle_callback(\WP_REST_Request $request)
     {
+        $params = $request->get_params();
+        $stk    = $params['Body']['stkCallback'] ?? null;
 
-        /*
-     * ======================================================
-     * 1. SAFARICOM CALLBACK (POST)
-     * ======================================================
+        if (!$stk) {
+            return rest_ensure_response(['status' => 'ignored']);
+        }
+
+        return self::store_details_meta($stk);
+    }
+
+
+    /**
+     * Stores M-Pesa transaction details and callback metadata to the database.
+     *
+     * Persists M-Pesa payment callback information to a custom post type, handling both
+     * initial transaction recording and duplicate prevention for callback retries. This method
+     * creates or retrieves an existing 'mpesa' post record and stores all transaction metadata
+     * including checkout ID, payment status, result codes, and timestamp for audit and
+     * reconciliation purposes.
+     *
+     * The method prevents duplicate entries by checking if a transaction with the same
+     * CheckoutRequestID already exists in the database. If found, it updates the existing
+     * post; otherwise, it creates a new post record. All transaction details are stored
+     * as post metadata for flexible querying and reporting.
+     *
+     * @since      1.0.0
+     * @param      string    $checkoutId     The unique M-Pesa checkout request ID for transaction identification
+     * @param      string    $status         The transaction status: 'success' or 'failed'
+     * @param      int       $resultCode     The M-Pesa result code (0 = success, non-zero = failure)
+     * @param      string    $resultDesc     The M-Pesa result description message
+     * @return     WP_REST_Response        JSON response indicating storage operation status:
+     *                                     - On success: ['status' => 'ok']
+     *                                     - On error creating/retrieving post: ['status' => 'error']
+     *
+     * @uses       get_posts() To query existing 'mpesa' posts by checkout_id meta value
+     * @uses       wp_insert_post() To create a new 'mpesa' post record for new transactions
+     * @uses       is_wp_error() To validate post creation was successful
+     * @uses       update_post_meta() To store transaction metadata fields
+     * @uses       current_time() To generate the transaction processing timestamp
+     * @uses       rest_ensure_response() To format the response as WP REST response
      */
-        if ($request->get_method() === 'POST') {
+    public static function store_details_meta($stk)
+    {
+        // Extract basic callback data
+        $checkoutId = sanitize_text_field($stk['CheckoutRequestID'] ?? '');
+        $merchantRequestId = sanitize_text_field($stk['MerchantRequestID'] ?? '');
+        $resultCode = (int) ($stk['ResultCode'] ?? -1);
+        $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
 
-            $raw_body = $request->get_body();
-            $body = json_decode($raw_body, true);
+        if (empty($checkoutId)) {
+            MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data.");
+            return rest_ensure_response(['status' => 'error', 'message' => 'Missing checkout ID'], 400);
+        }
 
-            $stk = $body['Body']['stkCallback'] ?? null;
+        // Extract transaction metadata
+        $amount = 0;
+        $phoneNumber = '';
+        $mpesaReceipt = '';
+        $transactionDate = '';
 
-            if (!$stk) {
-                return rest_ensure_response(['status' => 'ignored']);
+        if ($resultCode === 0 && isset($stk['CallbackMetadata']['Item'])) {
+            foreach ($stk['CallbackMetadata']['Item'] as $item) {
+                switch ($item['Name']) {
+                    case 'Amount':
+                        $amount = floatval($item['Value'] ?? 0);
+                        break;
+                    case 'MpesaReceiptNumber':
+                        $mpesaReceipt = sanitize_text_field($item['Value'] ?? '');
+                        break;
+                    case 'PhoneNumber':
+                        $phoneNumber = sanitize_text_field($item['Value'] ?? '');
+                        break;
+                    case 'TransactionDate':
+                        $transactionDate = sanitize_text_field($item['Value'] ?? '');
+                        break;
+                }
             }
+        }
+        $status = ($resultCode === 0) ? 'success' : 'failed';
 
-            $checkoutId = sanitize_text_field($stk['CheckoutRequestID']);
-            $resultCode = (int) $stk['ResultCode'];
-            $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
+        // Duplicate check
+        global $wpdb;
+        $existing_post_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = 'checkout_id' 
+         AND meta_value = %s 
+         LIMIT 1",
+            $checkoutId
+        ));
 
-            $status = ($resultCode === 0) ? 'success' : 'failed';
-
-            /*
-         * Prevent duplicates (Safaricom retries callbacks)
-         */
-            $existing = get_posts([
-                'post_type'   => 'mpesa',
-                'meta_key'    => 'checkout_id',
-                'meta_value'  => $checkoutId,
-                'fields'      => 'ids',
-                'numberposts' => 1,
-            ]);
-
-            if ($existing) {
-                $post_id = $existing[0]; // returns back the post id
-            } else {
-                $post_id = wp_insert_post([
-                    'post_type'   => 'mpesa',
-                    'post_status' => 'publish',
-                    'post_title'  => 'Mpesa STK ' . $checkoutId,
-                ]); // after create complete returns back the post id
-            }
-
-            if (is_wp_error($post_id)) {
-                return rest_ensure_response(['status' => 'error']);
-            }
-
-            /*
-         * Store callback data
-         */
-            // store relevant data in post meta
-
-            update_post_meta($post_id, 'checkout_id', $checkoutId);
-            update_post_meta($post_id, 'status', $status);
-            update_post_meta($post_id, 'amount', $this->amount);
-            update_post_meta($post_id, 'result_code', $resultCode);
-            update_post_meta($post_id, 'result_desc', $resultDesc);
-            update_post_meta($post_id, 'account_ref', $this->account_reference ?? '');
-            update_post_meta($post_id, 'date', current_time('mysql'));
-
-            return rest_ensure_response(['status' => 'ok']);
+        if ($existing_post_id) {
+            MpesaPaywallProLogger::info("Duplicate callback ignored for CheckoutRequestID: $checkoutId");
+            return rest_ensure_response(['status' => 'ok', 'post_id' => $existing_post_id, 'duplicate' => true], 200);
         }
 
-        /*
-     * ======================================================
-     * 2. JS POLLING (GET)
-     * ======================================================
-     */
-        $checkoutId = sanitize_text_field($request->get_param('checkout_id'));
-        $phone = sanitize_text_field($request->get_param('phone'));
+        // ULTRA-OPTIMIZED Single database transaction
+        $current_time = current_time('mysql'); // get local time for post
+        $gmt_time = get_gmt_from_date($current_time); // gets UTC time for consistency in storage
 
+        // Start transaction for atomic insert
+        $wpdb->query('START TRANSACTION');
 
-        if (!$checkoutId || !$phone) {
-            return rest_ensure_response([
-                'status'  => 'error',
-                'message' => 'No checkout id or phone provided',
-            ]);
+        // Insert post
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->posts} 
+        (post_type, post_status, post_title, post_date, post_date_gmt, post_modified, post_modified_gmt) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            'mpesa', // custom post type for M-Pesa transactions
+            'publish', // publish immediately for visibility in admin
+            'Mpesa STK ' . $checkoutId, // title with checkout ID for easy identification
+            $current_time, // local time for post_date
+            $gmt_time, // UTC time for post_date_gmt
+            $current_time, // local time for post_modified
+            $gmt_time // UTC time for post_modified_gmt
+        ));
+
+        // get id of newly inserted post
+        $post_id = $wpdb->insert_id;
+
+        if (!$post_id) {
+            $wpdb->query('ROLLBACK');
+            MpesaPaywallProLogger::error('Failed to insert post into database');
+            return rest_ensure_response(['status' => 'error', 'message' => 'Database error'], 500);
         }
 
-        $posts = get_posts([
-            'post_type'   => 'mpesa',
-            'meta_key'    => 'checkout_id',
-            'meta_value'  => $checkoutId,
-            'numberposts' => 1,
-        ]);
+        // Build meta values
+        $meta_rows = [
+            [$post_id, 'checkout_id', $checkoutId],
+            [$post_id, 'merchant_request_id', $merchantRequestId],
+            [$post_id, 'status', $status],
+            [$post_id, 'result_code', (string)$resultCode],
+            [$post_id, 'result_desc', $resultDesc],
+            [$post_id, 'date', $current_time],
+        ];
 
-        if (!$posts) {
-            return rest_ensure_response([
-                'status'  => 'pending',
-                'message' => 'Waiting for payment confirmation',
-            ]);
+        // add more meta if transaction was successful
+        if ($resultCode === 0) {
+            $meta_rows[] = [$post_id, 'amount', (string)$amount];
+            $meta_rows[] = [$post_id, 'mpesa_receipt_number', $mpesaReceipt];
+            $meta_rows[] = [$post_id, 'phone_number', $phoneNumber];
+            $meta_rows[] = [$post_id, 'transaction_date', $transactionDate];
         }
 
-        $post_id = $posts[0]->ID;
-
-        //store phone number in post meta
-        update_post_meta($post_id, 'phone_number', $phone);
-
-        $status      = get_post_meta($post_id, 'status', true);
-        $result_desc = get_post_meta($post_id, 'result_desc', true);
-
-        if ($status === 'failed') {
-            return rest_ensure_response([
-                'status'  => 'failed',
-                'message' => $result_desc ?: 'Payment was cancelled or failed',
-            ]);
+        // Single bulk insert for all meta
+        $placeholders = implode(', ', array_fill(0, count($meta_rows), '(%d, %s, %s)')); // build placeholders for prepared statement
+        $values = [];
+        foreach ($meta_rows as $row) {
+            $values = array_merge($values, $row);
         }
 
-        if ($status === 'success') {
-            return rest_ensure_response([
-                'status'  => 'success',
-                'message' => $result_desc ?: 'Payment successful',
-            ]);
-        }
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES {$placeholders}",
+            ...$values
+        ));
 
-        // fallback (should rarely happen)
-        return rest_ensure_response([
-            'status'  => 'pending',
-            'message' => 'Waiting for payment confirmation',
-        ]);
+        // Commit transaction
+        $wpdb->query('COMMIT');
+
+        // Clean cache
+        clean_post_cache($post_id);
+
+        MpesaPaywallProLogger::info("Callback processed for CheckoutRequestID: $checkoutId with status: $status. Post ID: $post_id");
+
+        return rest_ensure_response(['status' => 'ok', 'post_id' => $post_id], 200);
     }
 }

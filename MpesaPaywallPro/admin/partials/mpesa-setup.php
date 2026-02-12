@@ -25,7 +25,7 @@ $options = get_option('mpesapaywallpro_options', []);
     <div class="mpesapaywallpro-notice notice-info">
         <p>
             <?php esc_html_e('Enter your M-Pesa Daraja API credentials. These are required to process payments through Safaricom.', 'mpesapaywallpro'); ?>
-            <a href="https://developer.safaricom.co.ke/apis" target="_blank"><?php esc_html_e('Get API credentials', 'mpesapaywallpro'); ?></a>
+            <a href="<?php echo esc_url('https://developer.safaricom.co.ke/apis'); ?>" target="_blank"><?php esc_html_e('Get API credentials', 'mpesapaywallpro'); ?></a>
         </p>
     </div>
 

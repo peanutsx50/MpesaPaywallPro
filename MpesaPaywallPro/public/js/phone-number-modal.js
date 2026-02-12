@@ -48,13 +48,30 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Validate phone number
-  function validatePhone(phone) {
-    // Remove spaces and dashes
-    phone = phone.replace(/[\s-]/g, "");
+  function cleanPhoneNumber(phone) {
+    // Input validation
+    if (!phone || typeof phone !== "string") return false;
 
-    // Check if it's a valid Kenyan number (starts with 07 or 01, 10 digits)
-    const phonePattern = /^254(?:7[0-9]|1[01])[0-9]{7}$/;
-    return phonePattern.test(phone);
+    let cleaned = phone.trim().replace(/[\s\-\+]/g, "");
+
+    // Length constraints
+    if (cleaned.length < 10 || cleaned.length > 20) return false;
+
+    // Handle different input formats
+    if (cleaned.startsWith("+254")) {
+      cleaned = cleaned.substring(1); // Remove +
+    } else if (cleaned.startsWith("07")) {
+      cleaned = "254" + cleaned.substring(1); // Convert 07 to 254
+    }
+
+    // Validate Kenyan number format
+    const phonePattern = /^254(7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89])|11[0-5])\d{6}$/;
+
+    if (!phonePattern.test(cleaned)) {
+      return false;
+    }
+
+    return cleaned; // Return normalized number
   }
 
   // Format phone number for display
@@ -68,13 +85,13 @@ document.addEventListener("DOMContentLoaded", function () {
   form.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const phoneNumber = phoneInput.value.trim().replace(/^\+/, "");
+    // clean phone number
+    const phoneNumber = cleanPhoneNumber(phoneInput.value);
 
-    // Validate
-    if (!validatePhone(phoneNumber)) {
+    if (!phoneNumber) {
       phoneInput.classList.add("mpp-error");
       errorMsg.textContent =
-        "please enter a valid Kenyan phone number (e.g., 254712345678)";
+        "Invalid Kenyan Mpesa phone number, enter in format: 254XXXXXXXXX, +254XXXXXXXXX, or 07XXXXXXXX";
       errorMsg.classList.add("mpp-visible");
       return;
     }

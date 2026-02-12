@@ -24,34 +24,38 @@ if (! defined('WPINC')) {
         <button class="mpp-modal-close" id="mpp-modal-close" aria-label="Close">&times;</button>
 
         <div class="mpp-modal-header">
-            <h3 class="mpp-modal-title"><?php _e('Enter your M-Pesa number', 'mpesapaywallpro'); ?></h3>
+            <h3 class="mpp-modal-title"><?php esc_html_e('Enter your M-Pesa number', 'mpesapaywallpro'); ?></h3>
             <p class="mpp-modal-subtitle">
-                <?php echo sprintf(__('You\'ll receive an M-Pesa prompt to pay KES %s', 'mpesapaywallpro'), esc_html($price)); ?>
+                <?php echo sprintf(
+                    /* translators: %s: The total amount in KES. */
+                    esc_html__('You\'ll receive an M-Pesa prompt to pay KES %s', 'mpesapaywallpro'),
+                    esc_html($price)
+                ); ?>
             </p>
         </div>
 
         <form id="mpp-phone-form">
             <div class="mpp-form-group">
                 <label class="mpp-form-label" for="mpp-phone-number">
-                    <?php _e('Phone Number', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e('Phone Number', 'mpesapaywallpro'); ?>
                 </label>
                 <input
                     type="tel"
                     id="mpp-phone-number"
                     class="mpp-phone-input"
-                    placeholder="254712345678"
+                    placeholder="0712345678"
                     maxlength="12"
                     required />
-                <p class="mpp-phone-hint"><?php _e('Enter your Safaricom number (e.g., 254712345678)', 'mpesapaywallpro'); ?></p>
+                <p class="mpp-phone-hint"><?php esc_html_e('Enter your Safaricom number (e.g., 0712345678)', 'mpesapaywallpro'); ?></p>
                 <p class="mpp-error-message" id="mpp-phone-error"></p>
             </div>
 
             <div class="mpp-modal-actions">
                 <button type="button" class="mpp-btn mpp-btn-secondary" id="mpp-cancel-btn">
-                    <?php _e('Cancel', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e('Cancel', 'mpesapaywallpro'); ?>
                 </button>
                 <button type="submit" class="mpp-btn mpp-btn-primary" style="background-color: <?php echo esc_attr($buttonColor); ?>;" id="mpp-submit-btn">
-                    <?php _e('Continue', 'mpesapaywallpro'); ?>
+                    <?php esc_html_e('Continue', 'mpesapaywallpro'); ?>
                 </button>
             </div>
         </form>

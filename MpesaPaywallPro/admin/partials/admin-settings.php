@@ -32,7 +32,9 @@ $tabs = [
 ];
 
 
-$current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_GET['tab'] : array_key_first($tabs);
+// Sanitize and validate tab parameter
+$current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
+$current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_first($tabs);
 ?>
 
 
@@ -53,13 +55,13 @@ $current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $tabs) ? $_
             </div>
             <div class="mpesapaywallpro-banner-right">
                 <div class="mpesapaywallpro-banner-actions">
-                    <a href="https://surgetech.co.ke/contact" target="_blank" class="button button-primary">
+                    <a href="<?php echo esc_url('https://surgetech.co.ke/contact'); ?>" target="_blank" class="button button-primary">
                         <div class="mpesapaywallpro-features-button">
                             <span class="dashicons dashicons-external"></span>
                             <?php esc_html_e('Contact us for custom plugin', 'mpesapaywallpro'); ?>
                         </div>
                     </a>
-                    <a href="https://surgetech.co.ke/mpesapaywallpro" target="_blank" class="button">
+                    <a href="<?php echo esc_url('https://surgetech.co.ke/mpesapaywallpro'); ?>" target="_blank" class="button">
                         <div class="mpesapaywallpro-features-button">
                             <span class="dashicons dashicons-book"></span>
                             <?php esc_html_e('Read how to use this plugin', 'mpesapaywallpro'); ?>

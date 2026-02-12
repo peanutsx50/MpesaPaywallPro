@@ -23,7 +23,10 @@
 
 namespace MpesaPaywallPro\public;
 
+use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use MpesaPaywallPro\core\MpesaPaywallProUtils;
+use WP_Error;
 
 // TODO: Need to implement cookie signing to avoid tampering
 class MpesaPaywallProPublic
@@ -81,8 +84,8 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'public/css/public-paywall.css', array(), (float) $this->version, 'all');
-		wp_enqueue_style($this->mpesapaywallpro . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), (float) $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro, MPP_URL . 'public/css/public-paywall.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->mpesapaywallpro . '-modal', MPP_URL . 'public/css/phone-number-modal.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -105,9 +108,79 @@ class MpesaPaywallProPublic
 		 * class.
 		 */
 
-		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->mpesapaywallpro . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), (float) $this->version, true);
-		wp_enqueue_script($this->mpesapaywallpro . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), (float) $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'public/js/phone-number-modal.js', array('jquery'), $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-payment', MPP_URL . 'public/js/initiate-payment.js', array('jquery'), $this->version, true);
+		wp_enqueue_script($this->mpesapaywallpro . '-status', MPP_URL . 'public/js/check-payment-status.js', array('jquery'), $this->version, true);
+	}
+
+	/**
+	 * Registers REST API endpoint for M-Pesa payment callbacks.
+	 *
+	 * Registers a custom REST route that handles M-Pesa payment verification callbacks.
+	 * The endpoint is accessible at /wp-json/mppmpesa/v1/callback and accepts both
+	 * POST and GET requests. This endpoint allows the M-Pesa payment gateway to send
+	 * payment status updates without authentication requirements.
+	 *
+	 * @since      1.0.0
+	 * @return     void
+	 */
+	public function register_ajax_endpoints()
+	{
+		register_rest_route('mpesapaywallpro/v1', '/callback', [
+			'methods' => ['POST'],
+			'callback' => [MpesaPaywallProMpesa::class, 'handle_callback'],
+			'permission_callback' => [$this, 'validate_safaricom_IP'],
+			'show_in_index' => false, // Hide from REST API index for security through obscurity
+			//'permission_callback' => '__return_true', // Testing
+			'args'                => [
+				'mpp_auth' => [
+					'required' => true,
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+			],
+		]);
+
+		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
+			'methods' => 'POST',
+			'callback' => [$this, 'process_payment'],
+			'permission_callback' => [$this, 'validate_request'],
+			'args' => [
+				'phone_number' => [
+					'required'          => true,
+					'type'              => 'string',
+					'validate_callback' => [$this, 'validate_phone_number'],
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'amount' => [
+					'required' 			=> true,
+					'type'              => 'integer',
+					'validate_callback' => [$this, 'validate_amount'],
+				],
+				'nonce' => [
+					'required' 			=> true,
+					'type'     			=> 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+			],
+		]);
+
+		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
+			'methods' => 'POST',
+			'callback' => [$this, 'confirm_payment'],
+			'permission_callback' => [$this, 'validate_request'],
+			'args'                => [
+				'checkout_id' => [
+					'required'          => true,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'locked_post_id' => [
+					'required'          => true,
+					'type'              => 'integer',
+					'sanitize_callback' => 'absint',
+				]
+			]
+		]);
 	}
 
 	/**
@@ -132,11 +205,14 @@ class MpesaPaywallProPublic
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
-				'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
+				//'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
+				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
-				'post_id' => $post_id,
+				'post_id' => $post_id ? (int)$post_id : 0, // locked post ID
 				'amount' => $post_id ? $this->get_amount($post_id) : 0,
+				'pollInterval' => 500, // 500 milisecs
+				'maxPollAttempts' => 30, // total 1 minute of polling
 			)
 		);
 	}
@@ -170,7 +246,7 @@ class MpesaPaywallProPublic
 
 		// check if amount is 0, if so return content
 		$amount = $this->get_amount($post_id);
-		if ($amount <= 0) {
+		if ($amount < MPESA_MIN || $amount > MPESA_MAX) {
 			return $content;
 		}
 
@@ -179,11 +255,12 @@ class MpesaPaywallProPublic
 			return $content;
 		}
 
+		MpesaPaywallProLogger::info("User does not have access to post ID: $post_id. Displaying paywall.");
 		// Generate preview content
 		$preview_content = $this->generate_preview($content);
 
-		// Display preview html and attach paywall html
-		$paywall_html = $preview_content . $this->render_paywall();
+		// Display preview html and attach paywall html and pass amount (should never be 0 or greater than max)
+		$paywall_html = $preview_content . $this->render_paywall($amount);
 		return $paywall_html;
 	}
 
@@ -212,7 +289,7 @@ class MpesaPaywallProPublic
 		$excerpt = get_option('mpesapaywallpro_options')['excerpt_length'] ?? 100;
 		$preview_words = array_slice($words, 0, $excerpt);
 		$preview_content = implode(' ', $preview_words);
-		$preview_content .= '...<div class="mpp-preview-fade"></div>';
+		//$preview_content .= '...<div class="mpp-preview-fade"></div>';
 		return '<div class="mpp-content-preview">' . wpautop($preview_content) . '</div>';
 	}
 
@@ -243,29 +320,122 @@ class MpesaPaywallProPublic
 		$allowed_roles = get_option('mpesapaywallpro_options')['allowed_user_roles'] ?? ['administrator'];
 		foreach ($current_user->roles as $role) {
 			if (in_array($role, (array)$allowed_roles)) {
+				MpesaPaywallProLogger::info("User ID: {$current_user->ID} with role '{$role}' has access to post ID: $post_id due to role exemption.");
 				return true;
 			}
 		}
 
-		// Check for payment cookie (for immediate access after payment)
-		$cookie_name = 'mpp_paid_' . $post_id;
-		if (isset($_COOKIE[$cookie_name])) {
-			/** @disregard */
-			$checkout_id = sanitize_text_field($_COOKIE[$cookie_name]);
-			// get post meta to verify
-			$posts = get_posts([
-				'post_type'   => 'mpesa',
-				'meta_key'    => 'checkout_id',
-				'meta_value'  => $checkout_id,
-				'numberposts' => 1,
-			]);
+		// For logged-in users: use Server side transients with expiry
+		if (is_user_logged_in()) {
+			$transient_key = 'mpp_access_' . $current_user->ID . '_' . $post_id;
+			$checkout_id = get_transient($transient_key);
 
-			if (!empty($posts)) {
-				return true;
+			if ($checkout_id) {
+				return $this->verify_payment_record($checkout_id, $post_id);
 			}
+		}
+
+		// For guests: Use WordPress cookies with nonces (signed, time-limited)
+		if (isset($_COOKIE['mpp_paid_' . $post_id])) {
+			return $this->verify_guest_payment_cookie($post_id);
 		}
 
 		return false;
+	}
+
+	/**
+	 * Verify payment record exists and is successful
+	 */
+	private function verify_payment_record($checkout_id, $content_post_id)
+	{
+		$posts = get_posts([
+			'post_type'   => 'mpesa',
+			'meta_query'  => [
+				'relation' => 'AND',
+				[
+					'key'     => 'checkout_id',
+					'value'   => $checkout_id,
+					'compare' => '='
+				],
+				[
+					'key'     => 'status',
+					'value'   => 'success',
+					'compare' => '='
+				],
+				[
+					'key'     => 'content_post_id',
+					'value'   => $content_post_id,
+					'compare' => '='
+				]
+			],
+			'numberposts' => 1,
+			'fields'      => 'ids'
+		]);
+
+		if (empty($posts)) {
+			MpesaPaywallProLogger::info("No payment record found for checkout ID: $checkout_id, post: $content_post_id");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Verify guest payment cookie using WordPress nonces
+	 */
+	private function verify_guest_payment_cookie($post_id)
+	{
+		MpesaPaywallProLogger::info('Verifying guest payment cookie for post ID: ' . $post_id);
+		$cookie_value = sanitize_text_field(wp_unslash($_COOKIE['mpp_paid_' . $post_id]));
+
+		// Cookie format: checkout_id|nonce|expiry
+		$parts = explode('|', $cookie_value);
+
+		if (count($parts) !== 3) {
+			return false;
+		}
+
+		// takes array and unpacks into variables based on order
+		list($checkout_id, $nonce, $expiry) = $parts;
+
+		// Check expiration
+		if (time() > (int)$expiry) {
+			MpesaPaywallProLogger::info("Payment cookie for post ID: $post_id has expired. Clearing cookie.");
+			$this->clear_payment_cookie($post_id);
+			return false;
+		}
+
+		// Verify nonce (uses WordPress salts internally)
+		$expected_nonce = wp_hash($checkout_id . $post_id . $expiry, 'nonce');
+
+		if (!hash_equals($expected_nonce, $nonce)) {
+			MpesaPaywallProLogger::warning("Possible tampering detected. Payment cookie nonce verification failed for post ID: $post_id. Clearing cookie.");
+			$this->clear_payment_cookie($post_id);
+			return false;
+		}
+
+		// Verify against database
+		return $this->verify_payment_record($checkout_id, $post_id);
+	}
+
+
+	/**
+	 * Clear payment cookie
+	 */
+	private function clear_payment_cookie($post_id)
+	{
+		MpesaPaywallProLogger::info("Clearing payment cookie for post ID: $post_id");
+
+		setcookie(
+			'mpp_paid_' . $post_id,
+			'',
+			[
+				'expires'  => time() - 3600,
+				'path'     => '/',
+				'secure'   => is_ssl(),
+				'httponly' => true
+			]
+		);
 	}
 
 	/**
@@ -278,11 +448,92 @@ class MpesaPaywallProPublic
 	 * @since      1.0.0
 	 * @return     string    The rendered paywall HTML markup.
 	 */
-	public function render_paywall()
+	public function render_paywall($price)
 	{
 		ob_start();
-		require_once MPP_PATH . 'public/partials/paywall-display.php';
+		$file_path = MPP_PATH . 'public/partials/paywall-display.php';
+		require $file_path;
 		return ob_get_clean();
+	}
+
+	public function validate_request($request)
+	{
+		//1. check for ssl and return error if not enabled
+		if (!is_ssl()) {
+			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
+			return new WP_Error(
+				'ssl_required',
+				'SSL is not enabled on this site, transactions cannot be processed securely',
+				['status' => 403]
+			);
+		}
+
+		//2. verify nonce
+		$nonce = $request->get_param('nonce');
+		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
+		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
+			return new WP_Error(
+				'invalid_nonce',
+				'Invalid request',
+				['status' => 403]
+			);
+		}
+		return true;
+	}
+
+	public function validate_phone_number($phone, $request, $key)
+	{
+		$results = MpesaPaywallProUtils::check_phone_number($phone);
+
+		// Kenyan phone number validation
+		if (!$results) {
+			return new \WP_Error(
+				'invalid_phone',
+				'Invalid phone number. Use format: 254XXXXXXXXX',
+				['status' => 400]
+			);
+		}
+
+		return true;
+	}
+
+	public function validate_amount($amount, $request, $key)
+	{
+		if (!is_numeric($amount) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
+			return new \WP_Error(
+				'invalid_amount',
+				'Invalid amount. Must be between ' . MPESA_MIN . ' and ' . MPESA_MAX,
+				['status' => 400]
+			);
+		}
+		return true;
+	}
+
+	public function validate_safaricom_IP($request)
+	{
+		//check for ssl
+		if (!is_ssl()) {
+			MpesaPaywallProLogger::error("Unauthorized callback attempt from non-SSL connection.");
+			return new \WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
+		}
+
+		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
+		}
+		// validate auth token
+		$url_token = $request->get_param('mpp_auth');
+
+		// We use a hash of your NONCE_SALT to create a unique-to-you key
+		$secret_key = md5(wp_salt('nonce'));
+
+		if (!hash_equals($secret_key, $url_token)) {
+			MpesaPaywallProLogger::error("Unauthorized Callback: Token mismatch.");
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -306,27 +557,9 @@ class MpesaPaywallProPublic
 	 */
 	public function process_payment(\WP_REST_Request $request)
 	{
-
-		$params = $request->get_json_params();
-		$phone_number = sanitize_text_field($params['phone_number'] ?? '');
-		$amount = absint($params['amount'] ?? 0);
-		$nonce = sanitize_text_field($params['nonce'] ?? '');
-
-		// Verify nonce
-		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => 'Invalid request']
-			], 403);
-		}
-
-		// Validate required fields
-		if (empty($phone_number) || $amount < 1 || $amount > 150000) {
-			return new \WP_REST_Response([
-				'success' => false,
-				'data' => ['message' => __('Invalid phone number or amount.', 'mpesapaywallpro')]
-			], 400);
-		}
+		// Get parameters already validated by REST API args
+		$phone_number = $request->get_param('phone_number');
+		$amount       = $request->get_param('amount');
 
 		// Process payment
 		$mpesa = new MpesaPaywallProMpesa();
@@ -334,7 +567,7 @@ class MpesaPaywallProPublic
 
 		if ($response['status'] === 'success') {
 			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
-
+			MpesaPaywallProLogger::info("Payment initiated successfully for phone number: $phone_number with amount: $amount. CheckoutRequestID: $checkout_request_id");
 			return new \WP_REST_Response([
 				'success' => true,
 				'data' => [
@@ -343,6 +576,7 @@ class MpesaPaywallProPublic
 				]
 			], 200);
 		} else {
+			MpesaPaywallProLogger::error("Payment initiation failed for phone number: $phone_number with amount: $amount.");
 			return new \WP_REST_Response([
 				'success' => false,
 				'data' => ['message' => 'Payment initiation failed: ' . ($response['message'] ?? 'Unknown error')]
@@ -355,7 +589,7 @@ class MpesaPaywallProPublic
 		// Get settings and meta
 		$options = get_option('mpesapaywallpro_options', []);
 		$default_amount = absint($options['default_amount'] ?? 20);
-		$auto_lock = !empty($options['auto_lock']);
+		$auto_lock = absint($options['auto_lock'] ?? 0) === 1;
 
 		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true) === '1';
 		$custom_price = get_post_meta($post_id, 'mpp_price', true);
@@ -368,37 +602,113 @@ class MpesaPaywallProPublic
 
 		// Auto-lock disabled: only charge if manually locked
 		if ($is_locked) {
-			return $custom_price > 0 ? $custom_price : $default_amount;
+			return $custom_price > 0 ? $custom_price : 0;
 		}
 
 		// Not locked
 		return 0;
 	}
 
-	/**
-	 * Registers REST API endpoint for M-Pesa payment callbacks.
-	 *
-	 * Registers a custom REST route that handles M-Pesa payment verification callbacks.
-	 * The endpoint is accessible at /wp-json/mppmpesa/v1/callback and accepts both
-	 * POST and GET requests. This endpoint allows the M-Pesa payment gateway to send
-	 * payment status updates without authentication requirements.
-	 *
-	 * @since      1.0.0
-	 * @return     void
-	 */
-	public function register_ajax_endpoints()
+	public function confirm_payment($request)
 	{
-		$mpesa = new MpesaPaywallProMpesa();
-		register_rest_route('mpesapaywallpro/v1', '/callback', [
-			'methods' => ['POST', 'GET'],
-			'callback' => [$mpesa, 'handle_callback'],
-			'permission_callback' => '__return_true',
-		]);
+		// WordPress already sanitized these via args validation
+		$checkoutId = $request->get_param('checkout_id');      // Already sanitized
+		$content_post_id = $request->get_param('locked_post_id'); // Already absint()
 
-		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
-			'methods' => 'POST',
-			'callback' => [$this, 'process_payment'],
-			'permission_callback' => '__return_true',
+		// Find the payment record
+		global $wpdb;
+		$post_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = 'checkout_id' 
+         AND meta_value = %s 
+         LIMIT 1",
+			$checkoutId
+		));
+
+		if (!$post_id) {
+			return rest_ensure_response([
+				'status'  => 'pending',
+				'message' => 'Waiting for payment confirmation',
+			]);
+		}
+
+		// Get payment status
+		$status = get_post_meta($post_id, 'status', true);
+		$result_desc = get_post_meta($post_id, 'result_desc', true);
+		$mpesa_receipt = get_post_meta($post_id, 'mpesa_receipt_number', true);
+
+		// Handle failed payment
+		if ($status === 'failed') {
+			MpesaPaywallProLogger::error("Payment failed for checkout ID: $checkoutId. Reason: $result_desc");
+			return rest_ensure_response([
+				'status'      => 'failed',
+				'message'     => $result_desc ?: 'Payment was cancelled or failed',
+				'result_desc' => $result_desc,
+			]);
+		}
+
+		// Handle successful payment
+		if ($status === 'success') {
+			$this->grant_payment_access($content_post_id, $checkoutId);
+			MpesaPaywallProLogger::info("Access granted to post $content_post_id for checkout ID: $checkoutId");
+			return rest_ensure_response([
+				'status'          => 'success',
+				'message'         => $result_desc ?: 'Payment successful',
+				'mpesa_receipt'   => $mpesa_receipt,
+				'result_desc'     => $result_desc,
+				'content_post_id' => $content_post_id,
+			]);
+		}
+
+		// Still pending
+		return rest_ensure_response([
+			'status'  => 'pending',
+			'message' => 'Waiting for payment confirmation',
 		]);
+	}
+
+	/**
+	 * Set payment access after successful payment
+	 * Call this from your callback handler after storing payment
+	 */
+	public function grant_payment_access($content_post_id, $checkout_id)
+	{
+		$duration = (get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30) * DAY_IN_SECONDS;
+
+		if (is_user_logged_in()) {
+			// Store in transient (server-side, auto-expires)
+			$transient_key = 'mpp_access_' . get_current_user_id() . '_' . $content_post_id;
+			set_transient($transient_key, $checkout_id, $duration);
+		} else {
+			// Set signed cookie for guests
+			$this->set_payment_cookie($content_post_id, $checkout_id, $duration);
+		}
+	}
+
+	/**
+	 * Create signed cookie for guest users
+	 */
+	private function set_payment_cookie($content_post_id, $checkout_id, $duration)
+	{
+		// gets current time then add duration to set expiry
+		$expiry = time() + $duration;
+
+		// Create nonce using WordPress's wp_hash (uses WordPress salts)
+		$nonce = wp_hash($checkout_id . $content_post_id . $expiry, 'nonce');
+
+		// Cookie format: checkout_id|nonce|expiry
+		$cookie_value = $checkout_id . '|' . $nonce . '|' . $expiry;
+
+		setcookie(
+			'mpp_paid_' . $content_post_id,
+			$cookie_value,
+			[
+				'expires'  => $expiry,
+				'path'     => '/',
+				'secure'   => is_ssl(),
+				'httponly' => true,
+				'samesite' => 'Lax'
+			]
+		);
 	}
 }

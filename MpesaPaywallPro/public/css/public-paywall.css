@@ -23,6 +23,7 @@
   padding: 48px 0;
   margin: 0;
   text-align: center;
+  color: var(--wp--preset--color--contrast, #111827);
 }
 
 .mpp-paywall-title {
@@ -99,6 +100,7 @@
 
 #mpp-pay-button:hover {
   transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 #mpp-pay-button:active {
