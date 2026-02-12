@@ -181,6 +181,8 @@ class MpesaPaywallProMpesa
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->access_token,
                     'Content-Type'  => 'application/json',
+                    'Expect'        => '',
+                    'Connection'    => 'Keep-Alive', // Request the server to stay connected
                 ],
                 'body'    => json_encode($data),
                 'timeout' => 30, // Reduced from 60 - M-Pesa responds quickly
