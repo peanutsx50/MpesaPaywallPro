@@ -506,6 +506,7 @@ class MpesaPaywallProPublic
 
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
+			MpesaPaywallProLogger::warning("Unauthorized callback attempt from IP: $client_ip. Access denied.");
 			return new WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
 		}
 		// validate auth token
