@@ -161,6 +161,11 @@ class MpesaPaywallProPublic
 					'type'     			=> 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				],
+				'post_id' => [
+					'required'          => true,
+					'type'              => 'integer',
+					'sanitize_callback' => 'absint',
+				]
 			],
 		]);
 
@@ -178,7 +183,12 @@ class MpesaPaywallProPublic
 					'required'          => true,
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
-				]
+				],
+				'nonce' => [
+					'required'          => true,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
 			]
 		]);
 	}
@@ -205,12 +215,11 @@ class MpesaPaywallProPublic
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
-				//'callback_url' => rest_url('mpesapaywallpro/v1/callback'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
-				'post_id' => $post_id ? (int)$post_id : 0, // locked post ID
-				'amount' => $post_id ? $this->get_amount($post_id) : 0,
+				'post_id' => $post_id, // locked post ID int or false
+				'amount' => $this->get_amount($post_id), // get amount based on post meta or default
 				'pollInterval' => 500, // 500 milisecs
 				'maxPollAttempts' => 30, // total 1 minute of polling
 			)
@@ -350,6 +359,7 @@ class MpesaPaywallProPublic
 	{
 		$posts = get_posts([
 			'post_type'   => 'mpesa',
+			'post_status' => 'publish',
 			'meta_query'  => [
 				'relation' => 'AND',
 				[
@@ -369,7 +379,10 @@ class MpesaPaywallProPublic
 				]
 			],
 			'numberposts' => 1,
-			'fields'      => 'ids'
+			'fields'      => 'ids',
+			'no_found_rows' => true,  // Performance: skip counting total rows
+			'update_post_meta_cache' => false,  // Performance: skip meta cache
+			'update_post_term_cache' => false,  // Performance: skip term cache
 		]);
 
 		if (empty($posts)) {
@@ -489,7 +502,7 @@ class MpesaPaywallProPublic
 
 		// Kenyan phone number validation
 		if (!$results) {
-			return new \WP_Error(
+			return new WP_Error(
 				'invalid_phone',
 				'Invalid phone number. Use format: 254XXXXXXXXX',
 				['status' => 400]
@@ -502,7 +515,7 @@ class MpesaPaywallProPublic
 	public function validate_amount($amount, $request, $key)
 	{
 		if (!is_numeric($amount) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
-			return new \WP_Error(
+			return new WP_Error(
 				'invalid_amount',
 				'Invalid amount. Must be between ' . MPESA_MIN . ' and ' . MPESA_MAX,
 				['status' => 400]
@@ -516,12 +529,12 @@ class MpesaPaywallProPublic
 		//check for ssl
 		if (!is_ssl()) {
 			MpesaPaywallProLogger::error("Unauthorized callback attempt from non-SSL connection.");
-			return new \WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
+			return new WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
 		}
 
 		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
-			return new \WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
+			return new WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
 		}
 		// validate auth token
 		$url_token = $request->get_param('mpp_auth');
@@ -531,8 +544,9 @@ class MpesaPaywallProPublic
 
 		if (!hash_equals($secret_key, $url_token)) {
 			MpesaPaywallProLogger::error("Unauthorized Callback: Token mismatch.");
-			return false;
+			return new WP_Error('invalid_token', 'Access denied', ['status' => 403]);
 		}
+
 		return true;
 	}
 
@@ -560,13 +574,15 @@ class MpesaPaywallProPublic
 		// Get parameters already validated by REST API args
 		$phone_number = $request->get_param('phone_number');
 		$amount       = $request->get_param('amount');
+		$post_id	  = $request->get_param('post_id');
 
 		// Process payment
 		$mpesa = new MpesaPaywallProMpesa();
 		$response = $mpesa->send_stk_push_request($phone_number, $amount);
+		$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
 
-		if ($response['status'] === 'success') {
-			$checkout_request_id = $response['response']['CheckoutRequestID'] ?? null;
+		if ($response['status'] === 'success' && isset($checkout_request_id)) {
+			$this->store_pending_transaction($checkout_request_id, $post_id);
 			MpesaPaywallProLogger::info("Payment initiated successfully for phone number: $phone_number with amount: $amount. CheckoutRequestID: $checkout_request_id");
 			return new \WP_REST_Response([
 				'success' => true,
@@ -586,6 +602,11 @@ class MpesaPaywallProPublic
 
 	private function get_amount($post_id)
 	{
+		//check if post ID is not empty valid and return false
+		if (!$post_id || !get_post($post_id)) {
+			return false;
+		}
+
 		// Get settings and meta
 		$options = get_option('mpesapaywallpro_options', []);
 		$default_amount = absint($options['default_amount'] ?? 20);
@@ -607,6 +628,18 @@ class MpesaPaywallProPublic
 
 		// Not locked
 		return 0;
+	}
+
+	private function store_pending_transaction($checkout_request_id, $post_id)
+	{
+		// store pending transaction in custom post type for later verification in callback
+		$transction = get_transient('mpp_pending_' . $checkout_request_id);
+		if ($transction !== false) {
+			MpesaPaywallProLogger::warning("Pending transaction already exists for CheckoutRequestID: $checkout_request_id. Possible duplicate request.");
+			return;
+		}
+
+		set_transient('mpp_pending_' . $checkout_request_id, $post_id, 15 * MINUTE_IN_SECONDS); // 15 minutes timeout
 	}
 
 	public function confirm_payment($request)
@@ -636,6 +669,19 @@ class MpesaPaywallProPublic
 		$status = get_post_meta($post_id, 'status', true);
 		$result_desc = get_post_meta($post_id, 'result_desc', true);
 		$mpesa_receipt = get_post_meta($post_id, 'mpesa_receipt_number', true);
+		$paid_content_id = get_post_meta($post_id, 'content_post_id', true);
+
+		// Verify the payment was made for this specific post
+		if ((int)$paid_content_id !== (int)$content_post_id) {
+			MpesaPaywallProLogger::warning(
+				"Access bypass attempt: checkout_id $checkoutId was for post $paid_content_id, " .
+					"but user requested access to post $content_post_id. IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')
+			);
+			return rest_ensure_response([
+				'status'  => 'failed',
+				'message' => 'Payment was not made for this content',
+			]);
+		}
 
 		// Handle failed payment
 		if ($status === 'failed') {

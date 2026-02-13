@@ -408,10 +408,21 @@ class MpesaPaywallProMpesa
         $resultCode = (int) ($stk['ResultCode'] ?? -1);
         $resultDesc = sanitize_text_field($stk['ResultDesc'] ?? '');
 
+
         if (empty($checkoutId)) {
             MpesaPaywallProLogger::error("Missing CheckoutRequestID in M-Pesa callback data.");
             return rest_ensure_response(['status' => 'error', 'message' => 'Missing checkout ID'], 400);
         }
+
+        $content_post_id = get_transient('mpp_pending_' . $checkoutId); // check for pending transaction
+        // Security: If no pending transaction found, reject the callback
+        if (!$content_post_id) {
+            MpesaPaywallProLogger::warning("Possible hack: Callback received for unknown checkout ID: $checkoutId - no pending transaction found");
+            return rest_ensure_response(['status' => 'error', 'message' => 'Unknown transaction'], 400);
+        }
+
+        // Clean up the transient
+        delete_transient('mpp_pending_' . $checkoutId);
 
         // Extract transaction metadata
         $amount = 0;
@@ -492,6 +503,7 @@ class MpesaPaywallProMpesa
             [$post_id, 'result_code', (string)$resultCode],
             [$post_id, 'result_desc', $resultDesc],
             [$post_id, 'date', $current_time],
+            [$post_id, 'content_post_id', $content_post_id],
         ];
 
         // add more meta if transaction was successful
