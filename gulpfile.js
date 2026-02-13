@@ -5,11 +5,11 @@ const rename = require('gulp-rename');
 // Source paths
 const paths = {
   adminJs: {
-    src: 'MpesaPaywallPro/admin/js/*.js',
+    src: 'MpesaPaywallPro/admin/js/temp/*.js',
     dest: 'MpesaPaywallPro/admin/js/dist'
   },
   publicJs: {
-    src: 'MpesaPaywallPro/public/js/*.js',
+    src: 'MpesaPaywallPro/public/js/temp/*.js',
     dest: 'MpesaPaywallPro/public/js/dist'
   }
 };
