@@ -602,7 +602,7 @@ class MpesaPaywallProPublic
 
 	private function get_amount($post_id)
 	{
-		//check if post ID is not empty valid and return false
+		//check if post ID is not empty invalid and return false
 		if (!$post_id || !get_post($post_id)) {
 			return false;
 		}
