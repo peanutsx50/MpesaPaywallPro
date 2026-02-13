@@ -6,6 +6,9 @@ async function checkPaymentStatus(
 ) {
   let pollCount = 0;
   let continuePolling = true;
+  /**consecutive errors */
+  let consecutiveErrors = 0;
+  const maxConsecutiveErrors = 3;
 
   while (pollCount < maxAttempts && continuePolling) {
     pollCount++;
@@ -25,6 +28,9 @@ async function checkPaymentStatus(
 
       // 1. Check if the server actually responded with a 200-level status
       if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+      consecutiveErrors = 0; // reset on successful response
+
+      // 2. Check if response is valid JSON
       const data = await response.json();
 
       if (data.status === "success") {
@@ -51,7 +57,19 @@ async function checkPaymentStatus(
         return; // Exit function
       }
     } catch (error) {
-     console.warn(`Attempt ${pollCount} failed`);
+      consecutiveErrors++;
+      console.warn(
+        `Attempt ${pollCount} failed (${consecutiveErrors} consecutive)`,
+      );
+
+      if (consecutiveErrors >= maxConsecutiveErrors) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML =
+          "Connection error. Please check your payment and refresh.";
+        submitBtn.style.backgroundColor = "#f44336";
+        continuePolling = false;
+        return;
+      }
     }
 
     // Wait for pollInterval before next attempt

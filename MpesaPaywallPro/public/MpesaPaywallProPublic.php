@@ -148,13 +148,8 @@ class MpesaPaywallProPublic
 				'phone_number' => [
 					'required'          => true,
 					'type'              => 'string',
-					'validate_callback' => [$this, 'validate_phone_number'],
+					'validate_callback' => [$this, 'validate_phone_number'], // check if phone number is valid for M-Pesa
 					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'amount' => [
-					'required' 			=> true,
-					'type'              => 'integer',
-					'validate_callback' => [$this, 'validate_amount'],
 				],
 				'nonce' => [
 					'required' 			=> true,
@@ -164,6 +159,7 @@ class MpesaPaywallProPublic
 				'post_id' => [
 					'required'          => true,
 					'type'              => 'integer',
+					'validate_callback' => [$this, 'validate_post_id'], // check if post ID is valid
 					'sanitize_callback' => 'absint',
 				]
 			],
@@ -217,9 +213,7 @@ class MpesaPaywallProPublic
 				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
-				'access_expiry' => get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30,
 				'post_id' => $post_id, // locked post ID int or false
-				'amount' => $this->get_amount($post_id), // get amount based on post meta or default
 				'pollInterval' => 500, // 500 milisecs
 				'maxPollAttempts' => 30, // total 1 minute of polling
 			)
@@ -512,18 +506,6 @@ class MpesaPaywallProPublic
 		return true;
 	}
 
-	public function validate_amount($amount, $request, $key)
-	{
-		if (!is_numeric($amount) || $amount < MPESA_MIN || $amount > MPESA_MAX) {
-			return new WP_Error(
-				'invalid_amount',
-				'Invalid amount. Must be between ' . MPESA_MIN . ' and ' . MPESA_MAX,
-				['status' => 400]
-			);
-		}
-		return true;
-	}
-
 	public function validate_safaricom_IP($request)
 	{
 		//check for ssl
@@ -550,6 +532,18 @@ class MpesaPaywallProPublic
 		return true;
 	}
 
+	public function validate_post_id($post_id, $request, $key)
+	{
+		if (!get_post($post_id)) {
+			return new WP_Error(
+				'invalid_post_id',
+				'Invalid post ID',
+				['status' => 400]
+			);
+		}
+		return true;
+	}
+
 	/**
 	 * Processes M-Pesa payment requests via AJAX.
 	 *
@@ -573,8 +567,17 @@ class MpesaPaywallProPublic
 	{
 		// Get parameters already validated by REST API args
 		$phone_number = $request->get_param('phone_number');
-		$amount       = $request->get_param('amount');
 		$post_id	  = $request->get_param('post_id');
+
+		// Get amount from server to process request
+		$amount = $this->get_amount($post_id);
+
+		if ($amount < MPESA_MIN || $amount > MPESA_MAX) {
+			return new \WP_REST_Response([
+				'success' => false,
+				'data' => ['message' => 'Invalid amount for this content']
+			], 400);
+		}
 
 		// Process payment
 		$mpesa = new MpesaPaywallProMpesa();
@@ -633,13 +636,13 @@ class MpesaPaywallProPublic
 	private function store_pending_transaction($checkout_request_id, $post_id)
 	{
 		// store pending transaction in custom post type for later verification in callback
-		$transction = get_transient('mpp_pending_' . $checkout_request_id);
-		if ($transction !== false) {
+		$transaction = get_transient('mpp_pending_' . $checkout_request_id);
+		if ($transaction !== false) {
 			MpesaPaywallProLogger::warning("Pending transaction already exists for CheckoutRequestID: $checkout_request_id. Possible duplicate request.");
 			return;
 		}
 
-		set_transient('mpp_pending_' . $checkout_request_id, $post_id, 15 * MINUTE_IN_SECONDS); // 15 minutes timeout
+		return set_transient('mpp_pending_' . $checkout_request_id, $post_id, 15 * MINUTE_IN_SECONDS); // 15 minutes timeout
 	}
 
 	public function confirm_payment($request)

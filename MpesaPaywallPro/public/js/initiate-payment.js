@@ -21,30 +21,17 @@ function displayVerifying(submitBtn, phoneInput, errorMsg) {
  * @param {HTMLElement} errorMsg - The error message element
  */
 async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
-  const { process_payment_url, post_id, amount, nonce } = mpp_ajax_object;
-
-  // Validate required fields
-  if (!phoneNumber || !post_id || !amount || !nonce) {
-    displayPaymentError(
-      submitBtn,
-      phoneInput,
-      errorMsg,
-      "Missing required payment information. Please refresh the page and try again.",
-    );
-    return;
-  }
 
   try {
-    const response = await fetch(process_payment_url, {
+    const response = await fetch(mpp_ajax_object.process_payment_url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         phone_number: phoneNumber,
-        post_id: post_id,
-        amount: amount,
-        nonce: nonce,
+        post_id: mpp_ajax_object.post_id,
+        nonce: mpp_ajax_object.nonce,
       }),
     });
 
