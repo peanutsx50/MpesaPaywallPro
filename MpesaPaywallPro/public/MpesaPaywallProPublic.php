@@ -200,7 +200,7 @@ class MpesaPaywallProPublic
 			'mpp_ajax_object',
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
-				'nonce'    => wp_create_nonce('mpp_ajax_nonce'),
+				'nonce'    => wp_create_nonce('wp_rest'),
 				'process_payment_url' => rest_url('mpesapaywallpro/v1/process-payment'),
 				'confirm_payment_url' => rest_url('mpesapaywallpro/v1/confirm-payment'),
 				'post_id' => $post_id, // locked post ID int or false
@@ -469,7 +469,7 @@ class MpesaPaywallProPublic
 		$nonce = $request->get_header('X-WP-Nonce');
 		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
 		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
-		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {
+		if (!wp_verify_nonce($nonce, 'wp_rest')) {
 			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
 			return new WP_Error(
 				'invalid_nonce',
