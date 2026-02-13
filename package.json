@@ -1,0 +1,30 @@
+{
+  "name": "mpesapaywallpro",
+  "version": "1.0.0",
+  "description": "MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.",
+  "homepage": "https://surgetech.co.ke/mpesapaywallpro",
+  "bugs": {
+    "url": "https://github.com/peanutsx50/MpesaPaywallPro/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peanutsx50/MpesaPaywallPro.git"
+  },
+  "license": "GPL-2.0",
+  "author": {
+    "name": "SurgeTech",
+    "url": "https://surgetech.co.ke/"
+  },
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp",
+    "watch": "gulp watch"
+  },
+  "devDependencies": {
+    "gulp": "^5.0.1",
+    "gulp-rename": "^2.0.0",
+    "gulp-terser": "^2.1.0"
+  }
+}
