@@ -18,11 +18,11 @@ async function checkPaymentStatus(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-WP-Nonce": mpp_ajax_object.nonce,
         },
         body: JSON.stringify({
           checkout_id: checkoutRequestId,
           locked_post_id: mpp_ajax_object.post_id,
-          nonce: mpp_ajax_object.nonce,
         }),
       });
 

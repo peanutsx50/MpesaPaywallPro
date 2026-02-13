@@ -151,11 +151,6 @@ class MpesaPaywallProPublic
 					'validate_callback' => [$this, 'validate_phone_number'], // check if phone number is valid for M-Pesa
 					'sanitize_callback' => 'sanitize_text_field',
 				],
-				'nonce' => [
-					'required' 			=> true,
-					'type'     			=> 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
 				'post_id' => [
 					'required'          => true,
 					'type'              => 'integer',
@@ -179,11 +174,6 @@ class MpesaPaywallProPublic
 					'required'          => true,
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
-				],
-				'nonce' => [
-					'required'          => true,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
 				],
 			]
 		]);
@@ -476,7 +466,7 @@ class MpesaPaywallProPublic
 		}
 
 		//2. verify nonce
-		$nonce = $request->get_param('nonce');
+		$nonce = $request->get_header('X-WP-Nonce');
 		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
 		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
 		if (!wp_verify_nonce($nonce, 'mpp_ajax_nonce')) {

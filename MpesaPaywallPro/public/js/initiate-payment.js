@@ -27,11 +27,11 @@ async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-WP-Nonce": mpp_ajax_object.nonce,
       },
       body: JSON.stringify({
         phone_number: phoneNumber,
         post_id: mpp_ajax_object.post_id,
-        nonce: mpp_ajax_object.nonce,
       }),
     });
 
