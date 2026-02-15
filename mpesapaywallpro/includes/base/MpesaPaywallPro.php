@@ -124,10 +124,11 @@ class MpesaPaywallPro
 	 */
 	private function set_locale()
 	{
-
+		// loading text domain is no longer neccessary for wordpress 6.7+ but we will keep it for backward compatibility
 		$plugin_i18n = new MpesaPaywallProI18n();
-
+		
 		$this->loader->add_action('init', $plugin_i18n, 'load_plugin_textdomain');
+
 	}
 
 	/**
