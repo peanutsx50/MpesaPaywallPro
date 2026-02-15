@@ -297,7 +297,7 @@ class MpesaPaywallPro
 		echo '<tr class="plugin-update-tr active" id="mpesapaywallpro-license-notice">
         <td colspan=4 class="plugin-update colspanchange">
             <div class="update-message notice inline notice-error notice-alt">
-                <p>' . $message . '</p>
+                <p>' . wp_kses_post( $message ) . '</p>
             </div>
         </td>
     </tr>';
@@ -472,7 +472,7 @@ class MpesaPaywallPro
 	{
 		$schedules['fifty_minutes'] = array(
 			'interval' => 50 * MINUTE_IN_SECONDS,
-			'display'  => __('Every 50 Minutes')
+			'display'  => __('Every 50 Minutes', 'mpesapaywallpro')
 		);
 		return $schedules;
 	}
