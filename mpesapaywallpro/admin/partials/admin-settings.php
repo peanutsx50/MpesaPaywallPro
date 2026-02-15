@@ -33,8 +33,8 @@ $tabs = [
 
 
 // Sanitize and validate tab parameter
-$current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
-$current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_first($tabs); // prevents LFI by ensuring only valid tabs are used
+$mpp_current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
+$mpp_current_tab = array_key_exists($mpp_current_tab, $tabs) ? $mpp_current_tab : array_key_first($tabs); // prevents LFI by ensuring only valid tabs are used
 ?>
 
 
@@ -76,7 +76,7 @@ $current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_
     <!-- Admin tabbed navigation -->
     <div class="nav-tab-wrapper">
         <?php foreach ($tabs as $tab_key => $tab_info) : ?>
-            <a href="<?php echo esc_url(admin_url('admin.php?page=mpesa-paywall-pro&tab=' . $tab_key)); ?>" class="nav-tab <?php echo $current_tab === $tab_key ? 'nav-tab-active' : ''; ?>">
+            <a href="<?php echo esc_url(admin_url('admin.php?page=mpesa-paywall-pro&tab=' . $tab_key)); ?>" class="nav-tab <?php echo $mpp_current_tab === $tab_key ? 'nav-tab-active' : ''; ?>">
                 <span class="dashicons <?php echo esc_attr($tab_info['icon']); ?>"></span>
                 <?php echo esc_html($tab_info['label']); ?>
             </a>
@@ -143,11 +143,11 @@ $current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_
             settings_fields('mpesapaywallpro_settings_group');
 
             // Output setting sections and their fields
-            do_settings_sections('mpesapaywallpro_' . $current_tab);
+            do_settings_sections('mpesapaywallpro_' . $mpp_current_tab);
             ?>
             <div class="mpesapaywallpro-settings-sections">
                 <?php
-                switch ($current_tab) {
+                switch ($mpp_current_tab) {
                     case 'mpesa_setup':
                         include_once MPP_PATH . 'admin/partials/mpesa-setup.php';
                         break;

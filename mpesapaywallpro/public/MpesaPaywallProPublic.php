@@ -459,7 +459,7 @@ class MpesaPaywallProPublic
 	 * @since      1.0.0
 	 * @return     string    The rendered paywall HTML markup.
 	 */
-	public function render_paywall($price)
+	public function render_paywall($mpp_price)
 	{
 		ob_start();
 		$file_path = MPP_PATH . 'public/partials/paywall-display.php';
