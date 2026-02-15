@@ -34,7 +34,7 @@ $tabs = [
 
 // Sanitize and validate tab parameter
 $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
-$current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_first($tabs);
+$current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : array_key_first($tabs); // prevents LFI by ensuring only valid tabs are used
 ?>
 
 
