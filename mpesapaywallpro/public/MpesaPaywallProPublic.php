@@ -518,7 +518,8 @@ class MpesaPaywallProPublic
 			return new WP_Error('ssl_required', 'SSL is required for this endpoint', ['status' => 403]);
 		}
 
-		$client_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+		$client_ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? $raw_ip : 'UNKNOWN';
 		if (!MpesaPaywallProUtils::is_safaricom_ip($client_ip)) {
 			MpesaPaywallProLogger::warning("Unauthorized callback attempt from IP: $client_ip. Access denied.");
 			return new WP_Error('unauthorized_ip', 'Access denied', ['status' => 403]);
