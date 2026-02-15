@@ -106,10 +106,10 @@ class MpesaPaywallProLogger
 
         // Sanitize inputs
         $level = strtoupper(sanitize_text_field($level));
-        $message = is_string($message) ? $message : print_r($message, true);
+        $message = is_string($message) ? $message : wp_json_encode($message);
 
         $timestamp = current_time('Y-m-d H:i:s');
-        $raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $raw_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
         $ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
 
 

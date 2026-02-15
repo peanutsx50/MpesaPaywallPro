@@ -383,7 +383,16 @@ class MpesaPaywallProPublic
 	private function verify_guest_payment_cookie($post_id)
 	{
 		MpesaPaywallProLogger::info('Verifying guest payment cookie for post ID: ' . $post_id);
-		$cookie_value = sanitize_text_field(wp_unslash($_COOKIE['mpp_paid_' . $post_id]));
+		
+		$cookie_name = 'mpp_paid_' . $post_id;
+
+		// check if cookie is set
+		if (! isset($_COOKIE[$cookie_name])) {
+			return false;
+		}
+
+		// sanitize cookie value to prevent tampering
+		$cookie_value = sanitize_text_field(wp_unslash($_COOKIE[$cookie_name]));
 
 		// Cookie format: checkout_id|nonce|expiry
 		$parts = explode('|', $cookie_value);
