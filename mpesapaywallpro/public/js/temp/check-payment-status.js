@@ -58,10 +58,6 @@ async function checkPaymentStatus(
       }
     } catch (error) {
       consecutiveErrors++;
-      console.warn(
-        `Attempt ${pollCount} failed (${consecutiveErrors} consecutive)`,
-      );
-
       if (consecutiveErrors >= maxConsecutiveErrors) {
         submitBtn.disabled = false;
         submitBtn.innerHTML =
