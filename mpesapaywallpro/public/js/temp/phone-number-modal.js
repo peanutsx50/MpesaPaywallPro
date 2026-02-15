@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Validate phone number
+  // move this to localized script and pass in the regex pattern from php to js for better maintainability
   function cleanPhoneNumber(phone) {
     // Input validation
     if (!phone || typeof phone !== "string") return false;
