@@ -35,8 +35,6 @@ if (!$mpp_buttonColor) {
     $mpp_buttonColor = $mpp_primary_color ?: $mpp_accent_color ?: $mpp_link_color ?: '#111827';
 }
 
-wp_add_inline_style('mpesapaywallpro-public', ':root { --mpp-button-color: ' . esc_attr($mpp_buttonColor) . '; }');
-
 ?>
 <div class="mpp-paywall-container">
     <h3 class="mpp-paywall-title">
@@ -59,7 +57,7 @@ wp_add_inline_style('mpesapaywallpro-public', ':root { --mpp-button-color: ' . e
             <small>KES</small> <?php echo esc_html($mpp_price); ?>
         </div>
 
-        <button id="mpp-pay-button" type="button">
+        <button id="mpp-pay-button" type="button" style="background-color: <?php echo esc_attr($mpp_buttonColor); ?>;">
             <?php esc_html_e('Unlock with M-Pesa', 'mpesapaywallpro'); ?>
         </button>
     </div>
