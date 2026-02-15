@@ -27,15 +27,15 @@ jobs:
           npm config set registry https://registry.npmjs.org/
 
       - name: Install Composer dependencies
-        working-directory: ./MpesaPaywallPro
+        working-directory: ./mpesapaywallpro
         run: composer install --no-dev --optimize-autoloader
 
       - name: List plugin files
-        run: ls -R ./MpesaPaywallPro
+        run: ls -R ./mpesapaywallpro
 
       # Fix: Use @main to get the latest fixes for the @wp-playground 404 issue
       - name: Run plugin check
         uses: wordpress/plugin-check-action@main
         with:
-          build-dir: ./MpesaPaywallPro
+          build-dir: ./mpesapaywallpro
         continue-on-error: false
