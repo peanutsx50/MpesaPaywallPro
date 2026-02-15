@@ -303,7 +303,7 @@ class MpesaPaywallProLogger
                 // Get file size before deletion
 
                 // Attempt to delete the file
-                if (@unlink($log_file)) {
+                if (wp_delete_file($log_file)) {
                     $results['deleted_count']++;
                     $results['deleted_files'][] = basename($log_file);
                 } else {

@@ -99,7 +99,7 @@ function mpesapaywallpro_delete_log_folder(){
 
         foreach ($files as $file) {
             if (is_file($file)) {
-                @unlink($file);
+                wp_delete_file($file);
             }
         }
 
