@@ -35,7 +35,7 @@ class MpesaPaywallProLogger
 
     public static function init()
     {
-        self::$date = date('Y-m-d');;
+        self::$date = gmdate('Y-m-d'); // UTC timestamp for consistent log file naming
         self::$log_file = MPP_LOG_DIR . 'activity-' . self::$date . '.log';
         self::$init_errors = [];
 

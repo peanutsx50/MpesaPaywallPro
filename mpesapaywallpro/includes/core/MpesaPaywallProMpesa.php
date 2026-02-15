@@ -18,6 +18,7 @@
 namespace MpesaPaywallPro\core;
 
 use WP_REST_Response;
+use DateTimeZone;
 
 // If this file is called directly, abort.
 if (! defined('WPINC')) {
@@ -87,7 +88,7 @@ class MpesaPaywallProMpesa
         $this->access_token = $this->generate_access_token();
 
         //Timestamp
-        $this->timestamp = date('YmdHis');
+        $this->timestamp = wp_date('YmdHis', null, new DateTimeZone('Africa/Nairobi'));
 
         //Password generation
         $this->password = $this->generate_password();
