@@ -28,6 +28,11 @@ use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 use MpesaPaywallPro\core\MpesaPaywallProUtils;
 use WP_Error;
 
+// prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 // TODO: Need to implement cookie signing to avoid tampering
 class MpesaPaywallProPublic
 {

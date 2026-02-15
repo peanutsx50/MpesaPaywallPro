@@ -35,6 +35,10 @@ use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 use MpesaPaywallPro\public\MpesaPaywallProPublic;
 
+// prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class MpesaPaywallPro
 {

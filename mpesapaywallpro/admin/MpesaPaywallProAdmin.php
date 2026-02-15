@@ -26,6 +26,11 @@ namespace MpesaPaywallPro\admin;
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
 
+// prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class MpesaPaywallProAdmin
 {
 
