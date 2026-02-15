@@ -19,14 +19,16 @@ A WordPress plugin that integrates the M-Pesa payment gateway and enables you to
 
 ## Features
 
-- **M-Pesa Payment Integration**: Seamless integration with the M-Pesa payment gateway
+- **M-Pesa Payment Integration**: Seamless integration with the M-Pesa Daraja API (STK Push)
 - **Content Paywall**: Restrict premium content behind a secure paywall
-- **Easy Configuration**: Simple admin interface for setup and management
+- **Easy Configuration**: Simple admin interface with tabbed settings
 - **Responsive Design**: Mobile-friendly payment interface
-- **Secure Transactions**: Encrypted payment processing
-- **User Management**: Track user subscriptions and access
+- **Secure Transactions**: SSL enforcement, callback authentication, and IP validation
+- **User Management**: Track user subscriptions and access via cookies/user meta
 - **Multiple Content Types**: Protect pages, posts, or custom content
-- **Plugin Update Checker**: Automatic update notifications from GitHub
+- **Error Logging**: Comprehensive logging system with daily rotation
+- **GitHub Updates**: Automatic update notifications from GitHub (self-hosted version)
+- **Internationalization**: Translation-ready with Swahili (Kenya) included
 
 ## Requirements
 
@@ -160,30 +162,70 @@ ngrok http 8000
 ## Plugin Structure
 
 ```
-MpesaPaywallPro/
-├── admin/                          # Admin panel functionality
-│   ├── MpesaPaywallProAdmin.php   # Admin class
-│   ├── css/                        # Admin styles
-│   ├── js/                         # Admin scripts
-│   └── partials/                   # Admin templates
+mpesapaywallpro/
+├── admin/                              # Admin panel functionality
+│   ├── MpesaPaywallProAdmin.php        # Admin class
+│   ├── index.php                       # Security index
+│   ├── css/
+│   │   └── admin-settings.css          # Admin styles
+│   ├── js/
+│   │   ├── dist/                       # Minified production scripts
+│   │   │   ├── admin-settings.min.js
+│   │   │   ├── content-locked-meta-box.min.js
+│   │   │   └── test-connection.min.js
+│   │   └── temp/                       # Development scripts
+│   │       ├── admin-settings.js
+│   │       ├── content-locked-meta-box.js
+│   │       └── test-connection.js
+│   └── partials/                       # Admin templates
+│       ├── access-control.php
+│       ├── admin-settings.php
+│       ├── content-locked-meta-box.php
+│       ├── mpesa-setup.php
+│       └── paywall-settings.php
 ├── includes/
 │   ├── base/
-│   │   ├── MpesaPaywallPro.php           # Core plugin class
-│   │   ├── MpesaPaywallProActivator.php  # Activation hooks
-│   │   ├── MpesaPaywallProDeactivator.php # Deactivation hooks
-│   │   ├── MpesaPaywallProI18n.php       # Internationalization
-│   │   └── MpesaPaywallProLoader.php     # Hook loader
+│   │   ├── MpesaPaywallPro.php         # Core plugin class
+│   │   ├── MpesaPaywallProActivator.php    # Activation hooks
+│   │   ├── MpesaPaywallProDeactivator.php  # Deactivation hooks
+│   │   ├── MpesaPaywallProI18n.php     # Internationalization
+│   │   ├── MpesaPaywallProLoader.php   # Hook loader
+│   │   └── index.php                   # Security index
 │   └── core/
-|   |   └── MpesaPaywallProMpesa.php # M-Pesa API integration
-|   ├── public/                         # Frontend functionality
-│   ├── css/                        # Frontend styles
-│   ├── js/                         # Frontend scripts
-│   └── partials/                   # Frontend templates
-├── languages/                      # Translation files
-├── vendor/                         # Composer dependencies
-├── MpesaPaywallPro.php            # Main plugin file
-├── composer.json                   # Dependency configuration
-└── README.md                       # This file
+│       ├── MpesaPaywallProLogger.php   # Error logging system
+│       ├── MpesaPaywallProMpesa.php    # M-Pesa API integration
+│       ├── MpesaPaywallProUtils.php    # Utility functions
+│       └── index.php                   # Security index
+├── public/                             # Frontend functionality
+│   ├── MpesaPaywallProPublic.php       # Public class
+│   ├── index.php                       # Security index
+│   ├── css/
+│   │   ├── phone-number-modal.css      # Payment modal styles
+│   │   └── public-paywall.css          # Paywall display styles
+│   ├── js/
+│   │   ├── dist/                       # Minified production scripts
+│   │   │   ├── check-payment-status.min.js
+│   │   │   ├── initiate-payment.min.js
+│   │   │   └── phone-number-modal.min.js
+│   │   └── temp/                       # Development scripts
+│   │       ├── check-payment-status.js
+│   │       ├── initiate-payment.js
+│   │       └── phone-number-modal.js
+│   └── partials/                       # Frontend templates
+│       ├── paywall-display.php
+│       └── phone-number-modal.php
+├── languages/                          # Translation files
+│   ├── mpesapaywallpro.pot
+│   ├── mpesapaywallpro-sw_KE.mo
+│   └── mpesapaywallpro-sw_KE.po
+├── vendor/                             # Composer dependencies
+├── mpesapaywallpro.php                 # Main plugin file
+├── uninstall.php                       # Cleanup on uninstall
+├── index.php                           # Security index
+├── composer.json                       # Dependency configuration
+├── phpstan.neon.dist                   # PHPStan configuration
+├── LICENSE.txt                         # GPL v2 license
+└── README.txt                          # WordPress readme
 ```
 
 ## Author & Contact
@@ -319,31 +361,84 @@ You are free to:
 
 ### v1.0.0 (Initial Release)
 
-- M-Pesa payment gateway integration
-- Content paywall functionality
-- Admin dashboard
-- Plugin update checker
-- Fixed SSL Peer Verification vulnerability
-- added ip validation in callback
-- added ssl check to website and block request for non ssl
-- strengthen phone number validation in js
-- implemented an error logging system
+**Core Features:**
+- M-Pesa payment gateway integration (STK Push)
+- Content paywall functionality for posts and pages
+- Admin dashboard with tabbed settings interface
+- Plugin update checker for GitHub releases
+- Error logging system with daily rotation
+
+**Security Implementations:**
+- Callback URL authentication with `mpp_auth` token
+- Pending transaction tracking via transients to prevent MITM attacks
+- SSL verification and enforcement for all payment requests
+- Safaricom IP validation for callback requests
+- Content Security Policy headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy)
+- Proper nonce verification with `wp_unslash()` on all AJAX handlers
+- Direct access prevention on all index.php files
+
+**WordPress.org Compliance Fixes:**
+- Output escaping with `esc_html_e()` for all translatable strings
+- Replaced `date()` with `gmdate()` and `wp_date()` for timezone safety
+- Added `wp_unslash()` before all `$_SERVER`, `$_POST`, `$_GET`, `$_COOKIE` access
+- Replaced `unlink()` with `wp_delete_file()` in uninstall.php
+- Replaced `print_r()` with `wp_json_encode()` in logger
+- Fixed text domain parameter in all translation functions
+- Added proper `isset()` checks for cookie access
+- Corrected "Tested up to" version format in README.txt
+
+**JavaScript Improvements:**
+- Exponential backoff for payment status polling (reduces API calls)
+- Removed console logging from production builds
+- Strengthened phone number validation regex
+- Minified production builds in `/dist` folders
+
+**Bug Fixes:**
+- Fixed test connection handler mismatch (AJAX vs REST API)
+- Fixed cookie value parsing with proper unslashing
+- Fixed double semicolon syntax error in logger
+- Fixed IP validation using `filter_var()` with FILTER_VALIDATE_IP
 
 ## Roadmap
 
+### v1.2.0 (Security & Performance Enhancements)
+
 Future enhancements planned:
 
+- [ ] Rate limiting on payment endpoints (prevent API abuse)
+- [ ] M-Pesa credentials encryption (AES-256-CBC)
+- [ ] GDPR-compliant IP anonymization in logs
+- [ ] Prefix all global variables with `mpp_`
+- [ ] Prefix all functions with `mpp_`
+- [ ] Add nonce verification to admin tab navigation
+- [ ] JSON decode error handling for M-Pesa responses
+- [ ] Shortcode numeric-only validation
+- [ ] Convert inline CSS to CSS custom properties
+- [ ] Options caching singleton to reduce database queries
+- [ ] Replace filesystem operations with WP_Filesystem API
+- [ ] Add PHPCS ignore comments for intentional direct database calls
+- [ ] Optimize script/style loading (only on plugin pages)
+
+### v1.3.0 (Feature Expansion)
+
 - [ ] Advanced analytics and settings dashboard
-- [ ] Email notifications and reminders
+- [ ] Email notifications and payment reminders
 - [ ] Additional payment gateways
 - [ ] Multiple payment plans (daily, monthly, yearly)
+- [ ] Subscription management interface
 
 ## Security & Privacy
 
-- All payment data is encrypted
-- No sensitive information is stored on your server
-- Compliant with M-Pesa security standards
-- GDPR compliant data handling
+- **SSL Enforcement**: All payment requests require HTTPS
+- **Callback Authentication**: Secure `mpp_auth` token prevents callback spoofing
+- **IP Validation**: Safaricom IP whitelist for callback verification
+- **Transaction Tracking**: Transient-based pending transaction verification
+- **Security Headers**: X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+- **Input Sanitization**: All user input sanitized and validated
+- **Output Escaping**: WordPress escaping functions on all output
+- **CSRF Protection**: Nonce verification on all forms and AJAX handlers
+- **Error Logging**: Secure logging with IP anonymization options
+- **No Sensitive Storage**: M-Pesa credentials use WordPress options API
 
 ## Acknowledgments
 

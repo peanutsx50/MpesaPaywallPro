@@ -1,0 +1,32 @@
+{
+  "name": "festusmurimi/mpesapaywallpro",
+  "description": "MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "autoload": {
+    "psr-4": {
+      "MpesaPaywallPro\\": "includes/",
+      "MpesaPaywallPro\\admin\\": "admin/",
+      "MpesaPaywallPro\\public\\": "public/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Surge Technologies",
+      "email": "admin@surgetech.co.ke"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "yahnis-elsts/plugin-update-checker": "^5.6"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "szepeviktor/phpstan-wordpress": "^2.0",
+    "php-stubs/wordpress-stubs": "^6.7"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  }
+}
