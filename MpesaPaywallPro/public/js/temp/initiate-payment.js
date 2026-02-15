@@ -21,27 +21,30 @@ function displayVerifying(submitBtn, phoneInput, errorMsg) {
  * @param {HTMLElement} errorMsg - The error message element
  */
 async function initiatePayment(phoneNumber, submitBtn, phoneInput, errorMsg) {
+
   try {
     const response = await fetch(mpp_ajax_object.process_payment_url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-WP-Nonce": mpp_ajax_object.nonce,
       },
       body: JSON.stringify({
         phone_number: phoneNumber,
-        amount: mpp_ajax_object.amount,
-        nonce: mpp_ajax_object.nonce,
+        post_id: mpp_ajax_object.post_id,
       }),
     });
 
-    const text = await response.text();
+    // Handle HTTP errors
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
 
-    const data = JSON.parse(text);
+    const data = await response.json();
 
     if (data.success) {
-      checkPaymentStatus(data.data.checkout_request_id, submitBtn, phoneNumber);
       displayVerifying(submitBtn, phoneInput, errorMsg);
-
+      checkPaymentStatus(data.data.checkout_request_id, submitBtn, phoneNumber);
     } else {
       const errorMessage = data.data?.message || "Payment initiation failed";
       displayPaymentError(submitBtn, phoneInput, errorMsg, errorMessage);

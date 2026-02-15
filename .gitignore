@@ -48,3 +48,6 @@ package-lock.json
 
 ## ingore zip files
 *.zip
+
+## ignore distribution directory
+**/dist/

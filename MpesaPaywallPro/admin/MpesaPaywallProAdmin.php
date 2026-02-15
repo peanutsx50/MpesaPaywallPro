@@ -104,9 +104,9 @@ class MpesaPaywallProAdmin
 		 * class.
 		 */
 
-		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'admin/js/admin-settings.js', array('jquery'), $this->version, false);
-		wp_enqueue_script($this->mpesapaywallpro . '-meta-box', MPP_URL . 'admin/js/content-locked-meta-box.js', array('jquery'), $this->version, false);
-		wp_enqueue_script($this->mpesapaywallpro . '-test-connection', MPP_URL . 'admin/js/test-connection.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->mpesapaywallpro, MPP_URL . 'admin/js/dist/admin-settings.min.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->mpesapaywallpro . '-meta-box', MPP_URL . 'admin/js/dist/content-locked-meta-box.min.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->mpesapaywallpro . '-test-connection', MPP_URL . 'admin/js/dist/test-connection.min.js', array('jquery'), $this->version, false);
 	}
 
 	public function localize_scripts()
