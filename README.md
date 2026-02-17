@@ -2,13 +2,7 @@
 
 A WordPress plugin that integrates the M-Pesa payment gateway and enables you to restrict premium content behind a paywall, allowing you to monetize your website effectively.
 
-<p align="center" width="100%">
-  <video src="assets/how-to-use-mpesapaywallpro.mp4" 
-         width="80%" 
-         controls 
-         poster="assets/MpesaPaywallPro.png">
-  </video>
-</p>
+[![Watch the video](assets/MpesaPaywallPro.png)](assets/how-to-use-mpesapaywallpro.mp4)
 
 
 ## Table of Contents
