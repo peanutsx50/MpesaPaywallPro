@@ -29,7 +29,7 @@ if (! defined('WPINC')) {
                 <?php echo sprintf(
                     /* translators: %s: The total amount in KES. */
                     esc_html__('You\'ll receive an M-Pesa prompt to pay KES %s', 'mpesapaywallpro'),
-                    esc_html($price)
+                    esc_html($mpp_price)
                 ); ?>
             </p>
         </div>

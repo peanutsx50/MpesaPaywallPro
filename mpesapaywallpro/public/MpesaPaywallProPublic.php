@@ -529,7 +529,7 @@ class MpesaPaywallProPublic
 		$url_token = $request->get_param('mpp_auth');
 
 		// We use a hash of your NONCE_SALT to create a unique-to-you key
-		$secret_key = md5(wp_salt('nonce'));
+		$secret_key = wp_hash(wp_salt('nonce'), 'nonce');
 
 		if (!hash_equals($secret_key, $url_token)) {
 			MpesaPaywallProLogger::error("Unauthorized Callback: Token mismatch.");

@@ -95,7 +95,7 @@ class MpesaPaywallProMpesa
         $this->password = $this->generate_password();
 
         // Callback URL
-        $secret_key = md5(wp_salt('nonce')); // unique auth
+        $secret_key = wp_hash(wp_salt('nonce'), 'nonce'); // unique auth
         $this->callbackurl = add_query_arg(
             'mpp_auth',
             $secret_key,
@@ -307,13 +307,10 @@ class MpesaPaywallProMpesa
 
         foreach ($required_fields as $field) {
             if (empty($this->$field)) {
+                MpesaPaywallProLogger::error("M-Pesa configuration validation failed: Missing required field - $field");
                 return [
                     'status' => 'error',
-                    'message' => 'Missing required Mpesa configuration details for ' . $field,
-                    'data' => [
-                        'missing_field' => $field,
-                        'field_value' => $this->$field
-                    ]
+                    'message' => 'Missing required Mpesa configuration details'
                 ];
             }
         }
