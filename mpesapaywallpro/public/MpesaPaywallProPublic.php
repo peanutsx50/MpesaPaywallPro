@@ -618,8 +618,9 @@ class MpesaPaywallProPublic
 		}
 
 		// Get settings and meta
-		$default_amount = absint(MpesaPaywallProOptions::get_options('default_amount', 20));
-		$auto_lock = absint(MpesaPaywallProOptions::get_options('auto_lock', 0) === 1);
+		$options = MpesaPaywallProOptions::get_options();
+		$default_amount = absint($options['default_amount'] ?? 20);
+		$auto_lock = absint($options['auto_lock'] ?? 0) === 1;
 
 		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true) === '1';
 		$custom_price = get_post_meta($post_id, 'mpp_price', true);

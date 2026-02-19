@@ -513,22 +513,23 @@ class MpesaPaywallPro
 
 	public function fetch_access_token()
 	{
-		$consumer_key = MpesaPaywallProOptions::get_options('consumer_key', '');
-		$consumer_secret = MpesaPaywallProOptions::get_options('consumer_secret', '');
+		$options = MpesaPaywallProOptions::get_options();
+		$consumer_key = $options['consumer_key'] ?? '';
+		$consumer_secret = $options['consumer_secret'] ?? '';
 
 		if (empty($consumer_key) || empty($consumer_secret)) {
 			MpesaPaywallProLogger::error('Consumer key or secret is missing. Cannot fetch access token.');
 			return false;
 		}
+
 		// Use class constants for URLs (defined once, reused always)
 		static $auth_urls = [
 			'production' => 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
 			'sandbox'    => 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
 		];
 
-		$env = MpesaPaywallProOptions::get_options('env', 'sandbox');
+		$env = $options['env'] ?? 'sandbox';
 		$auth_url = $auth_urls[$env] ?? $auth_urls['sandbox'];
-
 		// Pre-build authorization header (avoid string concatenation in array)
 		$credentials = base64_encode($consumer_key . ':' . $consumer_secret);
 
