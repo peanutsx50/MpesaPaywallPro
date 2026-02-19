@@ -76,11 +76,16 @@ class MpesaPaywallProMpesa
         //Options retrieval
         $options = MpesaPaywallProOptions::get_options();
 
+        // get consumer key, consumer secret, passkey from options and decrypt them before using
+        $decrypted_consumer_key = MpesaPaywallProUtils::decrypt_credential($options['consumer_key'] ?? '');
+        $decrypted_consumer_secret = MpesaPaywallProUtils::decrypt_credential($options['consumer_secret'] ?? '');
+        $decrypted_passkey = MpesaPaywallProUtils::decrypt_credential($options['passkey'] ?? '');
+
         // Retrieve M-Pesa API credentials from WordPress options
-        $this->consumer_key            = $options['consumer_key'] ?? '';
-        $this->consumer_secret         = $options['consumer_secret'] ?? '';
+        $this->consumer_key            = $decrypted_consumer_key;
+        $this->consumer_secret         = $decrypted_consumer_secret;
         $this->shortcode               = $options['shortcode'] ?? '';
-        $this->passkey                 = $options['passkey'] ?? '';
+        $this->passkey                 = $decrypted_passkey;
         $this->environment             = $options['env'] ?? 'sandbox';
         $this->account_reference       = $options['account_reference'] ?? '';
         $this->transaction_description = $options['transaction_description'] ?? '';
