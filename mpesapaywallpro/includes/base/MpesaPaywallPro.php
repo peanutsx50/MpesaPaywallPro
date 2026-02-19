@@ -33,6 +33,7 @@ namespace MpesaPaywallPro\base;
 use MpesaPaywallPro\admin\MpesaPaywallProAdmin;
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
 use MpesaPaywallPro\public\MpesaPaywallProPublic;
 
 // prevent direct access to the file
@@ -322,7 +323,7 @@ class MpesaPaywallPro
 	 */
 	private function get_cached_license_status()
 	{
-		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
+		$license_key = (string) MpesaPaywallProOptions::get_options('license_key', '');
 
 		if (empty($license_key)) {
 			return 'missing';
@@ -438,7 +439,7 @@ class MpesaPaywallPro
 	 */
 	public function clear_license_cache()
 	{
-		$license_key = get_option('mpesapaywallpro_options')['license_key'] ?? '';
+		$license_key = (string) MpesaPaywallProOptions::get_options('license_key', '');
 		if (!empty($license_key)) {
 			delete_transient('mpesapaywallpro_license_' . md5($license_key));
 		}
@@ -512,8 +513,10 @@ class MpesaPaywallPro
 
 	public function fetch_access_token()
 	{
-		$options = get_option('mpesapaywallpro_options', []);
-		if (empty($options['consumer_key']) || empty($options['consumer_secret'])) {
+		$consumer_key = MpesaPaywallProOptions::get_options('consumer_key', '');
+		$consumer_secret = MpesaPaywallProOptions::get_options('consumer_secret', '');
+
+		if (empty($consumer_key) || empty($consumer_secret)) {
 			MpesaPaywallProLogger::error('Consumer key or secret is missing. Cannot fetch access token.');
 			return false;
 		}
@@ -523,10 +526,11 @@ class MpesaPaywallPro
 			'sandbox'    => 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
 		];
 
-		$auth_url = $auth_urls[$options['env'] ?? 'sandbox'] ?? $auth_urls['sandbox'];
+		$env = MpesaPaywallProOptions::get_options('env', 'sandbox');
+		$auth_url = $auth_urls[$env] ?? $auth_urls['sandbox'];
 
 		// Pre-build authorization header (avoid string concatenation in array)
-		$credentials = base64_encode($options['consumer_key'] . ':' . $options['consumer_secret']);
+		$credentials = base64_encode($consumer_key . ':' . $consumer_secret);
 
 		// Optimized HTTP request with minimal timeout
 		$response = wp_remote_get($auth_url, [
