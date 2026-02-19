@@ -57,13 +57,13 @@ class MpesaPaywallProUtils
     }
 
     // Decrypt when reading
-    private static function encrypt_credential($value)
+    public static function encrypt_credential($value)
     {
         if (empty($value)) return '';
         return base64_encode(openssl_encrypt($value, 'AES-256-CBC', wp_salt('auth'), 0, substr(wp_salt('nonce'), 0, 16)));
     }
 
-    private static function decrypt_credential($value)
+    public static function decrypt_credential($value)
     {
         if (empty($value)) return '';
         return openssl_decrypt(base64_decode($value), 'AES-256-CBC', wp_salt('auth'), 0, substr(wp_salt('nonce'), 0, 16));
