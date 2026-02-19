@@ -51,3 +51,8 @@ package-lock.json
 
 ## ignore distribution directory
 **/dist/
+
+## ingore phpunit result cache
+**/.phpunit.result.cache
+.phpunit.cache/
+phpunit
