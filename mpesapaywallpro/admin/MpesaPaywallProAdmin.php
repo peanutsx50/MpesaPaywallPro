@@ -124,6 +124,7 @@ class MpesaPaywallProAdmin
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_admin_ajax_nonce'),
 				'phone_number' => MpesaPaywallProOptions::get_options('test_phone_number', ''),
+				'phone_pattern' => '/^254(7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89])|11[0-5])\d{6}$/;'
 			)
 		);
 	}
