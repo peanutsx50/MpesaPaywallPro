@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://surgetech.co.ke/mpesapaywallpro
- * @since             1.0.0
+ * @since             1.1.0
  * @package           MpesaPaywallPro
- *
+ * 
  * @wordpress-plugin
  * Plugin Name:       MpesaPaywallPro
  * Plugin URI:        https://surgetech.co.ke/mpesapaywallpro
  * Description:       MpesaPaywallPro is a WordPress plugin that integrates M-Pesa payment gateway and restricts your premium content behind a paywall allowing you to monetize your website effectively.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            SurgeTech
  * Author URI:        https://surgetech.co.ke/
  * License:           GNU General Public License v2
@@ -44,13 +44,13 @@ require_once $autoload;
 
 /**
  * Currently plugin version.
- * Start at version 1.0.0 and use SemVer - https://semver.org
+ * Start at version 1.1.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  * 
  */
 
 // setting up plugin constants
-define('MPP_VERSION', '1.0.0');
+define('MPP_VERSION', '1.1.0');
 define('MPP_URL', plugin_dir_url(__FILE__));
 define('MPP_PATH', plugin_dir_path(__FILE__));
 define('MPP_BASENAME', plugin_basename(__FILE__));

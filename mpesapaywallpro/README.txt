@@ -5,7 +5,7 @@ Tags: m-pesa, paywall, payment-gateway, content-monetization, subscription
 Requires at least: 6.2.1
 Requires PHP: 7.4
 Tested up to: 6.9
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
