@@ -230,7 +230,7 @@ class MpesaPaywallProPublic
 	 * @return     string              The filtered content (either original content,
 	 *                                 preview + paywall, or unchanged content).
 	 */
-	public function filter_post_content($content)
+	public function filter_post_content(string $content):string
 	{
 		// Only apply on single post pages, not in admin or excerpts
 		if (is_admin() || !is_single() || is_feed()) {
