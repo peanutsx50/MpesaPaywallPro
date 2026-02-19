@@ -19,6 +19,7 @@ namespace MpesaPaywallPro\core;
 
 use WP_REST_Response;
 use DateTimeZone;
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
 
 // If this file is called directly, abort.
 if (! defined('WPINC')) {
@@ -73,7 +74,7 @@ class MpesaPaywallProMpesa
     private function run()
     {
         //Options retrieval
-        $options = get_option('mpesapaywallpro_options', []);
+        $options = MpesaPaywallProOptions::get_options();
 
         // Retrieve M-Pesa API credentials from WordPress options
         $this->consumer_key            = $options['consumer_key'] ?? '';
