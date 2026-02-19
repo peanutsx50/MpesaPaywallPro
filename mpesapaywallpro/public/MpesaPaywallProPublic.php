@@ -149,7 +149,7 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/process-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'process_payment'],
-			'permission_callback' => [$this, 'validate_request'],
+			'permission_callback' => [$this, 'validate_process_payment'], // validate, nonce and rate limit
 			'args' => [
 				'phone_number' => [
 					'required'          => true,
@@ -169,7 +169,7 @@ class MpesaPaywallProPublic
 		register_rest_route('mpesapaywallpro/v1', '/confirm-payment', [
 			'methods' => 'POST',
 			'callback' => [$this, 'confirm_payment'],
-			'permission_callback' => [$this, 'validate_request'],
+			'permission_callback' => [$this, 'validate_confirm_payment'], // validate nonce and SSL
 			'args'                => [
 				'checkout_id' => [
 					'required'          => true,
@@ -230,7 +230,7 @@ class MpesaPaywallProPublic
 	 * @return     string              The filtered content (either original content,
 	 *                                 preview + paywall, or unchanged content).
 	 */
-	public function filter_post_content(string $content):string
+	public function filter_post_content(string $content): string
 	{
 		// Only apply on single post pages, not in admin or excerpts
 		if (is_admin() || !is_single() || is_feed()) {
@@ -469,7 +469,7 @@ class MpesaPaywallProPublic
 		return ob_get_clean();
 	}
 
-	public function validate_request($request)
+	public function validate_confirm_payment($request)
 	{
 		//1. check for ssl and return error if not enabled
 		if (!is_ssl()) {
@@ -493,6 +493,45 @@ class MpesaPaywallProPublic
 				['status' => 403]
 			);
 		}
+		return true;
+	}
+
+	public function validate_process_payment($request)
+	{
+		//1. check for ssl and return error if not enabled
+		if (!is_ssl()) {
+			MpesaPaywallProLogger::error("Payment attempt blocked due to non-SSL connection.");
+			return new WP_Error(
+				'ssl_required',
+				'SSL is not enabled on this site, transactions cannot be processed securely',
+				['status' => 403]
+			);
+		}
+
+		//2. verify nonce
+		$nonce = $request->get_header('X-WP-Nonce');
+		$raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+		$ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? sanitize_text_field($raw_ip) : 'UNKNOWN';
+		if (!wp_verify_nonce($nonce, 'wp_rest')) {
+			MpesaPaywallProLogger::warning("Invalid nonce during payment confirmation. Possible CSRF attempt from IP: $ip");
+			return new WP_Error(
+				'invalid_nonce',
+				'Invalid request',
+				['status' => 403]
+			);
+		}
+
+		//3. rate limit check
+		$phone_number = $request->get_param('phone_number');
+		if (MpesaPaywallProUtils::rate_limit_exceeded($ip, $phone_number)) {
+			MpesaPaywallProLogger::warning("Rate limit exceeded for IP: $ip, phone number: $phone_number");
+			return new WP_Error(
+				'rate_limit_exceeded',
+				'Too many requests. Please try again later.',
+				['status' => 429]
+			);
+		}
+
 		return true;
 	}
 
