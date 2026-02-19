@@ -407,16 +407,16 @@ class MpesaPaywallProAdmin
 					$options = array_merge($existing_options, $options);
 
 					// get consumer key, consumer secret, passkey from options and encrypt them before saving to database
-					$consumer_key = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['consumer_key'] ?? ''));
-					$consumer_secret = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['consumer_secret'] ?? ''));
-					$passkey = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['passkey'] ?? ''));
+					$encrypted_consumer_key = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['consumer_key'] ?? ''));
+					$encrypted_consumer_secret = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['consumer_secret'] ?? ''));
+					$encrypted_passkey = MpesaPaywallProUtils::encrypt_credential(sanitize_text_field($options['passkey'] ?? ''));
 
 					return [
 						// M-Pesa API Setting
-						'consumer_key'            => $consumer_key, // encyrpted consumer key
-						'consumer_secret' 		  => $consumer_secret, // encrypted consumer secret
+						'consumer_key'            => $encrypted_consumer_key, // encyrpted consumer key
+						'consumer_secret' 		  => $encrypted_consumer_secret, // encrypted consumer secret
 						'shortcode'        		  => sanitize_text_field($options['shortcode'] ?? ''),
-						'passkey'          		  => $passkey, // encrypted passkey
+						'passkey'          		  => $encrypted_passkey, // encrypted passkey
 						'account_reference' 	  => sanitize_text_field($options['account_reference'] ?? ''),
 						'transaction_description' => sanitize_text_field($options['transaction_description'] ?? ''),
 						'env'              		  => (isset($options['env']) && $options['env'] === 'production')
