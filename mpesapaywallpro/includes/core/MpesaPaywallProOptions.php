@@ -38,7 +38,15 @@ class MpesaPaywallProOptions
         }
 
         if ($key !== null) {
-            return self::$options[$key] ?? $default;
+            $value = self::$options[$key] ?? null;
+
+            // Return stored value if it exists and is not empty
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+
+            // Handle callable defaults
+            return is_callable($default) ? $default() : $default;
         }
 
         return self::$options;

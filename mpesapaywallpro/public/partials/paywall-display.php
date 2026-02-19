@@ -13,6 +13,8 @@
  * 
  */
 
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
+
 // If this file is called directly, abort.
 if (! defined('WPINC')) {
     die;
@@ -22,18 +24,8 @@ if (! defined('WPINC')) {
 $post_id = get_the_ID();
 // retrieve current value of the content locked meta field
 // $price is coming from render_paywall() function in MpesaPaywallProPublic.php and is passed to the paywall-display.php file when it is required
-$mpp_buttonColor = get_option('mpesapaywallpro_options')['button_color'] ?? null;
-$mpp_paywallMessage = get_option('mpesapaywallpro_options')['paywall_message'] ?? esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro');
-
-// Get WordPress theme colors
-$mpp_primary_color = get_theme_mod('primary_color');
-$mpp_accent_color = get_theme_mod('accent_color');
-$mpp_link_color = get_theme_mod('link_color');
-
-// Fallback to button color option or theme mod
-if (!$mpp_buttonColor) {
-    $mpp_buttonColor = $mpp_primary_color ?: $mpp_accent_color ?: $mpp_link_color ?: '#111827';
-}
+$mpp_buttonColor = MpesaPaywallProOptions::get_options('button_color', '#111827');
+$mpp_paywallMessage = MpesaPaywallProOptions::get_options('paywall_message', esc_html__('This content is locked to help us continue creating valuable stories. Unlock full access with a secure M-Pesa payment.', 'mpesapaywallpro'));
 
 ?>
 <div class="mpp-paywall-container">
