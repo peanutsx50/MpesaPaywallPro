@@ -25,6 +25,7 @@ namespace MpesaPaywallPro\admin;
 
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
 
 // prevent direct access to the file
 if (!defined('ABSPATH')) {
@@ -122,7 +123,7 @@ class MpesaPaywallProAdmin
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_admin_ajax_nonce'),
-				'phone_number' => get_option('mpesapaywallpro_options')['test_phone_number'] ?? '',
+				'phone_number' => MpesaPaywallProOptions::get_options('test_phone_number') ?? '',
 			)
 		);
 	}
@@ -398,7 +399,7 @@ class MpesaPaywallProAdmin
 					$options = is_array($options) ? $options : [];
 
 					// Get existing options from database
-					$existing_options = get_option('mpesapaywallpro_options', []);
+					$existing_options = MpesaPaywallProOptions::get_options();
 
 					// Merge new options with existing ones (new values override existing)
 					$options = array_merge($existing_options, $options);
