@@ -123,7 +123,7 @@ class MpesaPaywallProAdmin
 			array(
 				'ajax_url' => admin_url('admin-ajax.php'),
 				'nonce'    => wp_create_nonce('mpp_admin_ajax_nonce'),
-				'phone_number' => MpesaPaywallProOptions::get_options('test_phone_number') ?? '',
+				'phone_number' => MpesaPaywallProOptions::get_options('test_phone_number', ''),
 			)
 		);
 	}

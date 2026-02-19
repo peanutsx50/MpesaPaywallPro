@@ -22,7 +22,8 @@ if (! defined('ABSPATH')) {
 }
 
 
-class MpesaPaywallProOptions {
+class MpesaPaywallProOptions
+{
     private static $options = null;
 
     /**
@@ -30,14 +31,16 @@ class MpesaPaywallProOptions {
      * 
      * @return array The plugin options.
      */
-    public static function get_options($key = null) {
+    public static function get_options($key = null, $default = null): mixed
+    {
         if (self::$options === null) {
             self::$options = get_option('mpesapaywallpro_options', []);
         }
 
-        if ($key !== null && isset(self::$options[$key])) {
-            return self::$options[$key];
+        if ($key !== null) {
+            return self::$options[$key] ?? $default;
         }
+
         return self::$options;
     }
 
@@ -47,7 +50,8 @@ class MpesaPaywallProOptions {
      * @param array $options The new plugin options.
      * @return void
      */
-    public static function refresh() {
+    public static function refresh()
+    {
         self::$options = null;
     }
 }

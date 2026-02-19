@@ -39,7 +39,7 @@ if (!defined('ABSPATH')) {
                 <input type="password"
                     id="consumer_key"
                     name="mpesapaywallpro_options[consumer_key]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('consumer_key') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('consumer_key', '')); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Consumer Key">
                 <p class="description">
@@ -57,7 +57,7 @@ if (!defined('ABSPATH')) {
                 <input type="password"
                     id="consumer_secret"
                     name="mpesapaywallpro_options[consumer_secret]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('consumer_secret') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('consumer_secret', '')); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Consumer Secret">
                 <p class="description">
@@ -75,7 +75,7 @@ if (!defined('ABSPATH')) {
                 <input type="text"
                     id="shortcode"
                     name="mpesapaywallpro_options[shortcode]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('shortcode') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('shortcode', '')); ?>"
                     class="regular-text"
                     placeholder="e.g., 174379">
                 <p class="description">
@@ -93,7 +93,7 @@ if (!defined('ABSPATH')) {
                 <input type="password"
                     id="passkey"
                     name="mpesapaywallpro_options[passkey]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('passkey') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('passkey', '')); ?>"
                     class="regular-text"
                     placeholder="Enter your M-Pesa Passkey">
                 <p class="description">
@@ -111,7 +111,7 @@ if (!defined('ABSPATH')) {
                 <input type="text"
                     id="account_reference"
                     name="mpesapaywallpro_options[account_reference]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('account_reference') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('account_reference', '')); ?>"
                     class="regular-text"
                     placeholder="Enter Account Reference">
                 <p class="description">
@@ -129,7 +129,7 @@ if (!defined('ABSPATH')) {
                 <input type="text"
                     id="transaction_description"
                     name="mpesapaywallpro_options[transaction_description]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('transaction_description') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('transaction_description', '')); ?>"
                     class="regular-text"
                     placeholder="Enter Transaction Description">
                 <p class="description">
@@ -145,10 +145,10 @@ if (!defined('ABSPATH')) {
             </th>
             <td>
                 <select id="env" name="mpesapaywallpro_options[env]" class="regular-text">
-                    <option value="sandbox" <?php selected(MpesaPaywallProOptions::get_options('env') ?? 'sandbox', 'sandbox'); ?>>
+                    <option value="sandbox" <?php selected(MpesaPaywallProOptions::get_options('env', 'sandbox'), 'sandbox'); ?>>
                         <?php esc_html_e('Sandbox (Testing)', 'mpesapaywallpro'); ?>
                     </option>
-                    <option value="production" <?php selected(MpesaPaywallProOptions::get_options('env') ?? '', 'production'); ?>>
+                    <option value="production" <?php selected(MpesaPaywallProOptions::get_options('env', ''), 'production'); ?>>
                         <?php esc_html_e('Production (Live)', 'mpesapaywallpro'); ?>
                     </option>
                 </select>
@@ -167,7 +167,7 @@ if (!defined('ABSPATH')) {
                 <input type="text"
                     id="test_phone_number"
                     name="mpesapaywallpro_options[test_phone_number]"
-                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('test_phone_number') ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('test_phone_number', '')); ?>"
                     class="regular-text"
                     placeholder="e.g., 2547XXXXXXXX">
                 <p class="description">

@@ -25,12 +25,13 @@ namespace MpesaPaywallPro\public;
 
 use MpesaPaywallPro\core\MpesaPaywallProLogger;
 use MpesaPaywallPro\core\MpesaPaywallProMpesa;
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
 use MpesaPaywallPro\core\MpesaPaywallProUtils;
 use WP_Error;
 
 // prevent direct access to the file
 if (!defined('ABSPATH')) {
-    exit;
+	exit;
 }
 
 // TODO: Need to implement cookie signing to avoid tampering
@@ -284,7 +285,7 @@ class MpesaPaywallProPublic
 	public function generate_preview($content)
 	{
 		$words = explode(' ', wp_strip_all_tags($content));
-		$excerpt = get_option('mpesapaywallpro_options')['excerpt_length'] ?? 100;
+		$excerpt = (int) MpesaPaywallProOptions::get_options('excerpt_length') ?? 100;
 		$preview_words = array_slice($words, 0, $excerpt);
 		$preview_content = implode(' ', $preview_words);
 		//$preview_content .= '...<div class="mpp-preview-fade"></div>';
@@ -315,7 +316,7 @@ class MpesaPaywallProPublic
 	{
 		// get current user role and check if exempted
 		$current_user = wp_get_current_user();
-		$allowed_roles = get_option('mpesapaywallpro_options')['allowed_user_roles'] ?? ['administrator'];
+		$allowed_roles = MpesaPaywallProOptions::get_options('allowed_user_roles', ['administrator']);
 		foreach ($current_user->roles as $role) {
 			if (in_array($role, (array)$allowed_roles)) {
 				MpesaPaywallProLogger::info("User ID: {$current_user->ID} with role '{$role}' has access to post ID: $post_id due to role exemption.");
@@ -388,7 +389,7 @@ class MpesaPaywallProPublic
 	private function verify_guest_payment_cookie($post_id)
 	{
 		MpesaPaywallProLogger::info('Verifying guest payment cookie for post ID: ' . $post_id);
-		
+
 		$cookie_name = 'mpp_paid_' . $post_id;
 
 		// check if cookie is set
@@ -617,9 +618,8 @@ class MpesaPaywallProPublic
 		}
 
 		// Get settings and meta
-		$options = get_option('mpesapaywallpro_options', []);
-		$default_amount = absint($options['default_amount'] ?? 20);
-		$auto_lock = absint($options['auto_lock'] ?? 0) === 1;
+		$default_amount = absint(MpesaPaywallProOptions::get_options('default_amount', 20));
+		$auto_lock = absint(MpesaPaywallProOptions::get_options('auto_lock', 0) === 1);
 
 		$is_locked = get_post_meta($post_id, 'mpp_is_locked', true) === '1';
 		$custom_price = get_post_meta($post_id, 'mpp_price', true);
@@ -728,7 +728,8 @@ class MpesaPaywallProPublic
 	 */
 	public function grant_payment_access($content_post_id, $checkout_id)
 	{
-		$duration = (get_option('mpesapaywallpro_options')['payment_expiry'] ?? 30) * DAY_IN_SECONDS;
+		$expiry_days = MpesaPaywallProOptions::get_options('payment_expiry', 30);
+		$duration = (int) $expiry_days * DAY_IN_SECONDS;
 
 		if (is_user_logged_in()) {
 			// Store in transient (server-side, auto-expires)

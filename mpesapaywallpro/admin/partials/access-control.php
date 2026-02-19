@@ -36,7 +36,7 @@ if (!defined('ABSPATH')) {
             <td>
                 <?php
                 $roles = wp_roles()->get_names();
-                $selected_roles = MpesaPaywallProOptions::get_options('allowed_user_roles') ?? ['administrator'];
+                $selected_roles = MpesaPaywallProOptions::get_options('allowed_user_roles', ['administrator']);
                 ?>
                 <fieldset>
                     <?php foreach ($roles as $role_value => $role_name): ?>
