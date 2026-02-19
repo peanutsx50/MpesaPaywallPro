@@ -212,6 +212,7 @@ class MpesaPaywallProPublic
 				'post_id' => $post_id, // locked post ID int or false
 				'pollInterval' => 500, // 500 milisecs
 				'maxPollAttempts' => 30, // total 1 minute of polling
+				'phone_pattern' => '/^254(7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89])|11[0-5])\d{6}$/;'
 			)
 		);
 	}
@@ -285,7 +286,7 @@ class MpesaPaywallProPublic
 	public function generate_preview($content)
 	{
 		$words = explode(' ', wp_strip_all_tags($content));
-		$excerpt = (int) MpesaPaywallProOptions::get_options('excerpt_length') ?? 100;
+		$excerpt = (int) MpesaPaywallProOptions::get_options('excerpt_length', 100);
 		$preview_words = array_slice($words, 0, $excerpt);
 		$preview_content = implode(' ', $preview_words);
 		//$preview_content .= '...<div class="mpp-preview-fade"></div>';
