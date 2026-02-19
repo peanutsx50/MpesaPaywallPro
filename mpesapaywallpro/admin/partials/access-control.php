@@ -8,12 +8,11 @@
  * @link       https://festuswp.gumroad.com/l/MpesaPaywallPro
  */
 
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
+
 if (!defined('ABSPATH')) {
     exit;
 }
-
-// Fetch options once
-$options = get_option('mpesapaywallpro_options', []);
 ?>
 
 <div class="mpesapaywallpro-settings-section">
@@ -37,7 +36,7 @@ $options = get_option('mpesapaywallpro_options', []);
             <td>
                 <?php
                 $roles = wp_roles()->get_names();
-                $selected_roles = $options['allowed_user_roles'] ?? ['administrator'];
+                $selected_roles = MpesaPaywallProOptions::get_options('allowed_user_roles') ?? ['administrator'];
                 ?>
                 <fieldset>
                     <?php foreach ($roles as $role_value => $role_name): ?>

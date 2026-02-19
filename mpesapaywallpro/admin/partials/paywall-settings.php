@@ -8,6 +8,8 @@
  * @link       https://festuswp.gumroad.com/l/MpesaPaywallPro
  */
 
+use MpesaPaywallPro\Core\MpesaPaywallProOptions;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -39,7 +41,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="password"
                     id="license_key"
                     name="mpesapaywallpro_options[license_key]"
-                    value="<?php echo esc_attr($options['license_key'] ?? ''); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('license_key') ?? ''); ?>"
                     class="regular-text">
                 <p class="description">
                     <?php esc_html_e('Enter your license key to enable updates and support.', 'mpesapaywallpro'); ?>
@@ -54,10 +56,10 @@ $options = get_option('mpesapaywallpro_options', []);
             </th>
             <td>
                 <select id="auto_lock" name="mpesapaywallpro_options[auto_lock]">
-                    <option value="0" <?php selected($options['auto_lock'] ?? 0, 0); ?>>
+                    <option value="0" <?php selected(MpesaPaywallProOptions::get_options('auto_lock') ?? 0, 0); ?>>
                         <?php esc_html_e('No', 'mpesapaywallpro'); ?>
                     </option>
-                    <option value="1" <?php selected($options['auto_lock'] ?? 0, 1); ?>>
+                    <option value="1" <?php selected(MpesaPaywallProOptions::get_options('auto_lock') ?? 0, 1); ?>>
                         <?php esc_html_e('Yes', 'mpesapaywallpro'); ?>
                     </option>
                 </select>
@@ -76,7 +78,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="number"
                     id="default_amount"
                     name="mpesapaywallpro_options[default_amount]"
-                    value="<?php echo esc_attr($options['default_amount'] ?? 20); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('default_amount') ?? 20); ?>"
                     class="small-text"
                     min="1"
                     step="1">
@@ -96,7 +98,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="color"
                     id="button_color"
                     name="mpesapaywallpro_options[button_color]"
-                    value="<?php echo esc_attr($options['button_color'] ?? '#111827'); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('button_color') ?? '#111827'); ?>"
                     class="mpesapaywallpro-color-field"
                     data-default-color="#111827">
                 <p class="description">
@@ -114,7 +116,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="number"
                     id="excerpt_length"
                     name="mpesapaywallpro_options[excerpt_length]"
-                    value="<?php echo esc_attr($options['excerpt_length'] ?? 100); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('excerpt_length') ?? 100); ?>"
                     class="small-text"
                     min="0"
                     step="1">
@@ -132,7 +134,7 @@ $options = get_option('mpesapaywallpro_options', []);
             </th>
             <td>
                 <?php
-                $message = $options['paywall_message']
+                $message = MpesaPaywallProOptions::get_options('paywall_message')
                     ?? esc_html__('This content is locked. Please make a payment to unlock full access.', 'mpesapaywallpro');
 
                 wp_editor($message, 'paywall_message', [
@@ -158,7 +160,7 @@ $options = get_option('mpesapaywallpro_options', []);
                 <input type="number"
                     id="payment_expiry"
                     name="mpesapaywallpro_options[payment_expiry]"
-                    value="<?php echo esc_attr($options['payment_expiry'] ?? 30); ?>"
+                    value="<?php echo esc_attr(MpesaPaywallProOptions::get_options('payment_expiry') ?? 30); ?>"
                     class="small-text"
                     min="0"
                     step="1">
